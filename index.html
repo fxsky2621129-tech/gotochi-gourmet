@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#26324A">
+<title>ご当地グルメ検索</title>
+<meta name="description" content="全国のご当地料理を検索。お気に入りを保存して、地図でお店を探せます。">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" type="image/svg+xml" href="./favicon.svg">
+<link rel="apple-touch-icon" href="./icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<style>
+:root {
+  --bg:#F5EFE0; --card:#FFFCF4; --ink:#263652; --soft:#66728A;
+  --red:#A33A3F; --green:#6E8B4E; --border:#D9CBA3; --head:#26324A;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:#DED5BE;font-family:system-ui,-apple-system,"Segoe UI","Noto Sans JP",sans-serif;color:var(--ink)}
+button,input,select{font:inherit}
+.app{max-width:560px;min-height:100vh;margin:0 auto;background:var(--bg)}
+.cover{background:var(--head);color:#F5EFE0;padding:24px 20px 22px}
+.cover h1{margin:0;font-size:25px}
+.cover p{margin:6px 0 0;font-size:12px;opacity:.72}
+.search-panel{padding:18px 16px 12px}
+.searchbox{display:flex;gap:8px}
+.searchbox input{flex:1;min-width:0;border:1px solid var(--border);border-radius:12px;background:var(--card);padding:13px 14px;color:var(--ink);outline:none}
+.primary{border:0;border-radius:12px;background:var(--red);color:white;padding:0 16px;font-weight:700;cursor:pointer}
+.row{display:flex;gap:8px;margin-top:10px}
+.row select,.ghost{flex:1;border:1px solid var(--border);border-radius:10px;background:var(--card);padding:10px;color:var(--ink)}
+.ghost{cursor:pointer}
+.chips{display:flex;gap:7px;overflow:auto;padding:10px 16px 5px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{white-space:nowrap;border:1px solid var(--border);background:var(--card);color:var(--soft);padding:7px 11px;border-radius:999px;font-size:12px;cursor:pointer}
+.chip.active{background:var(--ink);border-color:var(--ink);color:white}
+.status{padding:8px 16px;font-size:12px;color:var(--soft)}
+.quick{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;padding:8px 16px 12px}
+.quick button{border:1px solid var(--border);background:var(--card);border-radius:12px;padding:11px;text-align:left;color:var(--ink);cursor:pointer}
+.quick b{display:block;font-size:13px} .quick span{display:block;font-size:11px;color:var(--soft);margin-top:3px}
+.section-title{padding:14px 16px 7px;font-weight:800;font-size:14px}
+.results{padding:0 16px 84px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:13px;margin:9px 0}
+.card-top{display:flex;gap:10px;align-items:flex-start}
+.icon{width:40px;height:40px;border-radius:50%;border:1px solid var(--border);display:grid;place-items:center;font-size:20px;flex:none}
+.card-body{flex:1;min-width:0}
+.title{font-weight:800;font-size:15px;margin:0}
+.meta{display:flex;gap:5px;flex-wrap:wrap;margin:6px 0}
+.tag{border:1px solid var(--border);border-radius:999px;padding:2px 7px;font-size:10px;color:var(--soft)}
+.desc{font-size:12px;line-height:1.65;color:var(--soft);margin:0}
+.actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}
+.actions a,.actions button{text-decoration:none;border:1px solid var(--border);background:white;color:var(--ink);border-radius:8px;padding:7px 9px;font-size:11px;cursor:pointer}
+.notice{border:1px dashed var(--border);background:rgba(255,255,255,.35);padding:13px;border-radius:12px;font-size:12px;line-height:1.7;color:var(--soft);margin:9px 0}
+.bottom{position:sticky;bottom:0;background:var(--head);color:white;padding:10px 16px;display:flex;gap:8px;justify-content:space-between;align-items:center}
+.bottom small{opacity:.75}
+.badge{font-size:11px;background:rgba(255,255,255,.14);padding:5px 8px;border-radius:999px}
+.hidden{display:none!important}
+@media(min-width:600px){body{padding:20px} .app{border-radius:22px;overflow:hidden;box-shadow:0 20px 55px rgba(0,0,0,.2)}}
+.install-help{margin:12px 16px 0;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:var(--card);font-size:13px;line-height:1.6}
+.install-help summary{cursor:pointer;font-weight:700}
+.install-help p{margin:8px 0 0}
+#installApp{margin:10px 0 0;min-height:44px;padding:10px 14px}
+@media(display-mode:standalone){.install-help{display:none}}
+</style>
+</head>
+<body>
+<div class="app">
+<header class="cover">
+  <h1>ご当地グルメ検索</h1>
+  <p>ご当地料理・有名店・観光地グルメ・道の駅をひとつの検索窓から｜結果は最大10件表示</p>
+</header>
+<details class="install-help">
+<summary>ホーム画面に追加するには</summary>
+<p>AndroidのChromeで開き、右上の「︙」→「ホーム画面に追加」→「インストール」または「追加」を選びます。</p>
+<p>このページをそのままブラウザーで使うこともできます。</p>
+<p id="offlineStatus" role="status">初回はインターネットに接続して開いてください。</p>
+<button id="installApp" class="primary hidden" type="button">ホーム画面に追加</button>
+</details>
+
+<section class="search-panel">
+  <div class="searchbox">
+    <input id="q" autocomplete="off" placeholder="例：高山 飛騨牛 / 白川郷 食べ歩き / 道の駅 海鮮">
+    <button class="primary" id="searchBtn">検索</button>
+  </div>
+  <div class="row">
+    <select id="pref">
+      <option value="">全国</option>
+      <option>北海道</option><option>青森</option><option>岩手</option><option>宮城</option><option>秋田</option><option>山形</option><option>福島</option><option>茨城</option><option>栃木</option><option>群馬</option><option>埼玉</option><option>千葉</option><option>東京</option><option>神奈川</option><option>新潟</option><option>富山</option><option>石川</option><option>福井</option><option>山梨</option><option>長野</option><option>岐阜</option><option>静岡</option><option>愛知</option><option>三重</option><option>滋賀</option><option>京都</option><option>大阪</option><option>兵庫</option><option>奈良</option><option>和歌山</option><option>鳥取</option><option>島根</option><option>岡山</option><option>広島</option><option>山口</option><option>徳島</option><option>香川</option><option>愛媛</option><option>高知</option><option>福岡</option><option>佐賀</option><option>長崎</option><option>熊本</option><option>大分</option><option>宮崎</option><option>鹿児島</option><option>沖縄</option>
+    </select>
+    <button class="ghost" id="locBtn">📍 現在地を確認</button>
+  </div>
+</section>
+
+<nav class="chips" id="chips">
+  <button class="chip active" data-mode="all">すべて</button>
+  <button class="chip" data-mode="local">ご当地料理</button>
+  <button class="chip" data-mode="famous">有名店</button>
+  <button class="chip" data-mode="tourist">観光地グルメ</button>
+  <button class="chip" data-mode="roadstation">道の駅</button>
+  <button class="chip" data-mode="sweets">スイーツ</button>
+  <button class="chip" data-mode="seafood">海鮮</button>
+  <button class="chip" data-mode="noodle">麺</button>
+  <button class="chip" data-mode="meat">肉</button>
+</nav>
+
+<div class="status" id="status">内蔵データから全国のご当地料理を検索できます。</div>
+
+<section class="quick">
+  <button data-quick="人気 グルメ"><b>🔥 人気グルメ</b><span>地域＋人気店で探す</span></button>
+  <button data-quick="食べ歩き"><b>🚶 食べ歩き</b><span>観光地周辺を探す</span></button>
+  <button data-quick="道の駅 グルメ"><b>🛣️ 道の駅グルメ</b><span>食事・軽食・土産</span></button>
+  <button data-quick="名物 スイーツ"><b>🍰 名物スイーツ</b><span>和菓子・洋菓子</span></button>
+</section>
+
+<div class="section-title" id="resultTitle">ご当地料理</div>
+<main class="results" id="results"></main>
+
+<footer class="bottom">
+  <small>検索履歴はこの端末内だけに保存</small>
+  <span class="badge" id="favCount">お気に入り 0</span>
+</footer>
+</div>
+
+<script>
+const DATA = [
+
+  {id:'hokkaido-soupcurry', name:'スープカレー', pref:'北海道', region:'北海道・東北', category:'ご飯もの', emoji:'🍛', desc:'サラサラのスパイススープに骨付き肉と野菜がごろっと入った、札幌発祥のカレー。'},
+  {id:'hokkaido-jingisukan', name:'ジンギスカン', pref:'北海道', region:'北海道・東北', category:'肉料理', emoji:'🐑', desc:'専用の鍋で羊肉と野菜を焼く、北海道を代表する焼き肉料理。'},
+  {id:'aomori-misokare', name:'味噌カレー牛乳ラーメン', pref:'青森', region:'北海道・東北', category:'ラーメン', emoji:'🍜', desc:'味噌ラーメンにカレー粉と牛乳を加えた、青森市発祥のご当地ラーメン。'},
+  {id:'iwate-wanko', name:'わんこそば', pref:'岩手', region:'北海道・東北', category:'麺類', emoji:'🥢', desc:'お椀に一口分のそばを次々と注いでもらう、盛岡・花巻の名物そば。'},
+  {id:'miyagi-gyutan', name:'牛タン焼き', pref:'宮城', region:'北海道・東北', category:'肉料理', emoji:'🥩', desc:'厚切りの牛タンを塩で焼き上げる、仙台発祥の名物料理。'},
+  {id:'akita-kiritanpo', name:'きりたんぽ鍋', pref:'秋田', region:'北海道・東北', category:'鍋・汁物', emoji:'🍲', desc:'米をつぶして棒状に焼き固めた「きりたんぽ」を比内地鶏の出汁で煮込む鍋。'},
+  {id:'yamagata-imoni', name:'芋煮', pref:'山形', region:'北海道・東北', category:'鍋・汁物', emoji:'🍠', desc:'里芋と肉を醤油や味噌で煮込む、秋の風物詩として親しまれる郷土鍋。'},
+  {id:'fukushima-kitakata', name:'喜多方ラーメン', pref:'福島', region:'北海道・東北', category:'ラーメン', emoji:'🍜', desc:'手もみ太麺とあっさり醤油スープが特徴の、喜多方市発祥のラーメン。'},
+  {id:'ibaraki-natto', name:'水戸納豆', pref:'茨城', region:'関東', category:'その他', emoji:'🫘', desc:'小粒で粘りの強い大豆を使う、水戸を中心に発展した納豆文化。'},
+  {id:'tochigi-gyoza', name:'宇都宮餃子', pref:'栃木', region:'関東', category:'粉もの', emoji:'🥟', desc:'野菜たっぷりであっさり味、焼き・水・揚げの食べ比べが楽しい宇都宮の名物。'},
+  {id:'gunma-okkirikomi', name:'おっきりこみ', pref:'群馬', region:'関東', category:'麺類', emoji:'🍜', desc:'幅広の生麺を野菜と一緒に味噌や醤油で煮込む群馬の郷土料理。'},
+  {id:'saitama-musashino', name:'武蔵野うどん', pref:'埼玉', region:'関東', category:'麺類', emoji:'🍜', desc:'太くコシの強い麺を肉汁につけて食べる、埼玉西部発祥のうどん。'},
+  {id:'chiba-namero', name:'なめろう', pref:'千葉', region:'関東', category:'魚介', emoji:'🐟', desc:'アジやイワシを味噌・薬味と叩き合わせる、房総半島の漁師料理。'},
+  {id:'tokyo-monja', name:'もんじゃ焼き', pref:'東京', region:'関東', category:'粉もの', emoji:'🥞', desc:'ゆるく溶いた生地を鉄板で焼きながら食べる、月島発祥の下町グルメ。'},
+  {id:'kanagawa-shuumai', name:'崎陽軒のシウマイ', pref:'神奈川', region:'関東', category:'その他', emoji:'🥟', desc:'干し帆立の旨味を効かせた小ぶりのシュウマイ、横浜名物として親しまれる。'},
+  {id:'niigata-hegisoba', name:'へぎそば', pref:'新潟', region:'甲信越・北陸', category:'麺類', emoji:'🍜', desc:'海藻（布海苔）をつなぎに使い、独特のコシとつるりとした喉ごしが特徴のそば。'},
+  {id:'toyama-black', name:'富山ブラックラーメン', pref:'富山', region:'甲信越・北陸', category:'ラーメン', emoji:'🍜', desc:'濃口醤油をたっぷり使った真っ黒なスープが特徴の、富山市発祥のラーメン。'},
+  {id:'ishikawa-jibuni', name:'治部煮', pref:'石川', region:'甲信越・北陸', category:'郷土料理', emoji:'🦆', desc:'鴨肉や麩を出汁で煮てとろみをつけた、金沢の代表的な郷土料理。'},
+  {id:'fukui-oroshisoba', name:'越前おろしそば', pref:'福井', region:'甲信越・北陸', category:'麺類', emoji:'🍜', desc:'大根おろしをたっぷりのせた冷たいそばに、辛味の効いた出汁をかけて食べる福井名物。'},
+  {id:'yamanashi-houtou', name:'ほうとう', pref:'山梨', region:'甲信越・北陸', category:'麺類', emoji:'🍜', desc:'幅広の生麺をかぼちゃなどの野菜とともに味噌仕立てで煮込む郷土料理。'},
+  {id:'nagano-oyaki', name:'おやき', pref:'長野', region:'甲信越・北陸', category:'スイーツ・軽食', emoji:'🥟', desc:'野沢菜や野菜あんを小麦粉の生地で包んで焼いた、信州の伝統的な軽食。'},
+  {id:'gifu-kurikinton', name:'栗きんとん', pref:'岐阜', region:'東海', category:'スイーツ・軽食', emoji:'🌰', desc:'栗と砂糖だけで作る、中津川・恵那地方発祥の上品な和菓子。'},
+  {id:'gifu-hobamiso', name:'朴葉味噌', pref:'岐阜', region:'東海', category:'郷土料理', emoji:'🍃', desc:'朴の葉に味噌をのせて焼く、飛騨地方の香ばしい郷土料理。'},
+  {id:'shizuoka-oden', name:'静岡おでん', pref:'静岡', region:'東海', category:'鍋・汁物', emoji:'🍢', desc:'黒はんぺんなどを牛すじ出汁で煮込み、青のりとだし粉をかけて食べる静岡名物。'},
+  {id:'aichi-misokatsu', name:'味噌カツ', pref:'愛知', region:'東海', category:'肉料理', emoji:'🍱', desc:'濃厚な赤味噌だれをかけたとんかつ、名古屋を代表する洋食アレンジ。'},
+  {id:'aichi-hitsumabushi', name:'ひつまぶし', pref:'愛知', region:'東海', category:'ご飯もの', emoji:'🍚', desc:'うなぎの蒲焼きを刻み、そのまま・薬味・お茶漬けと3通りで楽しむ名古屋発祥の丼。'},
+  {id:'mie-iseudon', name:'伊勢うどん', pref:'三重', region:'東海', category:'麺類', emoji:'🍜', desc:'極太の柔らかい麺に濃厚なたまり醤油ダレを絡めて食べる、伊勢地方のうどん。'},
+  {id:'shiga-funazushi', name:'鮒寿司', pref:'滋賀', region:'近畿', category:'寿司', emoji:'🐟', desc:'琵琶湖のニゴロブナを塩と米で発酵させる、日本最古とも言われるなれずし。'},
+  {id:'kyoto-nishinsoba', name:'にしんそば', pref:'京都', region:'近畿', category:'麺類', emoji:'🍜', desc:'身欠きにしんの甘露煮をそばにのせた、京都で生まれた和風そば。'},
+  {id:'osaka-takoyaki', name:'たこ焼き', pref:'大阪', region:'近畿', category:'粉もの', emoji:'🐙', desc:'タコ入りの生地を丸く焼き上げる、大阪を代表する粉もの文化の象徴。'},
+  {id:'hyogo-akashiyaki', name:'明石焼き', pref:'兵庫', region:'近畿', category:'粉もの', emoji:'🥚', desc:'卵多めのふわふわ生地でタコを包み、出汁につけて食べる明石名物。'},
+  {id:'nara-kakinoha', name:'柿の葉寿司', pref:'奈良', region:'近畿', category:'寿司', emoji:'🍣', desc:'塩さばや鮭の押し寿司を柿の葉で包んだ、奈良の郷土寿司。'},
+  {id:'wakayama-ramen', name:'和歌山ラーメン', pref:'和歌山', region:'近畿', category:'ラーメン', emoji:'🍜', desc:'豚骨醤油の濃厚なスープに、サイドの早寿司を添えて食べるのが定番。'},
+  {id:'tottori-tofuchikuwa', name:'とうふちくわ', pref:'鳥取', region:'中国', category:'その他', emoji:'🍢', desc:'魚肉に豆腐を混ぜて作る、鳥取県ならではのヘルシーなちくわ。'},
+  {id:'shimane-izumosoba', name:'出雲そば', pref:'島根', region:'中国', category:'麺類', emoji:'🍜', desc:'そばの実を殻ごと挽いた黒っぽい麺を、丸い割子に重ねて食べる出雲地方のそば。'},
+  {id:'okayama-mamakari', name:'ままかり寿司', pref:'岡山', region:'中国', category:'寿司', emoji:'🐟', desc:'サッパという小魚を酢締めにして寿司にする、岡山の郷土料理。'},
+  {id:'hiroshima-okonomi', name:'広島風お好み焼き', pref:'広島', region:'中国', category:'粉もの', emoji:'🥞', desc:'生地・キャベツ・麺を層状に重ねて焼き上げる、広島独自スタイルのお好み焼き。'},
+  {id:'yamaguchi-kawara', name:'瓦そば', pref:'山口', region:'中国', category:'麺類', emoji:'🍜', desc:'熱した瓦の上に茶そばと具材をのせて香ばしく焼く、下関発祥の変わりそば。'},
+  {id:'tokushima-ramen', name:'徳島ラーメン', pref:'徳島', region:'四国', category:'ラーメン', emoji:'🍜', desc:'甘辛い豚バラ肉と生卵をのせた、こってり甘口スープが特徴のご当地ラーメン。'},
+  {id:'kagawa-udon', name:'讃岐うどん', pref:'香川', region:'四国', category:'麺類', emoji:'🍜', desc:'コシの強い麺とシンプルな出汁が持ち味の、香川県が全国に誇るうどん文化。'},
+  {id:'ehime-taimeshi', name:'鯛めし', pref:'愛媛', region:'四国', category:'ご飯もの', emoji:'🐟', desc:'宇和海の鯛を使い、宇和島風は刺身を卵かけご飯風にのせて食べる愛媛の名物。'},
+  {id:'kochi-katsuo', name:'かつおのたたき', pref:'高知', region:'四国', category:'魚介', emoji:'🐟', desc:'藁の強火で表面だけ炙ったカツオを厚切りにする、高知の代表的な郷土料理。'},
+  {id:'fukuoka-tonkotsu', name:'博多とんこつラーメン', pref:'福岡', region:'九州・沖縄', category:'ラーメン', emoji:'🍜', desc:'白濁した豚骨スープに極細麺を合わせる、替え玉文化でも知られる博多名物。'},
+  {id:'fukuoka-motsunabe', name:'もつ鍋', pref:'福岡', region:'九州・沖縄', category:'鍋・汁物', emoji:'🍲', desc:'牛や豚のもつをニラやキャベツと味噌や醤油だしで煮込む博多の鍋料理。'},
+  {id:'saga-sicilian', name:'シシリアンライス', pref:'佐賀', region:'九州・沖縄', category:'ご飯もの', emoji:'🍚', desc:'ご飯の上に肉炒めと生野菜、マヨネーズをのせた唐津発祥の洋風丼。'},
+  {id:'nagasaki-champon', name:'ちゃんぽん', pref:'長崎', region:'九州・沖縄', category:'麺類', emoji:'🍜', desc:'豚骨・鶏がらの濃厚スープに野菜と海鮮を煮込む、長崎発祥の中華麺料理。'},
+  {id:'kumamoto-basashi', name:'馬刺し', pref:'熊本', region:'九州・沖縄', category:'肉料理', emoji:'🐴', desc:'新鮮な馬肉を薄切りにし、生姜醤油やにんにく醤油で食べる熊本の名物。'},
+  {id:'oita-toriten', name:'とり天', pref:'大分', region:'九州・沖縄', category:'揚げ物', emoji:'🍗', desc:'鶏肉に衣をつけて揚げ、酢醤油やからしをつけて食べる大分名物。'},
+  {id:'miyazaki-nanban', name:'チキン南蛮', pref:'宮崎', region:'九州・沖縄', category:'揚げ物', emoji:'🍗', desc:'揚げた鶏肉を甘酢に浸し、タルタルソースをかける延岡発祥の宮崎名物。'},
+  {id:'kagoshima-kurobuta', name:'黒豚しゃぶしゃぶ', pref:'鹿児島', region:'九州・沖縄', category:'肉料理', emoji:'🐷', desc:'甘みと旨味の強い鹿児島黒豚を、しゃぶしゃぶでさっぱりと楽しむ料理。'},
+  {id:'okinawa-champuru', name:'ゴーヤーチャンプルー', pref:'沖縄', region:'九州・沖縄', category:'郷土料理', emoji:'🥒', desc:'苦味のあるゴーヤーと豆腐、豚肉や卵を炒め合わせる沖縄の定番家庭料理。'},
+  {id:'okinawa-soba', name:'沖縄そば', pref:'沖縄', region:'九州・沖縄', category:'麺類', emoji:'🍜', desc:'そば粉を使わず小麦粉だけで作る麺と、豚骨・かつおだしのスープが特徴の麺料理。'}
+];
+
+const RESULT_LIMIT = 10;
+
+function readFavorites() {
+  try {
+    const saved = JSON.parse(localStorage.getItem('gourmet-favorites-v2') || '[]');
+    return Array.isArray(saved) ? saved.filter(id => DATA.some(item => item.id === id)) : [];
+  } catch (_) { return []; }
+}
+const STATE = {
+  mode:'all',
+  query:'',
+  pref:'',
+  coords:null,
+  favorites:new Set(readFavorites())
+};
+
+const MODE_WORDS = {
+  all:'',
+  local:'',
+  famous:'有名店',
+  tourist:'観光地 グルメ',
+  roadstation:'道の駅',
+  sweets:'スイーツ',
+  seafood:'海鮮',
+  noodle:'麺 ラーメン うどん そば',
+  meat:'肉 焼肉 ステーキ'
+};
+
+function esc(s='') {
+  return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
+}
+function saveFav() {
+  localStorage.setItem('gourmet-favorites-v2', JSON.stringify([...STATE.favorites]));
+  document.getElementById('favCount').textContent = `お気に入り ${STATE.favorites.size}`;
+}
+function localMatch(item) {
+  const q = (STATE.query + ' ' + (MODE_WORDS[STATE.mode]||'')).trim().toLowerCase();
+  if(STATE.pref && item.pref !== STATE.pref) return false;
+  if(!q) return true;
+  const hay = (item.name+' '+item.pref+' '+item.region+' '+item.category+' '+item.desc).toLowerCase();
+  const words = q.split(/\s+/).filter(Boolean);
+  return words.some(w => hay.includes(w));
+}
+function mapsSearchUrl() {
+  const parts = [];
+  if(STATE.query) parts.push(STATE.query);
+  if(MODE_WORDS[STATE.mode]) parts.push(MODE_WORDS[STATE.mode]);
+  if(STATE.pref) parts.push(STATE.pref);
+  if(!parts.length) parts.push('ご当地グルメ');
+  let url = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(parts.join(' '));
+  return url;
+}
+function webSearchUrl() {
+  const parts = [STATE.query, MODE_WORDS[STATE.mode], STATE.pref, 'グルメ'].filter(Boolean);
+  return 'https://www.google.com/search?q=' + encodeURIComponent(parts.join(' '));
+}
+function roadSearchUrl() {
+  const parts = ['道の駅', STATE.pref, STATE.query].filter(Boolean);
+  return 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(parts.join(' '));
+}
+function render() {
+  const box = document.getElementById('results');
+  const items = DATA.filter(localMatch);
+  const hasExternalIntent = ['all','famous','tourist','roadstation','sweets','seafood','noodle','meat'].includes(STATE.mode);
+  let html = '';
+
+  if(items.length) {
+    html += items.slice(0,RESULT_LIMIT).map(item => {
+      const fav = STATE.favorites.has(item.id);
+      const q = encodeURIComponent(`${item.pref} ${item.name} 有名店`);
+      return `<article class="card">
+        <div class="card-top">
+          <div class="icon">${item.emoji}</div>
+          <div class="card-body">
+            <p class="title">${esc(item.name)}</p>
+            <div class="meta"><span class="tag">${esc(item.pref)}</span><span class="tag">${esc(item.category)}</span><span class="tag">ご当地料理</span></div>
+            <p class="desc">${esc(item.desc)}</p>
+          </div>
+        </div>
+        <div class="actions">
+          <a target="_self" rel="noopener" href="https://www.google.com/maps/search/?api=1&query=${q}">この料理のお店を地図で探す</a>
+          <button data-fav="${item.id}">${fav?'★ お気に入り済':'☆ お気に入り'}</button>
+        </div>
+      </article>`;
+    }).join('');
+  }
+
+  if(hasExternalIntent) {
+    html += `<div class="notice">
+      <b>オンライン店舗検索</b><br>
+      アプリ内の検索結果は最大10件表示にしています。
+      「この料理のお店を地図で探す」は無料のGoogleマップ検索を開きます。Googleマップ側の表示件数そのものはGoogleが決めるため10件固定ではありません。
+      料理データとお気に入りは端末内で利用できます。地図・Web検索にはインターネット接続が必要です。
+      <div class="actions">
+        <a target="_self" rel="noopener" href="${mapsSearchUrl()}">Googleマップで店舗検索</a>
+        <a target="_self" rel="noopener" href="${webSearchUrl()}">Webで有名店を検索</a>
+        <a target="_self" rel="noopener" href="${roadSearchUrl()}">道の駅を検索</a>
+      </div>
+    </div>`;
+  }
+
+  if(!items.length && !hasExternalIntent) {
+    html = '<div class="notice">内蔵データでは見つかりませんでした。検索語を変えてください。</div>';
+  }
+  box.innerHTML = html;
+
+  box.querySelectorAll('[data-fav]').forEach(btn => btn.addEventListener('click', () => {
+    const id = btn.dataset.fav;
+    STATE.favorites.has(id) ? STATE.favorites.delete(id) : STATE.favorites.add(id);
+    saveFav(); render();
+  }));
+
+  const label = STATE.pref ? STATE.pref + '・' : '';
+  document.getElementById('resultTitle').textContent = label + (STATE.query ? `「${STATE.query}」の検索結果` : 'ご当地料理');
+  document.getElementById('status').textContent =
+    `${Math.min(items.length, RESULT_LIMIT)}件表示` + (items.length > RESULT_LIMIT ? `（候補 ${items.length}件から上位${RESULT_LIMIT}件）` : '') + (STATE.coords ? ` ／ 現在地取得済み（検索への反映なし）` : '') + ` ／ モード：${document.querySelector('.chip.active')?.textContent||'すべて'}`;
+  saveFav();
+}
+
+function doSearch() {
+  STATE.query = document.getElementById('q').value.trim();
+  STATE.pref = document.getElementById('pref').value;
+  localStorage.setItem('gourmet-last-query-v2', STATE.query);
+  render();
+}
+
+document.getElementById('searchBtn').addEventListener('click', doSearch);
+document.getElementById('q').addEventListener('keydown', e => { if(e.key==='Enter') doSearch(); });
+document.getElementById('pref').addEventListener('change', doSearch);
+
+document.querySelectorAll('.chip').forEach(btn => btn.addEventListener('click', () => {
+  document.querySelectorAll('.chip').forEach(x=>x.classList.remove('active'));
+  btn.classList.add('active');
+  STATE.mode = btn.dataset.mode;
+  render();
+}));
+
+document.querySelectorAll('[data-quick]').forEach(btn => btn.addEventListener('click', () => {
+  document.getElementById('q').value = btn.dataset.quick;
+  doSearch();
+}));
+
+document.getElementById('locBtn').addEventListener('click', () => {
+  if(!navigator.geolocation) {
+    alert('この端末は位置情報に対応していません。'); return;
+  }
+  document.getElementById('locBtn').textContent = '位置情報を取得中…';
+  navigator.geolocation.getCurrentPosition(pos => {
+    STATE.coords = {lat:pos.coords.latitude,lng:pos.coords.longitude};
+    document.getElementById('locBtn').textContent = '📍 現在地取得済み';
+    render();
+  }, err => {
+    document.getElementById('locBtn').textContent = '📍 現在地を確認';
+    alert('位置情報を取得できませんでした。ブラウザーのサイト設定で、位置情報の許可を確認してください。');
+  }, {enableHighAccuracy:true, timeout:10000, maximumAge:60000});
+});
+
+document.getElementById('q').value = localStorage.getItem('gourmet-last-query-v2') || '';
+STATE.query = document.getElementById('q').value;
+render();
+</script>
+<script>
+let installPrompt;
+const installButton=document.getElementById('installApp');
+window.addEventListener('beforeinstallprompt',event=>{
+  event.preventDefault();installPrompt=event;installButton.classList.remove('hidden');
+});
+installButton.addEventListener('click',async()=>{
+  if(!installPrompt)return;
+  const prompt=installPrompt;installPrompt=null;
+  installButton.classList.add('hidden');
+  await prompt.prompt();await prompt.userChoice;
+});
+window.addEventListener('appinstalled',()=>{installPrompt=null;installButton.classList.add('hidden');});
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>{
+    navigator.serviceWorker.register('./sw.js').then(()=>navigator.serviceWorker.ready).then(()=>{
+      document.getElementById('offlineStatus').textContent='オフラインでの料理検索の準備ができました。地図・Web検索には通信が必要です。';
+    }).catch(()=>{
+      document.getElementById('offlineStatus').textContent='オフラインの準備ができませんでした。通信がある場所で開き直してください。';
+    });
+  });
+}
+</script>
+</body>
+</html>
