@@ -35,7 +35,7 @@ button,input,select{font:inherit}
 .chip.active{background:var(--ink);border-color:var(--ink);color:white}
 .status{padding:8px 16px;font-size:12px;color:var(--soft)}
 .quick{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;padding:8px 16px 12px}
-.quick button{border:1px solid var(--border);background:var(--card);border-radius:12px;padding:11px;text-align:left;color:var(--ink);cursor:pointer}
+.quick a{display:block;text-decoration:none;border:1px solid var(--border);background:var(--card);border-radius:12px;padding:11px;text-align:left;color:var(--ink);cursor:pointer}
 .quick b{display:block;font-size:13px} .quick span{display:block;font-size:11px;color:var(--soft);margin-top:3px}
 .section-title{padding:14px 16px 7px;font-weight:800;font-size:14px}
 .results{padding:0 16px 84px}
@@ -60,13 +60,25 @@ button,input,select{font:inherit}
 .install-help p{margin:8px 0 0}
 #installApp{margin:10px 0 0;min-height:44px;padding:10px 14px}
 @media(display-mode:standalone){.install-help{display:none}}
+.field-label{display:block;font-weight:700;font-size:14px;margin:0 0 8px}
+.search-panel .row{margin:0 0 16px}.row select{min-width:0;width:100%}.row .ghost{flex:0 0 auto;font-size:12px}
+.reset{border:0;background:transparent;color:var(--red);text-decoration:underline;padding:10px 0;cursor:pointer;font-size:13px}
+.quick-help{padding:0 16px;margin:0 0 6px;font-size:13px;line-height:1.6;color:var(--soft)}
+.pref-group{margin:10px 0;border:1px solid var(--border);border-radius:12px;background:var(--card);overflow:hidden}
+.pref-group>summary{padding:14px;font-size:16px;font-weight:700;cursor:pointer}
+.pref-group>summary span{float:right;font-size:13px;font-weight:400;color:var(--soft)}
+.pref-group .card{margin:0;border:0;border-top:1px solid var(--border);border-radius:0}
+.pref-title{font-size:18px;margin:14px 0 6px}.region-title{font-size:14px;margin:22px 0 6px;color:var(--soft)}
+.desc{font-size:14px}.actions a,.actions button{font-size:12px;min-height:40px}.tag{font-size:12px}
+.chip{font-size:13px}.quick b{font-size:14px}.quick span{font-size:12px}.results{padding-bottom:32px}
+@media(max-width:360px){.searchbox{flex-wrap:wrap}.searchbox .primary{min-height:44px}.row .ghost{padding:8px;font-size:11px}}
 </style>
 </head>
 <body>
 <div class="app">
 <header class="cover">
   <h1>ご当地グルメ検索</h1>
-  <p>ご当地料理・有名店・観光地グルメ・道の駅をひとつの検索窓から｜結果は最大10件表示</p>
+  <p>47都道府県のご当地料理と、お店・食べ歩きスポットを探す</p>
 </header>
 <details class="install-help">
 <summary>ホーム画面に追加するには</summary>
@@ -77,45 +89,46 @@ button,input,select{font:inherit}
 </details>
 
 <section class="search-panel">
-  <div class="searchbox">
-    <input id="q" autocomplete="off" placeholder="例：高山 飛騨牛 / 白川郷 食べ歩き / 道の駅 海鮮">
-    <button class="primary" id="searchBtn">検索</button>
-  </div>
-  <div class="row">
+  <label class="field-label" for="pref">① 都道府県を選ぶ</label>
+    <div class="row">
     <select id="pref">
-      <option value="">全国</option>
-      <option>北海道</option><option>青森</option><option>岩手</option><option>宮城</option><option>秋田</option><option>山形</option><option>福島</option><option>茨城</option><option>栃木</option><option>群馬</option><option>埼玉</option><option>千葉</option><option>東京</option><option>神奈川</option><option>新潟</option><option>富山</option><option>石川</option><option>福井</option><option>山梨</option><option>長野</option><option>岐阜</option><option>静岡</option><option>愛知</option><option>三重</option><option>滋賀</option><option>京都</option><option>大阪</option><option>兵庫</option><option>奈良</option><option>和歌山</option><option>鳥取</option><option>島根</option><option>岡山</option><option>広島</option><option>山口</option><option>徳島</option><option>香川</option><option>愛媛</option><option>高知</option><option>福岡</option><option>佐賀</option><option>長崎</option><option>熊本</option><option>大分</option><option>宮崎</option><option>鹿児島</option><option>沖縄</option>
+      <option value="">全国（都道府県別の一覧）</option>
+      <option value="北海道">北海道</option><option value="青森">青森県</option><option value="岩手">岩手県</option><option value="宮城">宮城県</option><option value="秋田">秋田県</option><option value="山形">山形県</option><option value="福島">福島県</option><option value="茨城">茨城県</option><option value="栃木">栃木県</option><option value="群馬">群馬県</option><option value="埼玉">埼玉県</option><option value="千葉">千葉県</option><option value="東京">東京都</option><option value="神奈川">神奈川県</option><option value="新潟">新潟県</option><option value="富山">富山県</option><option value="石川">石川県</option><option value="福井">福井県</option><option value="山梨">山梨県</option><option value="長野">長野県</option><option value="岐阜">岐阜県</option><option value="静岡">静岡県</option><option value="愛知">愛知県</option><option value="三重">三重県</option><option value="滋賀">滋賀県</option><option value="京都">京都府</option><option value="大阪">大阪府</option><option value="兵庫">兵庫県</option><option value="奈良">奈良県</option><option value="和歌山">和歌山県</option><option value="鳥取">鳥取県</option><option value="島根">島根県</option><option value="岡山">岡山県</option><option value="広島">広島県</option><option value="山口">山口県</option><option value="徳島">徳島県</option><option value="香川">香川県</option><option value="愛媛">愛媛県</option><option value="高知">高知県</option><option value="福岡">福岡県</option><option value="佐賀">佐賀県</option><option value="長崎">長崎県</option><option value="熊本">熊本県</option><option value="大分">大分県</option><option value="宮崎">宮崎県</option><option value="鹿児島">鹿児島県</option><option value="沖縄">沖縄県</option>
     </select>
     <button class="ghost" id="locBtn">📍 現在地を確認</button>
   </div>
+  <label class="field-label" for="q">② 料理名・地名を入力（任意）</label>
+  <div class="searchbox">
+    <input aria-label="料理名・地名" id="q" autocomplete="off" placeholder="料理名・地名（例：朴葉味噌 / 高山）">
+    <button class="primary" id="searchBtn">料理を検索</button>
+  </div>
+  <button class="reset" id="resetSearch" type="button">選んだ都道府県の料理をすべて表示</button>
 </section>
 
-<nav class="chips" id="chips">
-  <button class="chip active" data-mode="all">すべて</button>
-  <button class="chip" data-mode="local">ご当地料理</button>
-  <button class="chip" data-mode="famous">有名店</button>
-  <button class="chip" data-mode="tourist">観光地グルメ</button>
-  <button class="chip" data-mode="roadstation">道の駅</button>
-  <button class="chip" data-mode="sweets">スイーツ</button>
-  <button class="chip" data-mode="seafood">海鮮</button>
-  <button class="chip" data-mode="noodle">麺</button>
-  <button class="chip" data-mode="meat">肉</button>
+<nav class="chips" id="chips" aria-label="料理の種類">
+  <button class="chip active" data-mode="all" aria-pressed="true">ご当地料理すべて</button>
+  <button class="chip" data-mode="sweets" aria-pressed="false">スイーツ</button>
+  <button class="chip" data-mode="seafood" aria-pressed="false">海鮮</button>
+  <button class="chip" data-mode="noodle" aria-pressed="false">麺</button>
+  <button class="chip" data-mode="meat" aria-pressed="false">肉</button>
 </nav>
 
 <div class="status" id="status">内蔵データから全国のご当地料理を検索できます。</div>
 
-<section class="quick">
-  <button data-quick="人気 グルメ"><b>🔥 人気グルメ</b><span>地域＋人気店で探す</span></button>
-  <button data-quick="食べ歩き"><b>🚶 食べ歩き</b><span>観光地周辺を探す</span></button>
-  <button data-quick="道の駅 グルメ"><b>🛣️ 道の駅グルメ</b><span>食事・軽食・土産</span></button>
-  <button data-quick="名物 スイーツ"><b>🍰 名物スイーツ</b><span>和菓子・洋菓子</span></button>
+<div class="section-title">お店・スポットを検索</div>
+<p class="quick-help" id="quickHelp">Googleマップの検索結果を開きます（通信が必要です）。</p>
+<section class="quick" aria-label="Googleマップで店舗検索">
+  <a data-quick="人気 グルメ" href="https://www.google.com/maps/search/?api=1&amp;query=人気%20グルメ"><b>🔥 人気グルメ</b><span>Googleマップでお店を見る ↗</span></a>
+  <a data-quick="食べ歩き" href="https://www.google.com/maps/search/?api=1&amp;query=食べ歩き"><b>🚶 食べ歩き</b><span>Googleマップでスポットを見る ↗</span></a>
+  <a data-quick="道の駅 グルメ" href="https://www.google.com/maps/search/?api=1&amp;query=道の駅%20グルメ"><b>🛣️ 道の駅グルメ</b><span>Googleマップで道の駅を見る ↗</span></a>
+  <a data-quick="名物 スイーツ" href="https://www.google.com/maps/search/?api=1&amp;query=名物%20スイーツ"><b>🍰 名物スイーツ</b><span>Googleマップでお店を見る ↗</span></a>
 </section>
 
 <div class="section-title" id="resultTitle">ご当地料理</div>
 <main class="results" id="results"></main>
 
 <footer class="bottom">
-  <small>検索履歴はこの端末内だけに保存</small>
+  <small>v1.1 · 保存データはこの端末内</small>
   <span class="badge" id="favCount">お気に入り 0</span>
 </footer>
 </div>
@@ -177,166 +190,109 @@ const DATA = [
   {id:'okinawa-soba', name:'沖縄そば', pref:'沖縄', region:'九州・沖縄', category:'麺類', emoji:'🍜', desc:'そば粉を使わず小麦粉だけで作る麺と、豚骨・かつおだしのスープが特徴の麺料理。'}
 ];
 
-const RESULT_LIMIT = 10;
-
+const PREFS = Array.from(document.getElementById('pref').options).map(option => option.value).filter(Boolean);
+function fullPref(pref) { return pref === '北海道' ? pref : pref + ({東京:'都',京都:'府',大阪:'府'}[pref] || '県'); }
+function readSaved(key, fallback) { try { return localStorage.getItem(key) || fallback; } catch (_) { return fallback; } }
+function writeSaved(key, value) { try { localStorage.setItem(key, value); } catch (_) {} }
 function readFavorites() {
-  try {
-    const saved = JSON.parse(localStorage.getItem('gourmet-favorites-v2') || '[]');
-    return Array.isArray(saved) ? saved.filter(id => DATA.some(item => item.id === id)) : [];
-  } catch (_) { return []; }
+  try { const ids=JSON.parse(readSaved('gourmet-favorites-v2','[]')); return Array.isArray(ids)?ids.filter(id=>DATA.some(item=>item.id===id)):[]; }
+  catch (_) { return []; }
 }
-const STATE = {
-  mode:'all',
-  query:'',
-  pref:'',
-  coords:null,
-  favorites:new Set(readFavorites())
-};
-
-const MODE_WORDS = {
-  all:'',
-  local:'',
-  famous:'有名店',
-  tourist:'観光地 グルメ',
-  roadstation:'道の駅',
-  sweets:'スイーツ',
-  seafood:'海鮮',
-  noodle:'麺 ラーメン うどん そば',
-  meat:'肉 焼肉 ステーキ'
-};
-
-function esc(s='') {
-  return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
-}
-function saveFav() {
-  localStorage.setItem('gourmet-favorites-v2', JSON.stringify([...STATE.favorites]));
-  document.getElementById('favCount').textContent = `お気に入り ${STATE.favorites.size}`;
+const STATE = {mode:'all', query:readSaved('gourmet-last-query-v2',''), pref:readSaved('gourmet-pref-v1',''), coords:null, favorites:new Set(readFavorites())};
+if (!PREFS.includes(STATE.pref)) STATE.pref='';
+// Discard only the exact category strings written by the broken old shortcuts.
+if (['人気 グルメ','食べ歩き','道の駅 グルメ','名物 スイーツ'].includes(STATE.query)) STATE.query='';
+function esc(s='') { return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]); }
+function normalize(s) { return s.normalize('NFKC').toLowerCase().replace(/東京都|京都府|大阪府|([一-龠]+)県/g,(_,p)=>p||_.slice(0,-1)); }
+function categoryMatch(item) {
+  if(STATE.mode==='sweets') return item.id==='gifu-kurikinton';
+  if(STATE.mode==='seafood') return /魚介|寿司/.test(item.category)||['aichi-hitsumabushi','ehime-taimeshi'].includes(item.id);
+  if(STATE.mode==='noodle') return /麺|ラーメン/.test(item.category);
+  if(STATE.mode==='meat') return /肉|揚げ物/.test(item.category)||['fukuoka-motsunabe'].includes(item.id);
+  return true;
 }
 function localMatch(item) {
-  const q = (STATE.query + ' ' + (MODE_WORDS[STATE.mode]||'')).trim().toLowerCase();
-  if(STATE.pref && item.pref !== STATE.pref) return false;
-  if(!q) return true;
-  const hay = (item.name+' '+item.pref+' '+item.region+' '+item.category+' '+item.desc).toLowerCase();
-  const words = q.split(/\s+/).filter(Boolean);
-  return words.some(w => hay.includes(w));
+  if(STATE.pref && item.pref!==STATE.pref) return false;
+  if(!categoryMatch(item)) return false;
+  const hay=normalize([item.name,item.pref,item.region,item.category,item.desc].join(' '));
+  return normalize(STATE.query).split(/\s+/).filter(Boolean).every(word=>hay.includes(word));
 }
-function mapsSearchUrl() {
-  const parts = [];
-  if(STATE.query) parts.push(STATE.query);
-  if(MODE_WORDS[STATE.mode]) parts.push(MODE_WORDS[STATE.mode]);
-  if(STATE.pref) parts.push(STATE.pref);
-  if(!parts.length) parts.push('ご当地グルメ');
-  let url = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(parts.join(' '));
-  return url;
+function mapsUrl(query) { return 'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(query); }
+function searchContext() {
+  const pref=document.getElementById('pref').value;
+  return [pref?fullPref(pref):'',document.getElementById('q').value.trim()].filter(Boolean).join(' ');
 }
-function webSearchUrl() {
-  const parts = [STATE.query, MODE_WORDS[STATE.mode], STATE.pref, 'グルメ'].filter(Boolean);
-  return 'https://www.google.com/search?q=' + encodeURIComponent(parts.join(' '));
+function updateQuickLinks() {
+  const context=searchContext();
+  document.querySelectorAll('[data-quick]').forEach(link=>{
+    link.href=mapsUrl([context,link.dataset.quick].filter(Boolean).join(' '));
+  });
+  document.getElementById('quickHelp').textContent=(context?'「'+context+'」で検索。':'都道府県や地名を指定すると、その地域を検索します。')+'Googleマップの結果を開きます（通信が必要です）。';
 }
-function roadSearchUrl() {
-  const parts = ['道の駅', STATE.pref, STATE.query].filter(Boolean);
-  return 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(parts.join(' '));
+function saveInputs() {
+  STATE.query=document.getElementById('q').value.trim();
+  STATE.pref=document.getElementById('pref').value;
+  writeSaved('gourmet-last-query-v2',STATE.query);
+  writeSaved('gourmet-pref-v1',STATE.pref);
+}
+function saveFav() {
+  writeSaved('gourmet-favorites-v2',JSON.stringify(Array.from(STATE.favorites)));
+  document.getElementById('favCount').textContent='お気に入り '+STATE.favorites.size;
+}
+function card(item) {
+  const fav=STATE.favorites.has(item.id);
+  return `<article class="card" data-pref="${esc(item.pref)}"><div class="card-top"><div class="icon">${item.emoji}</div><div class="card-body">
+    <h3 class="title">${esc(item.name)}</h3><div class="meta"><span class="tag">${esc(fullPref(item.pref))}</span><span class="tag">${esc(item.category)}</span></div><p class="desc">${esc(item.desc)}</p></div></div>
+    <div class="actions"><a href="${mapsUrl(fullPref(item.pref)+' '+item.name)}">この料理のお店を地図で探す ↗</a>
+    <button data-fav="${item.id}" aria-pressed="${fav}">${fav?'★ お気に入り済':'☆ お気に入り'}</button></div></article>`;
 }
 function render() {
-  const box = document.getElementById('results');
-  const items = DATA.filter(localMatch);
-  const hasExternalIntent = ['all','famous','tourist','roadstation','sweets','seafood','noodle','meat'].includes(STATE.mode);
-  let html = '';
-
-  if(items.length) {
-    html += items.slice(0,RESULT_LIMIT).map(item => {
-      const fav = STATE.favorites.has(item.id);
-      const q = encodeURIComponent(`${item.pref} ${item.name} 有名店`);
-      return `<article class="card">
-        <div class="card-top">
-          <div class="icon">${item.emoji}</div>
-          <div class="card-body">
-            <p class="title">${esc(item.name)}</p>
-            <div class="meta"><span class="tag">${esc(item.pref)}</span><span class="tag">${esc(item.category)}</span><span class="tag">ご当地料理</span></div>
-            <p class="desc">${esc(item.desc)}</p>
-          </div>
-        </div>
-        <div class="actions">
-          <a target="_self" rel="noopener" href="https://www.google.com/maps/search/?api=1&query=${q}">この料理のお店を地図で探す</a>
-          <button data-fav="${item.id}">${fav?'★ お気に入り済':'☆ お気に入り'}</button>
-        </div>
-      </article>`;
-    }).join('');
+  const box=document.getElementById('results');
+  const openPrefs=new Set(Array.from(box.querySelectorAll('details[open]')).map(el=>el.dataset.pref));
+  const items=DATA.filter(localMatch);
+  let html='';let lastRegion='';
+  if(STATE.pref) {
+    html='<h2 class="pref-title">'+esc(fullPref(STATE.pref))+'のご当地料理</h2>'+items.map(card).join('');
+  } else {
+    PREFS.forEach(pref=>{
+      const group=items.filter(item=>item.pref===pref);if(!group.length)return;
+      const region=group[0].region;
+      if(region!==lastRegion){html+='<h2 class="region-title">'+esc(region)+'</h2>';lastRegion=region;}
+      const open=STATE.query||STATE.mode!=='all'||openPrefs.has(pref);
+      html+=`<details class="pref-group" data-pref="${esc(pref)}" ${open?'open':''}><summary>${esc(fullPref(pref))}<span>${group.length}品</span></summary>${group.map(card).join('')}</details>`;
+    });
   }
-
-  if(hasExternalIntent) {
-    html += `<div class="notice">
-      <b>オンライン店舗検索</b><br>
-      アプリ内の検索結果は最大10件表示にしています。
-      「この料理のお店を地図で探す」は無料のGoogleマップ検索を開きます。Googleマップ側の表示件数そのものはGoogleが決めるため10件固定ではありません。
-      料理データとお気に入りは端末内で利用できます。地図・Web検索にはインターネット接続が必要です。
-      <div class="actions">
-        <a target="_self" rel="noopener" href="${mapsSearchUrl()}">Googleマップで店舗検索</a>
-        <a target="_self" rel="noopener" href="${webSearchUrl()}">Webで有名店を検索</a>
-        <a target="_self" rel="noopener" href="${roadSearchUrl()}">道の駅を検索</a>
-      </div>
-    </div>`;
-  }
-
-  if(!items.length && !hasExternalIntent) {
-    html = '<div class="notice">内蔵データでは見つかりませんでした。検索語を変えてください。</div>';
-  }
-  box.innerHTML = html;
-
-  box.querySelectorAll('[data-fav]').forEach(btn => btn.addEventListener('click', () => {
-    const id = btn.dataset.fav;
-    STATE.favorites.has(id) ? STATE.favorites.delete(id) : STATE.favorites.add(id);
-    saveFav(); render();
+  if(!items.length) html+='<div class="notice">この条件の料理は内蔵データにありません。「選んだ都道府県の料理をすべて表示」で戻すか、上の4つのボタンでお店を検索してください。</div>';
+  box.innerHTML=html;
+  box.querySelectorAll('[data-fav]').forEach(button=>button.addEventListener('click',()=>{
+    const id=button.dataset.fav;
+    STATE.favorites.has(id)?STATE.favorites.delete(id):STATE.favorites.add(id);
+    saveFav();button.textContent=STATE.favorites.has(id)?'★ お気に入り済':'☆ お気に入り';button.setAttribute('aria-pressed',String(STATE.favorites.has(id)));
   }));
-
-  const label = STATE.pref ? STATE.pref + '・' : '';
-  document.getElementById('resultTitle').textContent = label + (STATE.query ? `「${STATE.query}」の検索結果` : 'ご当地料理');
-  document.getElementById('status').textContent =
-    `${Math.min(items.length, RESULT_LIMIT)}件表示` + (items.length > RESULT_LIMIT ? `（候補 ${items.length}件から上位${RESULT_LIMIT}件）` : '') + (STATE.coords ? ` ／ 現在地取得済み（検索への反映なし）` : '') + ` ／ モード：${document.querySelector('.chip.active')?.textContent||'すべて'}`;
-  saveFav();
+  const area=STATE.pref?fullPref(STATE.pref):'全国';
+  document.getElementById('resultTitle').textContent=STATE.query?area+'・「'+STATE.query+'」の料理検索':'ご当地料理を都道府県別に見る';
+  document.getElementById('status').textContent=area+'：'+items.length+'品'+(!STATE.pref?' ／ 都道府県名をタップして料理を表示':'')+(STATE.coords?' ／ 現在地確認済み（検索には未反映）':'');
+  document.querySelectorAll('[data-mode]').forEach(button=>{const active=button.dataset.mode===STATE.mode;button.classList.toggle('active',active);button.setAttribute('aria-pressed',String(active));});
+  updateQuickLinks();saveFav();
 }
-
-function doSearch() {
-  STATE.query = document.getElementById('q').value.trim();
-  STATE.pref = document.getElementById('pref').value;
-  localStorage.setItem('gourmet-last-query-v2', STATE.query);
-  render();
-}
-
-document.getElementById('searchBtn').addEventListener('click', doSearch);
-document.getElementById('q').addEventListener('keydown', e => { if(e.key==='Enter') doSearch(); });
-document.getElementById('pref').addEventListener('change', doSearch);
-
-document.querySelectorAll('.chip').forEach(btn => btn.addEventListener('click', () => {
-  document.querySelectorAll('.chip').forEach(x=>x.classList.remove('active'));
-  btn.classList.add('active');
-  STATE.mode = btn.dataset.mode;
-  render();
-}));
-
-document.querySelectorAll('[data-quick]').forEach(btn => btn.addEventListener('click', () => {
-  document.getElementById('q').value = btn.dataset.quick;
-  doSearch();
-}));
-
-document.getElementById('locBtn').addEventListener('click', () => {
-  if(!navigator.geolocation) {
-    alert('この端末は位置情報に対応していません。'); return;
-  }
-  document.getElementById('locBtn').textContent = '位置情報を取得中…';
-  navigator.geolocation.getCurrentPosition(pos => {
-    STATE.coords = {lat:pos.coords.latitude,lng:pos.coords.longitude};
-    document.getElementById('locBtn').textContent = '📍 現在地取得済み';
-    render();
-  }, err => {
-    document.getElementById('locBtn').textContent = '📍 現在地を確認';
-    alert('位置情報を取得できませんでした。ブラウザーのサイト設定で、位置情報の許可を確認してください。');
-  }, {enableHighAccuracy:true, timeout:10000, maximumAge:60000});
+function doSearch() { saveInputs();render(); }
+function resetSearch() { STATE.mode='all';document.getElementById('q').value='';doSearch(); }
+document.getElementById('q').value=STATE.query;
+document.getElementById('pref').value=STATE.pref;
+document.getElementById('searchBtn').addEventListener('click',doSearch);
+document.getElementById('q').addEventListener('keydown',event=>{if(event.key==='Enter')doSearch();});
+document.getElementById('q').addEventListener('input',updateQuickLinks);
+document.getElementById('pref').addEventListener('change',resetSearch);
+document.getElementById('resetSearch').addEventListener('click',resetSearch);
+document.querySelectorAll('[data-mode]').forEach(button=>button.addEventListener('click',()=>{STATE.mode=button.dataset.mode;doSearch();}));
+document.querySelectorAll('[data-quick]').forEach(link=>link.addEventListener('click',()=>{saveInputs();updateQuickLinks();}));
+document.getElementById('locBtn').addEventListener('click',()=>{
+  if(!navigator.geolocation){alert('この端末は位置情報に対応していません。');return;}
+  const button=document.getElementById('locBtn');button.textContent='位置情報を取得中…';
+  navigator.geolocation.getCurrentPosition(pos=>{STATE.coords={lat:pos.coords.latitude,lng:pos.coords.longitude};button.textContent='📍 現在地確認済み';render();},()=>{button.textContent='📍 現在地を確認';alert('位置情報を取得できませんでした。ブラウザーの位置情報の許可を確認してください。');},{enableHighAccuracy:true,timeout:10000,maximumAge:60000});
 });
-
-document.getElementById('q').value = localStorage.getItem('gourmet-last-query-v2') || '';
-STATE.query = document.getElementById('q').value;
 render();
+
 </script>
 <script>
 let installPrompt;
