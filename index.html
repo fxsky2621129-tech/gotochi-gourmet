@@ -111,10 +111,16 @@ button,input,select{font:inherit}
 <nav class="chips" id="chips" aria-label="検索する料理の種類">
   <button class="chip active" data-mode="all" aria-pressed="true">指定なし</button>
   <button class="chip" data-mode="local" aria-pressed="false">ご当地料理</button>
+  <button class="chip" data-mode="bgrade" aria-pressed="false">ご当地B級グルメ</button>
+  <button class="chip" data-mode="gourmet" aria-pressed="false">ご当地グルメ</button>
   <button class="chip" data-mode="sweets" aria-pressed="false">スイーツ</button>
   <button class="chip" data-mode="seafood" aria-pressed="false">海鮮</button>
   <button class="chip" data-mode="noodle" aria-pressed="false">麺</button>
   <button class="chip" data-mode="meat" aria-pressed="false">肉</button>
+  <button class="chip" data-mode="wagashi" aria-pressed="false">和菓子</button>
+  <button class="chip" data-mode="tempura" aria-pressed="false">てんぷら</button>
+  <button class="chip" data-mode="unagi" aria-pressed="false">鰻</button>
+  <button class="chip" data-mode="family" aria-pressed="false">ファミレス</button>
 </nav>
 <div style="padding:8px 16px 12px"><p id="searchSummary" role="status" style="font-size:14px"></p><button class="primary" id="searchBtn">料理・お店を検索 ↗</button></div>
 
@@ -133,7 +139,7 @@ button,input,select{font:inherit}
 <main class="results" id="results"></main>
 
 <footer class="bottom">
-  <small>v1.3 · 保存データはこの端末内</small>
+  <small>v1.4 · 保存データはこの端末内</small>
   <span class="badge" id="favCount">お気に入り 0</span>
 </footer>
 </div>
@@ -274,7 +280,7 @@ function render() {
   updateQuickLinks();saveFav();updateSearchSummary();
 }
 function doSearch() { saveInputs();render(); }
-const CATEGORY_TERMS={all:'',local:'郷土料理',sweets:'スイーツ',seafood:'海鮮',noodle:'麺 ラーメン',meat:'肉料理'};
+const CATEGORY_TERMS={all:'',local:'郷土料理',sweets:'スイーツ',seafood:'海鮮',noodle:'麺 ラーメン',meat:'肉料理',bgrade:'ご当地 B級グルメ',gourmet:'ご当地グルメ',wagashi:'和菓子',tempura:'天ぷら',unagi:'うなぎ',family:'ファミリーレストラン'};
 function selectedSearch() { return [searchContext(),CATEGORY_TERMS[STATE.mode]].filter(Boolean).join(' ') || '全国 グルメ'; }
 function searchShops() { saveInputs(); location.assign(mapsUrl(selectedSearch())); }
 function updateSearchSummary() { document.getElementById('searchSummary').textContent='検索条件：'+selectedSearch(); }
