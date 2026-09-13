@@ -121,7 +121,8 @@ button,input,select{font:inherit}
   <button class="chip" data-mode="wagashi" aria-pressed="false">和菓子</button>
   <button class="chip" data-mode="tempura" aria-pressed="false">てんぷら</button>
   <button class="chip" data-mode="unagi" aria-pressed="false">鰻</button>
-  <button class="chip" data-mode="family" aria-pressed="false">ファミレス</button>
+  <button class="chip" data-mode="family" aria-pressed="false">ファミレス（すべて）</button>
+  <button class="chip" data-mode="localfamily" aria-pressed="false">地域限定ファミレス</button>
 </nav>
 <div style="padding:8px 16px 12px"><p id="searchSummary" role="status" style="font-size:14px"></p><button class="primary" id="searchBtn">料理・お店を検索 ↗</button></div>
 
@@ -140,7 +141,7 @@ button,input,select{font:inherit}
 <main class="results" id="results"></main>
 
 <footer class="bottom">
-  <small>v1.5 · 保存データはこの端末内</small>
+  <small>v1.6 · 保存データはこの端末内</small>
   <span class="badge" id="favCount">お気に入り 0</span>
 </footer>
 </div>
@@ -281,10 +282,10 @@ function render() {
   updateQuickLinks();saveFav();updateSearchSummary();
 }
 function doSearch() { saveInputs();render(); }
-const CATEGORY_TERMS={all:'',local:'郷土料理',sweets:'スイーツ',seafood:'海鮮',noodle:'麺 ラーメン',soba:'そば',meat:'肉料理',bgrade:'ご当地 B級グルメ',gourmet:'ご当地グルメ',wagashi:'和菓子',tempura:'天ぷら',unagi:'うなぎ',family:'ファミリーレストラン'};
+const CATEGORY_TERMS={all:'',local:'郷土料理',sweets:'スイーツ',seafood:'海鮮',noodle:'麺 ラーメン',soba:'そば',meat:'肉料理',bgrade:'ご当地 B級グルメ',gourmet:'ご当地グルメ',wagashi:'和菓子',tempura:'天ぷら',unagi:'うなぎ',family:'ファミリーレストラン',localfamily:'ローカル ファミリーレストラン'};
 function selectedSearch() { return [searchContext(),CATEGORY_TERMS[STATE.mode]].filter(Boolean).join(' ') || '全国 グルメ'; }
 function searchShops() { saveInputs(); location.assign(mapsUrl(selectedSearch())); }
-function updateSearchSummary() { document.getElementById('searchSummary').textContent='検索条件：'+selectedSearch(); }
+function updateSearchSummary() { document.getElementById('searchSummary').textContent='検索条件：'+selectedSearch()+(STATE.mode==='localfamily'?'（地元店・ローカルチェーンを探します。全国チェーンが含まれる場合があります）':''); }
 function resetSearch() { STATE.mode='all';document.getElementById('q').value='';doSearch(); }
 document.getElementById('q').value=readSaved('gourmet-last-query-v2','');
 document.getElementById('pref').value=STATE.pref;
