@@ -72,6 +72,7 @@ button,input,select{font:inherit}
 .desc{font-size:14px}.actions a,.actions button{font-size:12px;min-height:40px}.tag{font-size:12px}
 .chip{font-size:13px}.quick b{font-size:14px}.quick span{font-size:12px}.results{padding-bottom:32px}
 @media(max-width:360px){.searchbox{flex-wrap:wrap}.searchbox .primary{min-height:44px}.row .ghost{padding:8px;font-size:11px}}
+#searchBtn{min-height:48px;width:100%}.chips{flex-wrap:wrap;overflow:visible}
 </style>
 </head>
 <body>
@@ -100,19 +101,22 @@ button,input,select{font:inherit}
   <label class="field-label" for="q">② 料理名・地名を入力（任意）</label>
   <div class="searchbox">
     <input aria-label="料理名・地名" id="q" autocomplete="off" placeholder="料理名・地名（例：朴葉味噌 / 高山）">
-    <button class="primary" id="searchBtn">料理・お店を検索 ↗</button>
+
   </div>
   <p style="font-size:13px;line-height:1.6;color:var(--soft)">入力した料理・地名でGoogleマップの店舗検索結果を開きます（通信が必要です）。</p>
   <button class="reset" id="resetSearch" type="button">選んだ都道府県の料理をすべて表示</button>
 </section>
 
-<nav class="chips" id="chips" aria-label="料理の種類">
-  <button class="chip active" data-mode="all" aria-pressed="true">ご当地料理すべて</button>
+<div class="section-title">③ カテゴリを選ぶ（任意）</div>
+<nav class="chips" id="chips" aria-label="検索する料理の種類">
+  <button class="chip active" data-mode="all" aria-pressed="true">指定なし</button>
+  <button class="chip" data-mode="local" aria-pressed="false">ご当地料理</button>
   <button class="chip" data-mode="sweets" aria-pressed="false">スイーツ</button>
   <button class="chip" data-mode="seafood" aria-pressed="false">海鮮</button>
   <button class="chip" data-mode="noodle" aria-pressed="false">麺</button>
   <button class="chip" data-mode="meat" aria-pressed="false">肉</button>
 </nav>
+<div style="padding:8px 16px 12px"><p id="searchSummary" role="status" style="font-size:14px"></p><button class="primary" id="searchBtn">料理・お店を検索 ↗</button></div>
 
 <div class="status" id="status">内蔵データから全国のご当地料理を検索できます。</div>
 
@@ -129,7 +133,7 @@ button,input,select{font:inherit}
 <main class="results" id="results"></main>
 
 <footer class="bottom">
-  <small>v1.2 · 保存データはこの端末内</small>
+  <small>v1.3 · 保存データはこの端末内</small>
   <span class="badge" id="favCount">お気に入り 0</span>
 </footer>
 </div>
@@ -205,17 +209,10 @@ if (!PREFS.includes(STATE.pref)) STATE.pref='';
 if (['人気 グルメ','食べ歩き','道の駅 グルメ','名物 スイーツ'].includes(STATE.query)) STATE.query='';
 function esc(s='') { return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]); }
 function normalize(s) { return s.normalize('NFKC').toLowerCase().replace(/東京都|京都府|大阪府|([一-龠]+)県/g,(_,p)=>p||_.slice(0,-1)); }
-function categoryMatch(item) {
-  if(STATE.mode==='sweets') return item.id==='gifu-kurikinton';
-  if(STATE.mode==='seafood') return /魚介|寿司/.test(item.category)||['aichi-hitsumabushi','ehime-taimeshi'].includes(item.id);
-  if(STATE.mode==='noodle') return /麺|ラーメン/.test(item.category);
-  if(STATE.mode==='meat') return /肉|揚げ物/.test(item.category)||['fukuoka-motsunabe'].includes(item.id);
-  return true;
-}
+
 function localMatch(item) {
   if(STATE.pref && item.pref!==STATE.pref) return false;
-  if(!categoryMatch(item)) return false;
-  const hay=normalize([item.name,item.pref,item.region,item.category,item.desc].join(' '));
+
   return true;
 }
 function mapsUrl(query) { return 'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(query); }
@@ -259,7 +256,7 @@ function render() {
       const group=items.filter(item=>item.pref===pref);if(!group.length)return;
       const region=group[0].region;
       if(region!==lastRegion){html+='<h2 class="region-title">'+esc(region)+'</h2>';lastRegion=region;}
-      const open=STATE.query||STATE.mode!=='all'||openPrefs.has(pref);
+      const open=openPrefs.has(pref);
       html+=`<details class="pref-group" data-pref="${esc(pref)}" ${open?'open':''}><summary>${esc(fullPref(pref))}<span>${group.length}品</span></summary>${group.map(card).join('')}</details>`;
     });
   }
@@ -272,19 +269,22 @@ function render() {
   }));
   const area=STATE.pref?fullPref(STATE.pref):'全国';
   document.getElementById('resultTitle').textContent='ご当地料理を都道府県別に見る';
-  document.getElementById('status').textContent=area+'：'+items.length+'品'+(!STATE.pref?' ／ 都道府県名をタップして料理を表示':'')+(STATE.coords?' ／ 現在地確認済み（検索には未反映）':'');
+  document.getElementById('status').textContent='ご当地料理の紹介：'+area+' '+items.length+'品'+(!STATE.pref?' ／ 都道府県名をタップして料理を表示':'')+(STATE.coords?' ／ 現在地確認済み（検索には未反映）':'');
   document.querySelectorAll('[data-mode]').forEach(button=>{const active=button.dataset.mode===STATE.mode;button.classList.toggle('active',active);button.setAttribute('aria-pressed',String(active));});
-  updateQuickLinks();saveFav();
+  updateQuickLinks();saveFav();updateSearchSummary();
 }
 function doSearch() { saveInputs();render(); }
-function searchShops() { saveInputs(); location.assign(mapsUrl(searchContext() || "全国 グルメ")); }
+const CATEGORY_TERMS={all:'',local:'郷土料理',sweets:'スイーツ',seafood:'海鮮',noodle:'麺 ラーメン',meat:'肉料理'};
+function selectedSearch() { return [searchContext(),CATEGORY_TERMS[STATE.mode]].filter(Boolean).join(' ') || '全国 グルメ'; }
+function searchShops() { saveInputs(); location.assign(mapsUrl(selectedSearch())); }
+function updateSearchSummary() { document.getElementById('searchSummary').textContent='検索条件：'+selectedSearch(); }
 function resetSearch() { STATE.mode='all';document.getElementById('q').value='';doSearch(); }
 document.getElementById('q').value=readSaved('gourmet-last-query-v2','');
 document.getElementById('pref').value=STATE.pref;
 document.getElementById('searchBtn').addEventListener('click',searchShops);
 document.getElementById('q').addEventListener('keydown',event=>{if(event.key==='Enter' && !event.isComposing){event.preventDefault();searchShops();}});
-document.getElementById('q').addEventListener('input',updateQuickLinks);
-document.getElementById('pref').addEventListener('change',resetSearch);
+document.getElementById('q').addEventListener('input',()=>{updateQuickLinks();updateSearchSummary();});
+document.getElementById('pref').addEventListener('change',doSearch);
 document.getElementById('resetSearch').addEventListener('click',resetSearch);
 document.querySelectorAll('[data-mode]').forEach(button=>button.addEventListener('click',()=>{STATE.mode=button.dataset.mode;doSearch();}));
 document.querySelectorAll('[data-quick]').forEach(link=>link.addEventListener('click',()=>{saveInputs();updateQuickLinks();}));
