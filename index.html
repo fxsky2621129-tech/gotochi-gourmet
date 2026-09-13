@@ -116,6 +116,7 @@ button,input,select{font:inherit}
   <button class="chip" data-mode="sweets" aria-pressed="false">スイーツ</button>
   <button class="chip" data-mode="seafood" aria-pressed="false">海鮮</button>
   <button class="chip" data-mode="noodle" aria-pressed="false">麺</button>
+  <button class="chip" data-mode="soba" aria-pressed="false">そば</button>
   <button class="chip" data-mode="meat" aria-pressed="false">肉</button>
   <button class="chip" data-mode="wagashi" aria-pressed="false">和菓子</button>
   <button class="chip" data-mode="tempura" aria-pressed="false">てんぷら</button>
@@ -139,7 +140,7 @@ button,input,select{font:inherit}
 <main class="results" id="results"></main>
 
 <footer class="bottom">
-  <small>v1.4 · 保存データはこの端末内</small>
+  <small>v1.5 · 保存データはこの端末内</small>
   <span class="badge" id="favCount">お気に入り 0</span>
 </footer>
 </div>
@@ -280,7 +281,7 @@ function render() {
   updateQuickLinks();saveFav();updateSearchSummary();
 }
 function doSearch() { saveInputs();render(); }
-const CATEGORY_TERMS={all:'',local:'郷土料理',sweets:'スイーツ',seafood:'海鮮',noodle:'麺 ラーメン',meat:'肉料理',bgrade:'ご当地 B級グルメ',gourmet:'ご当地グルメ',wagashi:'和菓子',tempura:'天ぷら',unagi:'うなぎ',family:'ファミリーレストラン'};
+const CATEGORY_TERMS={all:'',local:'郷土料理',sweets:'スイーツ',seafood:'海鮮',noodle:'麺 ラーメン',soba:'そば',meat:'肉料理',bgrade:'ご当地 B級グルメ',gourmet:'ご当地グルメ',wagashi:'和菓子',tempura:'天ぷら',unagi:'うなぎ',family:'ファミリーレストラン'};
 function selectedSearch() { return [searchContext(),CATEGORY_TERMS[STATE.mode]].filter(Boolean).join(' ') || '全国 グルメ'; }
 function searchShops() { saveInputs(); location.assign(mapsUrl(selectedSearch())); }
 function updateSearchSummary() { document.getElementById('searchSummary').textContent='検索条件：'+selectedSearch(); }
