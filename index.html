@@ -100,8 +100,9 @@ button,input,select{font:inherit}
   <label class="field-label" for="q">② 料理名・地名を入力（任意）</label>
   <div class="searchbox">
     <input aria-label="料理名・地名" id="q" autocomplete="off" placeholder="料理名・地名（例：朴葉味噌 / 高山）">
-    <button class="primary" id="searchBtn">料理を検索</button>
+    <button class="primary" id="searchBtn">料理・お店を検索 ↗</button>
   </div>
+  <p style="font-size:13px;line-height:1.6;color:var(--soft)">入力した料理・地名でGoogleマップの店舗検索結果を開きます（通信が必要です）。</p>
   <button class="reset" id="resetSearch" type="button">選んだ都道府県の料理をすべて表示</button>
 </section>
 
@@ -128,7 +129,7 @@ button,input,select{font:inherit}
 <main class="results" id="results"></main>
 
 <footer class="bottom">
-  <small>v1.1 · 保存データはこの端末内</small>
+  <small>v1.2 · 保存データはこの端末内</small>
   <span class="badge" id="favCount">お気に入り 0</span>
 </footer>
 </div>
@@ -198,7 +199,7 @@ function readFavorites() {
   try { const ids=JSON.parse(readSaved('gourmet-favorites-v2','[]')); return Array.isArray(ids)?ids.filter(id=>DATA.some(item=>item.id===id)):[]; }
   catch (_) { return []; }
 }
-const STATE = {mode:'all', query:readSaved('gourmet-last-query-v2',''), pref:readSaved('gourmet-pref-v1',''), coords:null, favorites:new Set(readFavorites())};
+const STATE = {mode:'all', query:'', pref:readSaved('gourmet-pref-v1',''), coords:null, favorites:new Set(readFavorites())};
 if (!PREFS.includes(STATE.pref)) STATE.pref='';
 // Discard only the exact category strings written by the broken old shortcuts.
 if (['人気 グルメ','食べ歩き','道の駅 グルメ','名物 スイーツ'].includes(STATE.query)) STATE.query='';
@@ -215,7 +216,7 @@ function localMatch(item) {
   if(STATE.pref && item.pref!==STATE.pref) return false;
   if(!categoryMatch(item)) return false;
   const hay=normalize([item.name,item.pref,item.region,item.category,item.desc].join(' '));
-  return normalize(STATE.query).split(/\s+/).filter(Boolean).every(word=>hay.includes(word));
+  return true;
 }
 function mapsUrl(query) { return 'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(query); }
 function searchContext() {
@@ -270,17 +271,18 @@ function render() {
     saveFav();button.textContent=STATE.favorites.has(id)?'★ お気に入り済':'☆ お気に入り';button.setAttribute('aria-pressed',String(STATE.favorites.has(id)));
   }));
   const area=STATE.pref?fullPref(STATE.pref):'全国';
-  document.getElementById('resultTitle').textContent=STATE.query?area+'・「'+STATE.query+'」の料理検索':'ご当地料理を都道府県別に見る';
+  document.getElementById('resultTitle').textContent='ご当地料理を都道府県別に見る';
   document.getElementById('status').textContent=area+'：'+items.length+'品'+(!STATE.pref?' ／ 都道府県名をタップして料理を表示':'')+(STATE.coords?' ／ 現在地確認済み（検索には未反映）':'');
   document.querySelectorAll('[data-mode]').forEach(button=>{const active=button.dataset.mode===STATE.mode;button.classList.toggle('active',active);button.setAttribute('aria-pressed',String(active));});
   updateQuickLinks();saveFav();
 }
 function doSearch() { saveInputs();render(); }
+function searchShops() { saveInputs(); location.assign(mapsUrl(searchContext() || "全国 グルメ")); }
 function resetSearch() { STATE.mode='all';document.getElementById('q').value='';doSearch(); }
-document.getElementById('q').value=STATE.query;
+document.getElementById('q').value=readSaved('gourmet-last-query-v2','');
 document.getElementById('pref').value=STATE.pref;
-document.getElementById('searchBtn').addEventListener('click',doSearch);
-document.getElementById('q').addEventListener('keydown',event=>{if(event.key==='Enter')doSearch();});
+document.getElementById('searchBtn').addEventListener('click',searchShops);
+document.getElementById('q').addEventListener('keydown',event=>{if(event.key==='Enter' && !event.isComposing){event.preventDefault();searchShops();}});
 document.getElementById('q').addEventListener('input',updateQuickLinks);
 document.getElementById('pref').addEventListener('change',resetSearch);
 document.getElementById('resetSearch').addEventListener('click',resetSearch);
