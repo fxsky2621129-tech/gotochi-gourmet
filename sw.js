@@ -1,5 +1,5 @@
 const PREFIX = 'gotochi-gourmet:' + new URL(self.registration.scope).pathname + ':';
-const CACHE = PREFIX + 'v1.6';
+const CACHE = PREFIX + 'v1.7';
 const ASSETS = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png', './favicon.svg'];
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(ASSETS)).then(() => self.skipWaiting()));
