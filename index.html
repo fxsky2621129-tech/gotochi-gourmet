@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <meta name="theme-color" content="#26324A">
-<title>ご当地グルメ検索 v7.1（現在地周辺検索）</title>
+<title>ご当地グルメ検索 v7.2（現在地周辺検索）</title>
 <style>
 :root {
   --bg:#F5EFE0; --card:#FFFCF4; --ink:#263652; --soft:#66728A;
@@ -44,10 +44,6 @@ button,input,select{font:inherit}
 .desc{font-size:12px;line-height:1.65;color:var(--soft);margin:0}
 .actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}
 .actions a,.actions button{text-decoration:none;border:1px solid var(--border);background:white;color:var(--ink);border-radius:8px;padding:7px 9px;font-size:11px;cursor:pointer}
-.review-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin-top:8px}
-.review-actions a{text-decoration:none;border:1px solid var(--border);background:#fff;color:var(--ink);border-radius:9px;padding:8px 9px;font-size:11px;text-align:center;font-weight:700}
-.review-actions a:hover{filter:brightness(.98)}
-.review-label{margin-top:10px;font-size:10.5px;color:var(--soft);font-weight:700}
 .notice{border:1px dashed var(--border);background:rgba(255,255,255,.35);padding:13px;border-radius:12px;font-size:12px;line-height:1.7;color:var(--soft);margin:9px 0}
 .bottom{position:sticky;bottom:0;background:var(--head);color:white;padding:10px 16px;display:flex;gap:8px;justify-content:space-between;align-items:center}
 .bottom small{opacity:.75}
@@ -68,13 +64,13 @@ button,input,select{font:inherit}
 <div class="app">
 <header class="cover">
   <h1>ご当地グルメ検索</h1>
-  <p>有名店・観光地グルメ・道の駅・食全般をひとつの検索窓から｜検索結果は各外部サイトで表示</p>
+  <p>有名店・観光地グルメ・道の駅・食全般をひとつの検索窓から｜検索するとGoogleマップの店舗一覧を表示</p>
 </header>
 
 <section class="search-panel">
   <div class="searchbox">
     <input id="q" autocomplete="off" placeholder="例：高山 飛騨牛 / 白川郷 食べ歩き / 道の駅 海鮮">
-    <button class="primary" id="searchBtn">検索</button>
+    <button class="primary" id="searchBtn">店舗を検索</button>
   </div>
   <div class="row">
     <select id="pref">
@@ -195,21 +191,6 @@ function roadSearchUrl() {
   return nearbyMapsUrl(parts.join(' '));
 }
 
-function reviewQuery(item) {
-  return [item?.pref || STATE.pref, item?.name || STATE.query, MODE_WORDS[STATE.mode], '飲食店'].filter(Boolean).join(' ');
-}
-function tabelogUrl(item) {
-  return 'https://tabelog.com/rstLst/?sk=' + encodeURIComponent(reviewQuery(item));
-}
-function rettyUrl(item) {
-  return 'https://retty.me/search/?keyword=' + encodeURIComponent(reviewQuery(item));
-}
-function hotpepperUrl(item) {
-  return 'https://www.hotpepper.jp/CSP/psh010/doBasic?FWT=' + encodeURIComponent(reviewQuery(item));
-}
-function tripadvisorUrl(item) {
-  return 'https://www.tripadvisor.jp/Search?q=' + encodeURIComponent(reviewQuery(item));
-}
 function render() {
   const box = document.getElementById('results');
   const parts = [STATE.pref, STATE.query, MODE_WORDS[STATE.mode]].filter(Boolean);
@@ -217,18 +198,11 @@ function render() {
 
   box.innerHTML = `<div class="notice">
     <b>${esc(condition)}を検索</b><br>
-    ご当地料理の固定一覧は表示せず、入力した条件から有名店・観光地グルメ・道の駅・飲食店を検索します。
+    「店舗を検索」または下のボタンを押すと、Googleマップの店舗一覧を開きます。戻る操作でこの画面に戻れます。
     <div class="actions">
       <a target="_blank" rel="noopener" href="${mapsSearchUrl()}">Googleマップで店舗検索</a>
       <a target="_blank" rel="noopener" href="${webSearchUrl()}">Webで有名店を検索</a>
       <a target="_blank" rel="noopener" href="${roadSearchUrl()}">道の駅を検索</a>
-    </div>
-    <div class="review-label">キーワード・地域・カテゴリで口コミサイトを検索（現在地は反映されません）</div>
-    <div class="review-actions">
-      <a target="_blank" rel="noopener" href="${tabelogUrl()}">🍽️ 食べログ</a>
-      <a target="_blank" rel="noopener" href="${rettyUrl()}">👤 Retty</a>
-      <a target="_blank" rel="noopener" href="${hotpepperUrl()}">🔥 ホットペッパー</a>
-      <a target="_blank" rel="noopener" href="${tripadvisorUrl()}">🌏 Tripadvisor</a>
     </div>
   </div>`;
 
@@ -239,15 +213,20 @@ function render() {
 }
 
 function doSearch() {
-  STATE.query = document.getElementById('q').value.trim();
+  STATE.query = document.getElementById('q').value.trim().replace(/[・、,]+/g, ' ').replace(/\s+/g, ' ');
   STATE.pref = document.getElementById('pref').value;
   if(STATE.pref && STATE.coords) clearLocation();
   saveLastQuery(STATE.query);
   render();
 }
 
-document.getElementById('searchBtn').addEventListener('click', doSearch);
-document.getElementById('q').addEventListener('keydown', e => { if(e.key==='Enter') doSearch(); });
+function searchStores() {
+  doSearch();
+  window.location.href = mapsSearchUrl();
+}
+
+document.getElementById('searchBtn').addEventListener('click', searchStores);
+document.getElementById('q').addEventListener('keydown', e => { if(e.key==='Enter' && !e.isComposing && e.keyCode !== 229) { e.preventDefault(); searchStores(); } });
 document.getElementById('pref').addEventListener('change', () => {
   clearLocation();
   doSearch();
@@ -261,8 +240,10 @@ document.querySelectorAll('.chip').forEach(btn => btn.addEventListener('click', 
 }));
 
 document.querySelectorAll('[data-quick]').forEach(btn => btn.addEventListener('click', () => {
-  document.getElementById('q').value = btn.dataset.quick;
-  doSearch();
+  const input = document.getElementById('q');
+  const words = (input.value + ' ' + btn.dataset.quick).replace(/[・、,]+/g, ' ').split(/\s+/).filter(Boolean);
+  input.value = [...new Set(words)].join(' ');
+  searchStores();
 }));
 
 document.getElementById('locBtn').addEventListener('click', () => {
