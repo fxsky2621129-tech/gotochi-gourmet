@@ -65,3 +65,14 @@
 
 - ８番らーめん：石川（他県は未登録） https://www.hachiban.jp/shop/ishikawa/
 - すし食いねぇ！：石川・富山 https://www.sushikuine.co.jp/shops/
+
+## SNS・ネット話題グルメ（提案中）
+
+`trending.html` を開くと、Googleニュースの公開RSSの**見出しにSNSへの言及と飲食関連語の両方がある記事**を最大10件表示します。SNSの投稿・再生・いいね件数を計測したランキングではありません。並び順は掲載日時の新しい順です。ニュース見出しに都道府県名が明記された場合だけ都道府県を設定します。市区町村は自動推測しないため、市区町村検索の結果は、将来その所在地の確認手段を追加するまで原則0件となります。Googleマップへのリンクは検索補助であり店舗の同定ではありません。
+
+- GitHub Actions `.github/workflows/update-trending.yml` が、毎日00:17 UTC（日本時間09:17）を目安に `scripts/update_trending.py` を実行します。遅延や不実行の可能性があります。実際に定期実行されるのはワークフローをデフォルトブランチにマージしてからです。
+- Googleニュースの公開RSSを利用し、取得に成功した候補を `data/trending-gourmet.json` に保存します。全フィードが失敗した場合は保存ファイルを変更しません。ニュースの配信方針や取得条件が変われば0件となる場合があります。
+- 無料の公開記事・標準GitHub Actions・GitHub Pagesのみで運用する構成です。Google Places APIやX、Instagram、TikTokのAPIキーは使いません。
+- 第三者サイトへの大量アクセスや無断の画像収集は行いません。記事はタイトル、日時、掲載元、元記事リンクのみ掲載します。
+- `node --test tests/trending.test.cjs` で静的な安全性・データ形式の確認ができます。実RSS取得は外部接続が必要です。
+- GitHubリポジトリの `Settings > Actions > General` で Actions の実行と書き込み権限が利用可能かを確認してください。
