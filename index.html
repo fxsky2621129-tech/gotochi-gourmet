@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <meta name="theme-color" content="#26324A">
-<title>ご当地グルメ検索 v7.10（47都道府県の地域チェーン）</title>
+<title>ご当地グルメ検索 v7.11（47都道府県の地域チェーン）</title>
 <style>
 :root {
   --bg:#F5EFE0; --card:#FFFCF4; --ink:#263652; --soft:#66728A;
@@ -278,7 +278,30 @@ const LOCAL_CHAINS = [
   {"name":"黒亭","query":"黒亭","kind":"ラーメン店","prefs":["熊本"],"source":"https://kokutei.co.jp/access/"},
   {"name":"牧のうどん","query":"牧のうどん","kind":"うどん・そば","prefs":["福岡","佐賀","長崎"],"source":"https://www.makinoudon.jp/cont6/main.html"},
   {"name":"ハングリータイガー","query":"ハングリータイガー","kind":"ステーキ・ハンバーグ","prefs":["神奈川"],"source":"https://hungrytiger.co.jp/location/"},
-  {"name":"るーぱん","query":"るーぱん","kind":"ピザ・パスタ","prefs":["埼玉"],"source":"https://www.ru-pan.com/store"}
+  {"name":"るーぱん","query":"るーぱん","kind":"ピザ・パスタ","prefs":["埼玉"],"source":"https://www.ru-pan.com/store"},
+  {"name":"小嶋屋総本店","query":"小嶋屋総本店","kind":"うどん・そば","prefs":["新潟"],"source":"https://www.kojimaya.co.jp/kojimaya/tenpo.html"},
+  {"name":"彩華ラーメン","query":"彩華ラーメン","kind":"ラーメン店","prefs":["奈良","大阪","京都","愛知"],"source":"https://www.saikaramen.com/shop/","match":"彩華","aliases":["サイカラーメン"]},
+  {"name":"もっこす","query":"もっこす","kind":"ラーメン店","prefs":["兵庫"],"source":"https://moccos.jp/shop/"},
+  {"name":"味千拉麺","query":"味千拉麺","kind":"ラーメン店","prefs":["熊本"],"source":"https://www.aji1000.co.jp/shop/","aliases":["味千ラーメン"]},
+  {"name":"さか枝うどん","query":"さか枝うどん","kind":"うどん・そば","prefs":["香川"],"source":"https://www.my-kagawa.jp/udon/511","match":"さか枝","sourceLabel":"県公式観光情報","additionalSources":["https://www.kensanpin.org/toshiakeudonmap/detail.php?id=40"]},
+  {"name":"どんどん庵","query":"どんどん庵","kind":"うどん・そば","prefs":["愛知","岐阜","三重"],"source":"https://www.sagami.co.jp/dondonan/"},
+  {"name":"福しん","query":"福しん","kind":"中華・餃子","prefs":["東京","埼玉"],"source":"https://www.fuku-sin.co.jp/shop.html"},
+  {"name":"みっちゃん総本店","query":"みっちゃん総本店","kind":"お好み焼き","prefs":["広島"],"source":"https://www.okonomi.co.jp/"},
+  {"name":"ぎょうざの美鈴","query":"ぎょうざの美鈴","kind":"中華・餃子","prefs":["三重"],"source":"https://www.gyouzanomisuzu.com/","aliases":["駅裏の美鈴","美鈴本店"]},
+  {"name":"すなば珈琲","query":"すなば珈琲","kind":"カフェ・喫茶","prefs":["鳥取","岩手"],"source":"https://sunaba.coffee/store/"},
+  {"name":"ヒライ","query":"おべんとうのヒライ","kind":"軽食・持ち帰り","prefs":["熊本","福岡","大分"],"source":"https://www.hirai-wa.com/shop_map/"},
+  {"name":"焼肉・冷麺ヤマト","query":"焼肉・冷麺ヤマト","kind":"焼肉店","prefs":["岩手","宮城"],"source":"https://yamato55.com/tenpo/","aliases":["焼肉冷麺ヤマト","焼肉ヤマト"]},
+  {"name":"インデアンカレー（大阪発祥）","query":"インデアンカレー","kind":"カレー","prefs":["大阪","兵庫","東京"],"source":"https://www.indiancurry.jp/","match":"インデアンカレー"},
+  {"name":"寧々家","query":"寧々家","kind":"居酒屋","prefs":["岩手","宮城","秋田","山形","福島","茨城","栃木","新潟","長野","静岡","愛知"],"source":"https://www.d-neneya.com/shop/"},
+  {"name":"さぶろうべい","query":"さぶろうべい","kind":"定食・郷土料理","prefs":["石川","富山"],"source":"https://saburoubei.jp/","additionalSources":["https://su-bee.jp/news"]},
+  {"name":"チャンピオンカレー","query":"チャンピオンカレー","kind":"カレー","prefs":["石川","富山","福井"],"source":"https://chancurry.com/area/hokuriku/","aliases":["カレーのチャンピオン"]},
+  {"name":"かつ時","query":"かつ時","kind":"とんかつ","prefs":["石川","福井","長野","岐阜","愛知"],"source":"https://www.atom-corp.co.jp/brand/brand.php?brand_no=82"},
+  {"name":"牛右衛門","query":"牛右衛門","kind":"ファミリーレストラン","prefs":["長崎"],"source":"https://gyuemon.com/shoplist/"},
+  {"name":"岡田珈琲","query":"岡田珈琲","kind":"カフェ・喫茶","prefs":["熊本"],"source":"https://okada-coffee.com/shopinfo"},
+  {"name":"焼肉なべしま","query":"焼肉なべしま","kind":"焼肉店","prefs":["鹿児島","宮崎","熊本","福岡","佐賀"],"source":"https://www.nabeshima-jp.com/company/"},
+  {"name":"平禄寿司","query":"平禄寿司","kind":"回転寿司","prefs":["北海道","青森","岩手","宮城","東京"],"source":"https://ys-holdings.co.jp/shop/?f=&shop-brand%5B%5D=heiroku-sushi&shop-prefectures="},
+  {"name":"金沢まいもん寿司","query":"金沢まいもん寿司","kind":"寿司","prefs":["石川","東京","神奈川","埼玉","千葉","愛知","京都","大阪","兵庫","福岡","沖縄","広島"],"source":"https://www.maimon-susi.com/shop/"},
+  {"name":"むすびのむさし","query":"むすびのむさし","kind":"軽食・持ち帰り","prefs":["広島"],"source":"https://www.city.hiroshima.lg.jp/hiroshima-brand/tokusan/1026502/1026504/1014706.html","sourceLabel":"市公式情報"}
 ];
 let reviewSequence = 0;
 
@@ -298,7 +321,12 @@ const MODES = {
     ['お好み焼き','ローカルチェーン お好み焼き'],
     ['軽食・持ち帰り','ローカルチェーン 軽食・持ち帰り'],
     ['ステーキ・ハンバーグ','ローカルチェーン ステーキ・ハンバーグ'],
-    ['ピザ・パスタ','ローカルチェーン ピザ・パスタ']
+    ['ピザ・パスタ','ローカルチェーン ピザ・パスタ'],
+    ['カフェ・喫茶','ローカルチェーン カフェ・喫茶'],
+    ['カレー','ローカルチェーン カレー'],
+    ['とんかつ','ローカルチェーン とんかつ'],
+    ['居酒屋','ローカルチェーン 居酒屋'],
+    ['寿司','ローカルチェーン 寿司']
   ]},
   famous:{label:'有名店', term:'人気の飲食店'},
   tourist:{label:'観光地グルメ', term:'観光地 飲食店'},
@@ -374,7 +402,7 @@ function refreshChains() {
   document.getElementById('chainNote').innerHTML =
     '登録' + LOCAL_CHAINS.length + 'チェーン・47都道府県に対応。件数はチェーン数で、支店・店舗数ではありません。県内の候補を表示しています。市区町村内の出店は店舗検索で確認できます。' +
     (chain ? ' <a target="_blank" rel="noopener" href="' + esc(chain.source) + '">' + esc(chain.sourceLabel || '公式店舗情報') + '</a>' : '') +
-    ' 地域とチェーン名で検索し、自由入力欄は使いません。全チェーンを網羅するものではありません。';
+    ' 地域とチェーン名で検索し、自由入力欄は使いません。登録候補は件数制限なしで全件表示します。未登録のチェーンもあります。';
 }
 function chainSearchText(chain) {
   return [fullPrefName(STATE.pref), STATE.city, chain.query].filter(Boolean).join(' ');

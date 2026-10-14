@@ -143,7 +143,7 @@ test('every prefecture has multiple curated chains and every entry has a source 
   assert.equal(prefs.length,47);
   for(const pref of prefs.filter(Boolean)) {
     p.pref(pref);
-    assert.ok(p.run('chainCandidates().length')>=3, pref+' needs at least three candidates');
+    assert.ok(p.run('chainCandidates().length')>=4, pref+' needs at least four candidates');
     assert.equal((p.ids.results.innerHTML.match(/class="card/g)||[]).length,p.run('chainCandidates().length'),pref+' must display all candidates');
     assert.equal(p.ids.chain.disabled,false);
   }
@@ -231,7 +231,7 @@ test('registered brand aliases retain matching branches and still reject unrelat
 
 test('all-region catalog is not truncated and new kinds remain filterable', () => {
   const p=page(); p.mode('localchain');
-  assert.ok(p.run('chainCandidates().length')>=80);
+  assert.ok(p.run('chainCandidates().length')>=103);
   assert.equal((p.ids.results.innerHTML.match(/class="card/g)||[]).length,p.run('LOCAL_CHAINS.length'));
   p.pref('神奈川'); p.kind('ローカルチェーン ステーキ・ハンバーグ');
   assert.ok(p.ids.results.innerHTML.includes('ハングリータイガー'));
@@ -250,6 +250,31 @@ test('takeaway chains can return food shops without admitting unrelated stores',
     store('unrelated',99,{displayName:'如月 電器',formattedAddress:'高知県高知市',types:['electronics_store'],primaryType:'electronics_store'})
   ];
   assert.deepEqual(Array.from(p.context.window.GourmetReviews.rank(places,options),s=>s.id),['takeaway']);
+});
+
+test('new chain kinds filter candidates and returning to all restores every candidate', () => {
+  const p=page(); p.mode('localchain');
+  for(const [pref,kind,name] of [['鳥取','カフェ・喫茶','すなば珈琲'],['石川','カレー','チャンピオンカレー'],['福井','とんかつ','かつ時'],['岩手','居酒屋','寧々家'],['沖縄','寿司','金沢まいもん寿司']]) {
+    p.pref(pref); p.kind('ローカルチェーン '+kind);
+    assert.ok(p.ids.results.innerHTML.includes(name));
+    assert.ok(p.run('chainCandidates()').every(c=>c.kind===kind));
+  }
+  p.kind('');
+  assert.equal((p.ids.results.innerHTML.match(/class="card/g)||[]).length,p.run('LOCAL_CHAINS.filter(c=>c.prefs.includes("沖縄")).length'));
+});
+
+test('cafe chains admit cafe types while rejecting wrong brands, regions and non-food stores', () => {
+  const api=page().context.window.GourmetReviews;
+  const options={mode:'localchain',chainKind:'カフェ・喫茶',chainName:'すなば珈琲',pref:'鳥取県'};
+  assert.equal(api.request(options).includedType,undefined);
+  const places=[
+    store('cafe',5,{displayName:'すなば珈琲 鳥取駅前店',formattedAddress:'鳥取県鳥取市',types:['cafe'],primaryType:'cafe'}),
+    store('coffee',4,{displayName:'すなば珈琲 空港店',formattedAddress:'鳥取県鳥取市',types:['coffee_shop'],primaryType:'coffee_shop'}),
+    store('other',999,{displayName:'全国チェーン珈琲',formattedAddress:'鳥取県鳥取市',types:['cafe'],primaryType:'cafe'}),
+    store('outside',99,{displayName:'すなば珈琲 高田松原店',formattedAddress:'岩手県陸前高田市',types:['cafe'],primaryType:'cafe'}),
+    store('nonfood',99,{displayName:'すなば珈琲 電器',formattedAddress:'鳥取県鳥取市',types:['electronics_store'],primaryType:'electronics_store'})
+  ];
+  assert.deepEqual(Array.from(api.rank(places,options),s=>s.id),['cafe','coffee']);
 });
 
 test('all selectable dish types keep the area and replace conflicting cuisine', async t => {

@@ -53,7 +53,7 @@
     };
     const type = TYPES[options.term] ||
       (options.mode === 'roadstation' || options.mode === 'sweets' ||
-       (options.mode === 'localchain' && options.chainKind === '軽食・持ち帰り') ? '' : 'restaurant');
+       (options.mode === 'localchain' && ['軽食・持ち帰り','カフェ・喫茶'].includes(options.chainKind)) ? '' : 'restaurant');
     if (type) { req.includedType = type; req.useStrictTypeFiltering = true; }
     if (options.coords) req.locationBias = {
       center: {lat:options.coords.lat, lng:options.coords.lng}, radius:10000
@@ -89,7 +89,8 @@
       const types = [...(place.types || []), place.primaryType].filter(Boolean);
       if (type && !types.includes(type)) return false;
       if (!type && options.mode === 'localchain' &&
-        !types.some(t => t === 'food' || t === 'meal_takeaway' || t === 'convenience_store' || t.endsWith('restaurant'))) return false;
+        !types.some(t => t === 'food' || t === 'meal_takeaway' || t === 'convenience_store' || t.endsWith('restaurant') ||
+          (options.chainKind === 'カフェ・喫茶' && ['cafe','coffee_shop','tea_house'].includes(t)))) return false;
       if (!type && options.mode === 'sweets' && !types.some(t => DESSERT_TYPES.includes(t))) return false;
       if (options.mode === 'roadstation' && !compact(place.displayName).includes('道の駅')) return false;
       if (options.coords) {
