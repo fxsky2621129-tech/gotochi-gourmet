@@ -76,8 +76,10 @@
   function rank(places, options) {
     const seen = new Set(), type = request(options).includedType;
     return places.filter(place => {
-      if (options.mode === 'localchain' && (!options.chainName ||
-        !compact(place.displayName).includes(compact(options.chainName)))) return false;
+      if (options.mode === 'localchain') {
+        const names = [options.chainName, ...(options.chainAliases || [])].filter(Boolean);
+        if (!names.some(name => compact(place.displayName).includes(compact(name)))) return false;
+      }
       if (!place.id || seen.has(place.id)) return false;
       seen.add(place.id);
       if (place.businessStatus === 'CLOSED_PERMANENTLY' || place.businessStatus === 'FUTURE_OPENING') return false;

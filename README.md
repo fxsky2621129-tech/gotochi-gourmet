@@ -1,4 +1,4 @@
-# ご当地グルメ検索 v7.9
+# ご当地グルメ検索 v7.10
 
 ローカルチェーン検索は、地域・種類に合う登録チェーン名を選ぶ方式に変更。一般語「ローカルチェーン」で検索しません。未選択・未登録の場合は検索せず説明を表示し、全国チェーンを含む一般検索へ自動で戻しません。保存済みの全国チェーン名などが混ざらないよう、このカテゴリでは自由入力を使用しません。Googleマップの関連候補は完全には制御できません。口コミ順では選択したブランド名を店名に含む候補のみ表示（所属の公式認定ではなく名称照合）。
 
@@ -53,110 +53,151 @@
 - 無料検索の店舗順位・営業情報はGoogleマップ側が決定します。口コミ順は最大20候補内の並べ替えであり、地域の全店ランキングではありません。実APIによる店舗照合・検索精度の定量測定は未実施です。
 - 検索窓に別の地域名が残っている場合、選択した地域と両方が検索語に含まれます。地域切替時は表示される検索語を確認してください。店名を壊さないため自由入力語を自動削除しません。
 
-## v7.9 地域チェーン（2026-10-14）
+## v7.10 地域チェーン（2026-10-14）
 
-7から41チェーンへ拡充。47都道府県それぞれで、種類「すべて」の候補を2件以上登録しています。県に出店するブランドの候補であり、支店数や各市区町村の出店を示す件数ではありません。チェーン未選択でも候補カードから地域とブランドを指定してGoogleマップ検索へ進めます。
+41から80チェーンへ拡充。47都道府県すべてで種類「すべて」の候補を3件以上、46都道府県で4件以上登録。候補は上限で打ち切らず全件表示します。件数はブランド数であり支店数ではありません。市区町村内の出店は各検索結果で確認してください。
 
-全国チェーンを追加して件数を水増しせず、地域中心のブランドを手動選定しています。一部他地域へ展開するブランドや、地域に根付いた暖簾分け店を含みます。全ブランド・全出店県を網羅する台帳ではありません。各情報源の更新時期は異なり、開閉店の即時反映は保証しません。ほうとう不動・グリーンコーナーは公式サイトを取得できなかったため、自治体の公式観光情報で確認し、カードにもその出典種別を表示します。
+地域を中心に展開するブランドを公式店舗情報に基づいて手動選定。一部他地域に出店するブランドや暖簾分けを含みます。全国全チェーン・全出店県の網羅は保証しません。閉店や出店予定だけを根拠に県を追加しません。各情報源の更新時期は異なります。
 
-種類にうどん・そば、中華・餃子、定食・郷土料理、お好み焼き、軽食・持ち帰りを追加。口コミ表示はローカルチェーンに限り取得候補内の最大20店に拡張しました。軽食・持ち帰りはrestaurantに限定せず、店名・地域・飲食関連タイプで確認します。自由入力の全国チェーン名は混入させません。
+ステーキ・ハンバーグ、ピザ・パスタの種類を追加。「三宝亭／さんぽう亭」などの表記違いを登録し、口コミの店舗判定で取りこぼしを減らしました。APIから返った候補の中でブランド・地域を確認し最大20店舗を表示します。Googleマップ側の結果は外部サービスの検索に依存します。
 
-自動テスト72件成功。47都道府県の複数候補、地域・種類の切替、検索リンク、全国チェーン除外、20店舗表示、持ち帰り店の判定を模擬応答で確認。Google実APIの検索精度の定量測定は未実施です。
+自動テスト74件成功。全47県の最低件数・全候補表示、種類切替、別名、全国チェーン除外、地域外除外を確認。実Google APIを使った検索精度の定量測定は未実施です。
 
 ### 登録チェーンと確認元
 
 | チェーン | 登録地域 | 情報源 |
 |---|---|---|
-| とんでん | 北海道・群馬・埼玉・千葉・東京・神奈川 | [公式店舗情報](https://www.tonden.co.jp/shop) |
-| みよしの | 北海道 | [公式店舗情報](https://miyoshino-sapporo.jp/menu-shop-list/) |
-| まるまつ | 青森・岩手・宮城・秋田・山形・福島・栃木 | [公式店舗情報](https://www.re-marumatu.co.jp/information/restaurant_list.html) |
-| やまなか家 | 青森・岩手・宮城・秋田・山形・福島 | [公式店舗情報](https://stores.yamanakaya.jp/) |
-| ばんどう太郎 | 茨城・栃木・千葉 | [公式店舗情報](https://shop.bandotaro.co.jp/) |
-| ぎょうざの満洲 | 群馬・埼玉・東京・神奈川・大阪・兵庫 | [公式店舗情報](https://www.mansyu.co.jp/shop/) |
-| みかづき | 新潟 | [公式店舗情報](https://www.mikazuki-italian.com/) |
-| フレンド | 新潟 | [公式店舗情報](https://www.e-friend.co.jp/) |
-| ８番らーめん | 富山・石川・福井 | [公式店舗情報](https://www.hachiban.jp/shop/) |
-| すし食いねぇ！ | 石川・富山 | [公式店舗情報](https://www.sushikuine.co.jp/shops/) |
-| ヨーロッパ軒 | 福井 | [公式店舗情報](https://yo-roppaken.gourmet.coocan.jp/sub3.htm) |
-| 小作 | 山梨・長野 | [公式店舗情報](https://www.kosaku.co.jp/) |
-| ほうとう不動 | 山梨 | [県公式観光情報](https://www.yamanashi-kankou.jp/kankou/eat/p3_0111.html) |
-| テンホウ | 長野 | [公式店舗情報](https://tenhoo.jp/stores/) |
-| 岐阜タンメン | 岐阜・愛知 | [公式店舗情報](https://gifu-tanmen.com/99_access/) |
-| 魚魚丸 | 愛知・岐阜・静岡 | [公式店舗情報](https://comline.co.jp/list.html) |
-| あみやき亭 | 愛知・岐阜・三重・滋賀 | [公式店舗情報](https://shop.amiyakitei.co.jp/) |
-| 炭焼きレストランさわやか | 静岡 | [公式店舗情報](https://www.genkotsu-hb.com/shop) |
-| フライングガーデン | 群馬・栃木・茨城・埼玉・千葉 | [公式店舗情報](https://www.fgarden.co.jp/restaurant/) |
-| おにぎりの桃太郎 | 三重 | [公式店舗情報](https://onigiri-momotaro.jp/store/) |
-| にぎり長次郎 | 埼玉・愛知・滋賀・京都・大阪・兵庫・奈良・和歌山 | [公式店舗情報](https://www.chojiro.jp/shop/) |
-| 香の川製麺 | 京都・大阪・兵庫・奈良 | [公式店舗情報](https://kanokawa.joyfull.co.jp/shop) |
-| グリーンコーナー | 和歌山 | [市公式観光情報](https://www.city.wakayama.wakayama.jp/kankou/kankouspot/1027585/1036196.html) |
-| たまき | 鳥取・島根 | [公式店舗情報](https://izumo-tamaki.com/web/locations/) |
-| 回転すし北海道 | 鳥取・島根 | [公式店舗情報](https://sushibenkei.co.jp/shop) |
-| すわき後楽中華そば | 岡山 | [公式店舗情報](https://ffn.co.jp/store/) |
-| ちから | 広島 | [公式店舗情報](https://www.chikara.jp/) |
-| どんどん | 東京・岡山・広島・島根・山口・福岡 | [公式店舗情報](https://www.s-dondon.co.jp/shoplist/) |
-| こがね製麺所 | 東京・神奈川・富山・石川・兵庫・岡山・徳島・香川・愛媛・高知 | [公式店舗情報](https://www.koganeseimensyo.com/guide.html) |
-| こだわり麺や | 香川 | [公式店舗情報](https://kodawarimenya.com/shop_list.html) |
-| セルフうどんやま | 徳島 | [公式店舗情報](https://yumekubo.com/) |
-| じゃんじゃか | 愛媛・徳島・広島・山口 | [公式店舗情報](https://the-fff.com/?cn=100009) |
-| くいしんぼ如月 | 高知 | [公式店舗情報](https://www.nanban-tabetai.jp/shopinfo) |
-| 庄屋 | 福岡・佐賀・長崎・熊本・大分 | [公式店舗情報](https://www.sho-ya.co.jp/shop/archives/category/shoya) |
-| どんどん亭 | 山口・福岡・佐賀・長崎・熊本・大分 | [公式店舗情報](https://www.dondontei.com/shop/) |
-| 味のおぐら | 宮崎 | [公式店舗情報](https://www.ogurachain.com/) |
-| おぐらきんなべ | 宮崎 | [公式店舗情報](https://www.ogurakinnabe.jp/store/) |
-| ふく福 | 鹿児島 | [公式店舗情報](https://www.jf-group.co.jp/brand/fukufuku) |
-| 寿庵 | 鹿児島 | [公式店舗情報](https://www.jf-group.co.jp/brand/juan/juan-shops/) |
-| A&W | 沖縄 | [公式店舗情報](https://www.awok.co.jp/shopsearch/) |
-| ジェフ | 沖縄 | [公式店舗情報](https://jefokinawa.co.jp/) |
+| 越前つるきそば | 福井 | [公式店舗情報](https://www.echizen-tsurukisoba.com/)  |
+| 長崎ちゃんめん | 山口・広島・岡山・兵庫・大阪 | [公式店舗情報](https://ys-holdings.co.jp/nagasakichanmen/?page_id=676)  |
+| 寿司めいじん | 大分・佐賀 | [公式店舗情報](https://www.sushimeijin.com/shop/)  |
+| ポーたま | 沖縄・東京・愛知・大阪・福岡・熊本 | [公式店舗情報](https://porktamago.com/shop/)  |
+| 麺屋ひしお | 和歌山 | [公式店舗情報](https://sp-ad.jp/hishio_honten/)  |
+| とんでん | 北海道・群馬・埼玉・千葉・東京・神奈川 | [公式店舗情報](https://www.tonden.co.jp/shop)  |
+| みよしの | 北海道 | [公式店舗情報](https://miyoshino-sapporo.jp/menu-shop-list/)  |
+| まるまつ | 青森・岩手・宮城・秋田・山形・福島・栃木 | [公式店舗情報](https://www.re-marumatu.co.jp/information/restaurant_list.html)  |
+| やまなか家 | 青森・岩手・宮城・秋田・山形・福島 | [公式店舗情報](https://stores.yamanakaya.jp/)  |
+| ばんどう太郎 | 茨城・栃木・千葉 | [公式店舗情報](https://shop.bandotaro.co.jp/)  |
+| ぎょうざの満洲 | 群馬・埼玉・東京・神奈川・大阪・兵庫 | [公式店舗情報](https://www.mansyu.co.jp/shop/)  |
+| みかづき | 新潟 | [公式店舗情報](https://www.mikazuki-italian.com/)  |
+| フレンド | 新潟 | [公式店舗情報](https://www.e-friend.co.jp/)  |
+| ８番らーめん | 富山・石川・福井 | [公式店舗情報](https://www.hachiban.jp/shop/)  |
+| すし食いねぇ！ | 石川・富山 | [公式店舗情報](https://www.sushikuine.co.jp/shops/)  |
+| ヨーロッパ軒 | 福井 | [公式店舗情報](https://yo-roppaken.gourmet.coocan.jp/sub3.htm)  |
+| 小作 | 山梨・長野 | [公式店舗情報](https://www.kosaku.co.jp/)  |
+| ほうとう不動 | 山梨 | [県公式観光情報](https://www.yamanashi-kankou.jp/kankou/eat/p3_0111.html)  |
+| テンホウ | 長野 | [公式店舗情報](https://tenhoo.jp/stores/)  |
+| 岐阜タンメン | 岐阜・愛知 | [公式店舗情報](https://gifu-tanmen.com/99_access/)  |
+| 魚魚丸 | 愛知・岐阜・静岡 | [公式店舗情報](https://comline.co.jp/list.html)  |
+| あみやき亭 | 愛知・岐阜・三重・滋賀 | [公式店舗情報](https://shop.amiyakitei.co.jp/)  |
+| 炭焼きレストランさわやか | 静岡 | [公式店舗情報](https://www.genkotsu-hb.com/shop)  |
+| フライングガーデン | 群馬・栃木・茨城・埼玉・千葉 | [公式店舗情報](https://www.fgarden.co.jp/restaurant/)  |
+| おにぎりの桃太郎 | 三重 | [公式店舗情報](https://onigiri-momotaro.jp/store/)  |
+| にぎり長次郎 | 埼玉・愛知・滋賀・京都・大阪・兵庫・奈良・和歌山 | [公式店舗情報](https://www.chojiro.jp/shop/)  |
+| 香の川製麺 | 京都・大阪・兵庫・奈良 | [公式店舗情報](https://kanokawa.joyfull.co.jp/shop)  |
+| グリーンコーナー | 和歌山 | [市公式観光情報](https://www.city.wakayama.wakayama.jp/kankou/kankouspot/1027585/1036196.html)  |
+| たまき | 鳥取・島根 | [公式店舗情報](https://izumo-tamaki.com/web/locations/)  |
+| 回転すし北海道 | 鳥取・島根 | [公式店舗情報](https://sushibenkei.co.jp/shop)  |
+| すわき後楽中華そば | 岡山 | [公式店舗情報](https://ffn.co.jp/store/)  |
+| ちから | 広島 | [公式店舗情報](https://www.chikara.jp/)  |
+| どんどん | 東京・岡山・広島・島根・山口・福岡 | [公式店舗情報](https://www.s-dondon.co.jp/shoplist/)  |
+| こがね製麺所 | 東京・神奈川・富山・石川・兵庫・岡山・徳島・香川・愛媛・高知 | [公式店舗情報](https://www.koganeseimensyo.com/guide.html)  |
+| こだわり麺や | 香川 | [公式店舗情報](https://kodawarimenya.com/shop_list.html)  |
+| セルフうどんやま | 徳島 | [公式店舗情報](https://yumekubo.com/)  |
+| じゃんじゃか | 愛媛・徳島・広島・山口 | [公式店舗情報](https://the-fff.com/?cn=100009)  |
+| くいしんぼ如月 | 高知 | [公式店舗情報](https://www.nanban-tabetai.jp/shopinfo)  |
+| 庄屋 | 福岡・佐賀・長崎・熊本・大分 | [公式店舗情報](https://www.sho-ya.co.jp/shop/archives/category/shoya)  |
+| どんどん亭 | 山口・福岡・佐賀・長崎・熊本・大分 | [公式店舗情報](https://www.dondontei.com/shop/)  |
+| 味のおぐら | 宮崎 | [公式店舗情報](https://www.ogurachain.com/)  |
+| おぐらきんなべ | 宮崎 | [公式店舗情報](https://www.ogurakinnabe.jp/store/)  |
+| ふく福 | 鹿児島 | [公式店舗情報](https://www.jf-group.co.jp/brand/fukufuku)  |
+| 寿庵 | 鹿児島 | [公式店舗情報](https://www.jf-group.co.jp/brand/juan/juan-shops/)  |
+| A&W | 沖縄 | [公式店舗情報](https://www.awok.co.jp/shopsearch/)  |
+| ジェフ | 沖縄 | [公式店舗情報](https://jefokinawa.co.jp/)  |
+| ラッキーピエロ | 北海道 | [公式店舗情報](https://luckypierrot.jp/shop/)  |
+| なごやか亭 | 北海道・滋賀 | [公式店舗情報](https://www.mitsuboshi.net/nagoyakatei/nagoyakatei_sidemenu/)  |
+| 半田屋 | 北海道・青森・岩手・宮城・埼玉 | [公式店舗情報](https://www.handaya.jp/shop)  |
+| 南部家敷 | 岩手・宮城・秋田・山形 | [公式店舗情報](https://www.nanbuyashiki.jp/shoplist/shoplist.html)  |
+| 三宝亭 | 新潟・秋田・宮城・山形・福島・埼玉・長野・愛知・東京 | [公式店舗情報](https://sanpou-g.co.jp/map/)  |
+| いっちょう | 栃木・群馬・埼玉・茨城・長野 | [公式店舗情報](https://www.icho.co.jp/)  |
+| 山田うどん | 埼玉・東京・神奈川・千葉・栃木・茨城・群馬 | [公式店舗情報](https://www.yamada-udon.co.jp/shop)  |
+| 五味八珍 | 静岡・愛知・山梨・神奈川 | [公式店舗情報](https://gomihattin.co.jp/info/)  |
+| スガキヤ | 愛知・岐阜・三重・静岡・大阪・京都・奈良・兵庫・滋賀 | [公式店舗情報](https://www.sugakico.co.jp/brand/sugakiya/?post_type=area&prefectures=)  |
+| 丸田屋 | 和歌山・大阪 | [公式店舗情報](https://www.chukasoba.com/)  |
+| 天理スタミナラーメン | 奈良・三重 | [公式店舗情報](https://www.tensuta.jp/)  |
+| りょう花 | 愛媛・香川・徳島・高知 | [公式店舗情報](https://ryoka-ism.com/shopmenu/)  |
+| 寿司まどか | 鹿児島・宮崎・熊本・大分 | [公式店舗情報](https://www.kousei-grp.co.jp/madoka/tenpoitiran/)  |
+| 若竹丸 | 長崎・佐賀・福岡・熊本・神奈川 | [公式店舗情報](https://wakatakemaru.com/shop/)  |
+| ステーキハウス88 | 沖縄 | [公式店舗情報](https://s88.co.jp/)  |
+| 海鮮アトム | 福井 | [公式店舗情報](https://www.kaisenatom.com/shop/)  |
+| すし玉 | 富山・石川 | [公式店舗情報](https://sushitama.co.jp/locations/)  |
+| あっぷるぐりむ | 長野・新潟 | [公式店舗情報](https://appleivy.co.jp/applegrimm/shop/)  |
+| 奥出雲そば処一福 | 島根・広島・岡山・兵庫 | [公式店舗情報](https://www.ippuku.co.jp/shopinfo.html)  |
+| 幡龍 | 青森 | [公式店舗情報](https://banryu.stores.jp/about)  |
+| 豚太郎 | 高知・愛媛 | [公式店舗情報](https://www.tontaro-kochi.com/wdoc/?group=grp04) [追加公式情報](https://mys1115.com/) |
+| 天領うどん | 宮崎 | [公式店舗情報](https://www.tenryo-udon.com/company.html)  |
+| ふぁみり庵はいから亭 | 鹿児島・宮崎 | [公式店舗情報](https://www.kousei-grp.co.jp/familian/tenpo/)  |
+| 一鶴 | 香川・神奈川・大阪・福岡 | [公式店舗情報](https://www.ikkaku.co.jp/profile.html)  |
+| メヒコ | 福島・茨城・東京 | [公式店舗情報](https://mehico.com/shop/index.html)  |
+| 新福菜館 | 京都・大阪 | [公式店舗情報](https://shinpukusaikan.net/)  |
+| 歩成 | 山梨 | [公式店舗情報](https://www.funari.jp/)  |
+| 徳川 | 広島 | [公式店舗情報](https://www.tokugawa.jp/shops.html)  |
+| 拉麺屋神楽 | 鳥取・島根 | [公式店舗情報](https://page.line.me/227dwnst/showcase/1177368800478316)  |
+| レストラン三宝 | 新潟 | [公式店舗情報](https://sanpou-g.co.jp/map/)  |
+| 黒亭 | 熊本 | [公式店舗情報](https://kokutei.co.jp/access/)  |
+| 牧のうどん | 福岡・佐賀・長崎 | [公式店舗情報](https://www.makinoudon.jp/cont6/main.html)  |
+| ハングリータイガー | 神奈川 | [公式店舗情報](https://hungrytiger.co.jp/location/)  |
+| るーぱん | 埼玉 | [公式店舗情報](https://www.ru-pan.com/store)  |
+
+補足確認元：南部家敷の秋田・山形は https://www.nanbuyashiki.co.jp/store/ 、新福菜館の大阪は https://keihan-mall.jp/author/shinpukusaikan/ 、麺屋ひしおの複数店舗は和歌山市公式ラーメンマップ https://www.city.wakayama.wakayama.jp/_res/projects/default_project/_page_/001/027/769/ramen_map_202603.pdf 。
 
 ### 都道府県別の候補数（種類「すべて」）
 
 | 都道府県 | チェーン数 |
 |---|---:|
-| 北海道 | 2 |
-| 青森 | 2 |
-| 岩手 | 2 |
-| 宮城 | 2 |
-| 秋田 | 2 |
-| 山形 | 2 |
-| 福島 | 2 |
-| 茨城 | 2 |
-| 栃木 | 3 |
-| 群馬 | 3 |
-| 埼玉 | 4 |
-| 千葉 | 3 |
-| 東京 | 4 |
-| 神奈川 | 3 |
-| 新潟 | 2 |
-| 富山 | 3 |
-| 石川 | 3 |
-| 福井 | 2 |
-| 山梨 | 2 |
-| 長野 | 2 |
-| 岐阜 | 3 |
-| 静岡 | 2 |
-| 愛知 | 4 |
-| 三重 | 2 |
-| 滋賀 | 2 |
-| 京都 | 2 |
-| 大阪 | 3 |
-| 兵庫 | 4 |
-| 奈良 | 2 |
-| 和歌山 | 2 |
-| 鳥取 | 2 |
-| 島根 | 3 |
-| 岡山 | 3 |
-| 広島 | 3 |
-| 山口 | 3 |
-| 徳島 | 3 |
-| 香川 | 2 |
-| 愛媛 | 2 |
-| 高知 | 2 |
-| 福岡 | 3 |
-| 佐賀 | 2 |
-| 長崎 | 2 |
-| 熊本 | 2 |
-| 大分 | 2 |
-| 宮崎 | 2 |
-| 鹿児島 | 2 |
-| 沖縄 | 2 |
+| 北海道 | 5 |
+| 青森 | 4 |
+| 岩手 | 4 |
+| 宮城 | 5 |
+| 秋田 | 4 |
+| 山形 | 4 |
+| 福島 | 4 |
+| 茨城 | 5 |
+| 栃木 | 5 |
+| 群馬 | 5 |
+| 埼玉 | 9 |
+| 千葉 | 4 |
+| 東京 | 8 |
+| 神奈川 | 8 |
+| 新潟 | 5 |
+| 富山 | 4 |
+| 石川 | 4 |
+| 福井 | 4 |
+| 山梨 | 4 |
+| 長野 | 5 |
+| 岐阜 | 4 |
+| 静岡 | 4 |
+| 愛知 | 8 |
+| 三重 | 4 |
+| 滋賀 | 4 |
+| 京都 | 4 |
+| 大阪 | 9 |
+| 兵庫 | 7 |
+| 奈良 | 4 |
+| 和歌山 | 4 |
+| 鳥取 | 3 |
+| 島根 | 5 |
+| 岡山 | 5 |
+| 広島 | 6 |
+| 山口 | 4 |
+| 徳島 | 4 |
+| 香川 | 4 |
+| 愛媛 | 4 |
+| 高知 | 4 |
+| 福岡 | 7 |
+| 佐賀 | 5 |
+| 長崎 | 4 |
+| 熊本 | 6 |
+| 大分 | 4 |
+| 宮崎 | 5 |
+| 鹿児島 | 4 |
+| 沖縄 | 4 |

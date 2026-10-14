@@ -126,7 +126,7 @@ test('unselected or unregistered chain searches never fall back to broad map or 
   const p=page(); p.pref('北海道'); p.quick('localchain');
   assert.equal(p.context.window.location.href,'app');
   assert.ok(p.ids.results.innerHTML.includes('とんでん'));
-  p.kind('ローカルチェーン 回転寿司');
+  p.kind('ローカルチェーン お好み焼き');
   assert.equal(p.ids.chain.disabled,true);
   assert.ok(p.ids.results.innerHTML.includes('まだ登録されていません'));
   assert.ok(!p.ids.results.innerHTML.includes('href='));
@@ -143,7 +143,8 @@ test('every prefecture has multiple curated chains and every entry has a source 
   assert.equal(prefs.length,47);
   for(const pref of prefs.filter(Boolean)) {
     p.pref(pref);
-    assert.ok(p.run('chainCandidates().length')>=2, pref+' needs multiple candidates');
+    assert.ok(p.run('chainCandidates().length')>=3, pref+' needs at least three candidates');
+    assert.equal((p.ids.results.innerHTML.match(/class="card/g)||[]).length,p.run('chainCandidates().length'),pref+' must display all candidates');
     assert.equal(p.ids.chain.disabled,false);
   }
   const chains=p.run('LOCAL_CHAINS');
@@ -161,8 +162,10 @@ test('candidate cards keep the city, ignore saved free text, and escape brand na
   const p=page({savedQuery:'ガスト'}); p.pref('沖縄'); p.city('那覇市'); p.mode('localchain');
   const links=[...p.ids.results.innerHTML.matchAll(/href="([^"]+)"/g)].map(m=>m[1].replaceAll('&amp;','&'));
   const maps=links.filter(url=>url.startsWith('https://www.google.com/maps/'));
-  assert.equal(maps.length,2);
-  assert.deepEqual(maps.map(mapsText),['沖縄県 那覇市 A&W','沖縄県 那覇市 ジェフ ハンバーガー']);
+  assert.equal(maps.length,p.run('chainCandidates().length'));
+  assert.ok(maps.map(mapsText).includes('沖縄県 那覇市 A&W'));
+  assert.ok(maps.map(mapsText).includes('沖縄県 那覇市 ジェフ ハンバーガー'));
+  assert.ok(maps.map(mapsText).every(q=>q.startsWith('沖縄県 那覇市 ')&&!q.includes('ガスト')));
   assert.ok(p.ids.results.innerHTML.includes('A&amp;W'));
   p.pref('青森');
   assert.ok(!p.ids.results.innerHTML.includes('A&amp;W'));
@@ -208,6 +211,33 @@ test('local chain review search displays all twenty matching branches', async ()
   await p.run('searchStores()');
   assert.ok(p.ids.status.textContent.includes('20店表示'));
   assert.ok(p.ids.results.innerHTML.includes('あみやき亭 支店0'));
+});
+
+test('registered brand aliases retain matching branches and still reject unrelated names', async () => {
+  const p=page(); p.pref('新潟'); p.mode('localchain');
+  p.ids.chain.value='三宝亭'; p.ids.chain.fire('change'); p.display('reviews'); p.ids.placesKey.value='test';
+  connectMockPlaces(p,()=>({places:[
+    store('kanji',5,{displayName:'三宝亭 新通店',formattedAddress:'新潟県新潟市'}),
+    store('kana',6,{displayName:'さんぽう亭 燕店',formattedAddress:'新潟県燕市'}),
+    store('other',999,{displayName:'ガスト 燕店',formattedAddress:'新潟県燕市'}),
+    store('outside',99,{displayName:'三宝亭 東海店',formattedAddress:'愛知県東海市'})
+  ]}));
+  await p.run('searchStores()');
+  assert.ok(p.ids.results.innerHTML.includes('三宝亭 新通店'));
+  assert.ok(p.ids.results.innerHTML.includes('さんぽう亭 燕店'));
+  assert.ok(!p.ids.results.innerHTML.includes('ガスト'));
+  assert.ok(!p.ids.results.innerHTML.includes('東海店'));
+});
+
+test('all-region catalog is not truncated and new kinds remain filterable', () => {
+  const p=page(); p.mode('localchain');
+  assert.ok(p.run('chainCandidates().length')>=80);
+  assert.equal((p.ids.results.innerHTML.match(/class="card/g)||[]).length,p.run('LOCAL_CHAINS.length'));
+  p.pref('神奈川'); p.kind('ローカルチェーン ステーキ・ハンバーグ');
+  assert.ok(p.ids.results.innerHTML.includes('ハングリータイガー'));
+  assert.ok(!p.ids.results.innerHTML.includes('山田うどん'));
+  p.pref('埼玉'); p.kind('ローカルチェーン ピザ・パスタ');
+  assert.ok(p.ids.results.innerHTML.includes('るーぱん'));
 });
 
 test('takeaway chains can return food shops without admitting unrelated stores', () => {
