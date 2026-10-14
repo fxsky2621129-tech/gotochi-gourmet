@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>使い方・利用条件・プライバシー｜ご当地グルメ検索</title>
+<style>
+body{margin:0;background:#F5EFE0;color:#263652;font-family:system-ui,sans-serif;line-height:1.8}
+main{max-width:680px;margin:auto;padding:24px 18px 48px}h1{font-size:23px}h2{font-size:18px;margin-top:28px}
+a{color:#263652}li{margin:7px 0}code{overflow-wrap:anywhere}
+</style>
+</head>
+<body><main>
+<a href="./">← 検索へ戻る</a>
+<h1>使い方・利用条件・プライバシー</h1>
+<p>更新日：2026年10月14日</p>
+<h2>市区町村から探す</h2>
+<p>都道府県を選び、市区町村欄に文字を入力して候補から選ぶか、直接入力します。カテゴリーと料理の種類を指定し、「店舗を検索」を押してください。通常のGoogleマップ検索はAPIキーなしで利用できます。</p>
+<h2 id="setup">口コミ・評価件数順の設定</h2>
+<p>この表示方法にはご自身のGoogle Maps PlatformのAPIキーと請求設定が必要です。無料枠や利用量に応じて料金が発生する場合があります。</p>
+<ol>
+<li>Google Cloudの自身のプロジェクトで「Maps JavaScript API」「Places API（New）」を有効にし、請求先を設定します。</li>
+<li>APIキーのウェブサイト制限に <code>https://fxsky2621129-tech.github.io/*</code> を登録し、API制限は上記2種類に限定します。</li>
+<li>Google Cloudで料金・無料枠・割り当てを確認し、必要な使用量の上限を設定します。</li>
+<li>検索画面の表示方法を「口コミ・評価件数の多い順」にし、接続設定欄にキーを入力して検索します。</li>
+</ol>
+<p>キーはこのタブだけで使用します。再読み込みやタブを閉じると消えます。読み込み済みのキーを変える場合も、再読み込みしてください。</p>
+<p><a href="https://developers.google.com/maps/documentation/javascript/get-api-key" target="_blank" rel="noopener">Google公式：APIキーの設定</a> ／ <a href="https://developers.google.com/maps/api-security-best-practices" target="_blank" rel="noopener">キーの制限</a> ／ <a href="https://developers.google.com/maps/billing-and-pricing/pricing" target="_blank" rel="noopener">料金</a></p>
+<h2>検索結果について</h2>
+<p>口コミ件数順は、1回の検索で取得した最大20候補のうち、地域・業態の条件に合う店舗を評価件数の多い順に並べ、最大10店表示します。地域全店の上位を網羅するランキングではありません。件数には文章のない評価も含まれ、件数不明の店舗はその旨を表示します。現在地検索は取得候補のうち10km以内を表示します。</p>
+<p>Googleマップに登録された住所・業態を基に絞り込みます。料理の提供、営業状況、数値の完全性は保証されないため、来店前に店舗の最新情報をご確認ください。</p>
+<h2>利用条件</h2>
+<p>Googleの店舗データを利用する機能には、<a href="https://cloud.google.com/maps-platform/terms" target="_blank" rel="noopener">Google Maps Platform利用規約</a>および<a href="https://www.google.com/intl/ja/help/terms_maps/" target="_blank" rel="noopener">Googleマップ利用規約</a>が適用されます。APIの請求は入力したキーのプロジェクトに対してGoogleから行われます。</p>
+<h2>プライバシー</h2>
+<p>最後の検索語は、保存可能な場合にこの端末のlocalStorageに保存します。このページは独自のサーバーへ検索履歴を送信しません。市区町村・カテゴリー・APIキー・店舗データはアプリの保存機能には保存しません。</p>
+<p>GoogleマップやWeb検索を開くと検索条件がGoogleへ送信されます。口コミ件数順の検索時にはAPIキー、検索条件、通常の通信情報がGoogleへ送信され、現在地検索を利用する場合は取得した座標も検索のために送信されます。位置情報はブラウザの許可を受けて取得し、アプリ内に保存しません。</p>
+<p>Googleでの情報の取り扱いには<a href="https://policies.google.com/privacy?hl=ja" target="_blank" rel="noopener">Googleプライバシーポリシー</a>が適用されます。このサイトはGitHub Pagesで配信され、GitHubによる通信情報の取り扱いは<a href="https://docs.github.com/ja/site-policy/privacy-policies/github-general-privacy-statement" target="_blank" rel="noopener">GitHubのプライバシーに関する声明</a>をご確認ください。</p>
+<h2>市区町村候補の出典</h2>
+<p><a href="https://maps.gsi.go.jp/js/muni.js" target="_blank" rel="noopener">地理院地図の市区町村名称データ（国土地理院）</a>を都道府県別の候補に加工しています。取得日：2026年10月14日。最新の行政区分を保証する台帳ではありません。候補にない名称も直接入力できます。</p>
+</main></body></html>

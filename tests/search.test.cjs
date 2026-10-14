@@ -6,9 +6,11 @@ const vm = require('node:vm');
 
 const html = fs.readFileSync(path.join(__dirname, '../index.html'), 'utf8');
 const script = html.match(/<script>([\s\S]*?)<\/script>/)[1];
+const cityScript = fs.readFileSync(path.join(__dirname, '../municipalities.js'), 'utf8');
+const reviewScript = fs.readFileSync(path.join(__dirname, '../reviews.js'), 'utf8');
 
 // Run the actual page and its event handlers without external services.
-function page({ savedQuery = '', storageBlocked = false } = {}) {
+function page({ savedQuery = '', storageBlocked = false, cityDataUnavailable = false } = {}) {
   function element(attrs = {}) {
     const classes = new Set((attrs.class || '').split(' ').filter(Boolean));
     const node = {
@@ -28,7 +30,7 @@ function page({ savedQuery = '', storageBlocked = false } = {}) {
     return node;
   }
   const markup = html.split('<script>')[0];
-  const nodes = [...markup.matchAll(/<(?:input|button|select|div|main|section)[^>]*>/g)].map(match => {
+  const nodes = [...markup.matchAll(/<(?:input|button|select|div|main|section|datalist|p|details)[^>]*>/g)].map(match => {
     const attrs = Object.fromEntries([...match[0].matchAll(/([\w-]+)="([^"]*)"/g)]
       .map(([, k, v]) => [k, v]));
     return element(attrs);
@@ -57,14 +59,19 @@ function page({ savedQuery = '', storageBlocked = false } = {}) {
       setItem(key, value) { if (storageBlocked) throw Error('blocked'); saved.set(key, value); }
     },
     navigator: { geolocation: { getCurrentPosition(ok, fail, options) { locationRequest = { ok, fail, options }; } } },
-    alert: message => alerts.push(message)
+    alert: message => alerts.push(message),
+    URL, setTimeout, clearTimeout
   });
+  if (!cityDataUnavailable) vm.runInContext(cityScript, context);
+  vm.runInContext(reviewScript, context);
   vm.runInContext(script, context);
   return {
     ids, opened, alerts, saved, context,
     run: expression => vm.runInContext(expression, context),
     query(value) { ids.q.value = value; ids.q.fire('input'); },
     pref(value) { ids.pref.value = value; ids.pref.fire('change'); },
+    city(value) { ids.city.value = value; ids.city.fire('input'); },
+    display(value) { ids.resultMode.value = value; ids.resultMode.fire('change'); },
     mode(value) { chips.find(n => n.dataset.mode === value).fire('click'); },
     kind(value) { ids.kind.value = value; ids.kind.fire('change'); },
     quick(value) { quick.find(n => n.dataset.quick === value).fire('click'); },
@@ -256,4 +263,271 @@ test('storage restrictions do not prevent searching and input is escaped', () =>
   assert.ok(!p.ids.results.innerHTML.includes('<img'));
   p.ids.searchBtn.fire('click');
   assert.ok(mapsText(p.context.window.location.href).endsWith('ラーメン店'));
+});
+
+test('city suggestions cover every prefecture and include towns, villages and city wards', () => {
+  const p = page();
+  assert.equal(p.run('Object.keys(CITY_DATA).length'), 47);
+  p.pref('山形');
+  assert.ok(p.ids.citySuggestions.innerHTML.includes('山形市'));
+  assert.ok(p.ids.citySuggestions.innerHTML.includes('大石田町'));
+  assert.ok(p.ids.citySuggestions.innerHTML.includes('鮭川村'));
+  p.pref('愛知');
+  assert.ok(p.ids.citySuggestions.innerHTML.includes('名古屋市 中区'));
+  assert.ok(!p.ids.citySuggestions.innerHTML.includes('山形市'));
+  p.pref('東京');
+  assert.ok(p.ids.citySuggestions.innerHTML.includes('千代田区'));
+});
+
+test('city and category are used in main, quick and web searches', () => {
+  const p = page();
+  p.pref('山形');
+  p.city('山形市');
+  p.mode('ramen');
+  assert.equal(p.run('searchText()'), '山形県 山形市 ラーメン店');
+  assert.equal(new URL(p.run('webSearchUrl()')).searchParams.get('q'), '山形県 山形市 ラーメン店');
+  p.quick('sweets');
+  assert.equal(mapsText(p.context.window.location.href), '山形県 山形市 スイーツ店');
+});
+
+test('prefecture changes remove the old city and never navigate automatically', () => {
+  const p = page();
+  p.pref('山形');
+  p.city('山形市');
+  p.mode('ramen');
+  p.pref('岐阜');
+  assert.equal(p.ids.city.value, '');
+  assert.equal(p.run('searchText()'), '岐阜県 ラーメン店');
+  assert.equal(p.context.window.location.href, 'app');
+});
+
+test('city entry normalizes spaces and avoids duplicate prefecture, city and ward names', () => {
+  const p = page();
+  p.pref('愛知');
+  p.city('愛知県　名古屋市　中区');
+  p.query('名古屋市 中区 ステーキ');
+  p.mode('meat');
+  assert.equal(p.run('searchText()'), '愛知県 名古屋市 中区 ステーキ店');
+  assert.ok(p.ids.resultTitle.textContent.includes('名古屋市 中区'));
+});
+
+test('a manually entered city still works when the suggestions file cannot load', () => {
+  const p = page({ cityDataUnavailable: true });
+  p.pref('岐阜');
+  p.city('岐阜市');
+  p.mode('ramen');
+  assert.equal(p.run('searchText()'), '岐阜県 岐阜市 ラーメン店');
+  assert.equal(p.ids.citySuggestions.innerHTML, '');
+});
+
+test('a city can be searched without a prefecture and empty all-category searches find restaurants', () => {
+  const p = page();
+  p.city('山形市');
+  assert.equal(p.run('searchText()'), '山形市 飲食店');
+});
+
+test('city entry and current-location search are mutually exclusive', () => {
+  const p = page();
+  p.pref('山形');
+  p.city('山形市');
+  p.mode('ramen');
+  p.ids.locBtn.fire('click');
+  assert.equal(p.ids.city.disabled, true);
+  p.geolocate();
+  assert.equal(p.ids.city.value, '');
+  assert.equal(p.ids.city.disabled, false);
+  assert.equal(mapsText(p.opened[0].location.href), 'ラーメン店');
+  p.city('岐阜市');
+  assert.equal(p.run('STATE.coords'), null);
+  assert.equal(mapsText(p.run('mapsSearchUrl()')), '岐阜市 ラーメン店');
+});
+
+test('Enter in the city input searches while IME conversion stays in the input', () => {
+  const p = page();
+  p.pref('岐阜');
+  p.city('岐阜市');
+  p.mode('ramen');
+  p.ids.city.fire('keydown', { key: 'Enter', isComposing: true, preventDefault() {} });
+  assert.equal(p.context.window.location.href, 'app');
+  p.ids.city.fire('keydown', { key: 'Enter', preventDefault() {} });
+  assert.equal(mapsText(p.context.window.location.href), '岐阜県 岐阜市 ラーメン店');
+});
+
+function store(id, reviews, extra = {}) {
+  return {
+    id, displayName: 'ラーメン' + id, formattedAddress: '日本、山形県山形市',
+    types: ['ramen_restaurant', 'restaurant'], primaryType: 'ramen_restaurant',
+    rating: 4, userRatingCount: reviews, businessStatus: 'OPERATIONAL', ...extra
+  };
+}
+function connectMockPlaces(p, getResult) {
+  const requests = [];
+  p.context.window.google = { maps: { async importLibrary(name) {
+    assert.equal(name, 'places');
+    return { Place: { async searchByText(request) {
+      requests.push(request);
+      return getResult(request);
+    } } };
+  } } };
+  p.ids.placesKey.value = 'mock-key-for-tests-only';
+  return requests;
+}
+
+test('review ranking uses actual counts before stars, excludes other cities and categories, and removes duplicate IDs', () => {
+  const p = page();
+  const places = [
+    store('high-star', 20, {rating:5}), store('popular', 1500, {rating:3.5}),
+    store('other-city', 9999, {formattedAddress:'山形県天童市'}),
+    store('other-pref', 9999, {formattedAddress:'岐阜県山形市'}),
+    store('wrong-type', 9999, {types:['hair_salon'], primaryType:'hair_salon'}),
+    store('popular', 1500), store('closed', 9999, {businessStatus:'CLOSED_PERMANENTLY'}),
+    store('future', 9999, {businessStatus:'FUTURE_OPENING'}), store('unknown', undefined)
+  ];
+  const ranked = p.context.window.GourmetReviews.rank(places, {
+    text:'山形県 山形市 ラーメン店', pref:'山形県', city:'山形市', mode:'ramen', term:'ラーメン店'
+  });
+  assert.deepEqual(Array.from(ranked, s => s.id), ['popular', 'high-star', 'unknown']);
+  assert.equal(places.length, 9);
+});
+
+test('equal review counts use rating to break ties and unknown counts remain after zero', () => {
+  const p = page();
+  const ranked = p.context.window.GourmetReviews.rank([
+    store('unknown', null), store('low', 300, {rating:3}),
+    store('high', 300, {rating:4.5}), store('zero', 0)
+  ], {text:'ラーメン店', mode:'ramen', term:'ラーメン店'});
+  assert.deepEqual(Array.from(ranked, s => s.id), ['high','low','zero','unknown']);
+});
+
+test('review search sends one request and displays the ten largest counts among retrieved candidates', async () => {
+  const p = page();
+  const requests = connectMockPlaces(p, () => ({places:Array.from({length:20}, (_, i) => store('店'+i, i*100))}));
+  p.pref('山形'); p.city('山形市'); p.mode('ramen'); p.display('reviews');
+  await p.run('searchStores()');
+  assert.equal(requests.length, 1);
+  assert.equal(requests[0].textQuery, '山形県 山形市 ラーメン店');
+  assert.equal(requests[0].maxResultCount, 20);
+  assert.equal(requests[0].includedType, 'ramen_restaurant');
+  assert.equal(requests[0].useStrictTypeFiltering, true);
+  assert.ok(requests[0].fields.includes('userRatingCount'));
+  const rendered = p.ids.results.innerHTML;
+  assert.equal((rendered.match(/<article/g) || []).length, 10);
+  assert.ok(rendered.indexOf('ラーメン店19') < rendered.indexOf('ラーメン店18'));
+  assert.ok(rendered.includes('1,900件'));
+  assert.ok(!rendered.includes('ラーメン店9<'));
+  assert.ok(rendered.includes('地域全店を網羅するランキングではありません'));
+  assert.ok(rendered.includes('Google Maps'));
+  assert.equal(p.context.window.location.href, 'app');
+  assert.deepEqual(Array.from(p.saved.keys()), ['gourmet-last-query-v2']);
+});
+
+test('missing API key never loads Google or substitutes a purported review-sorted map search', async () => {
+  const p = page();
+  p.display('reviews');
+  await p.run('searchStores()');
+  assert.equal(p.context.window.google, undefined);
+  assert.equal(p.ids.reviewSettings.open, true);
+  assert.ok(p.ids.results.innerHTML.includes('APIキーが必要'));
+  assert.equal(p.context.window.location.href, 'app');
+  assert.equal(p.opened.length, 0);
+});
+
+test('ordinary free searches do not call Places even if a key is present', async () => {
+  const p = page();
+  const requests = connectMockPlaces(p, () => ({places:[]}));
+  p.pref('山形'); p.city('山形市'); p.mode('ramen');
+  await p.run('searchStores()');
+  assert.equal(requests.length, 0);
+  assert.equal(mapsText(p.context.window.location.href), '山形県 山形市 ラーメン店');
+});
+
+test('review errors give a clear fallback and never reveal provider errors or keys', async () => {
+  const p = page();
+  connectMockPlaces(p, () => {throw Error('PRIVATE_KEY_OR_PROVIDER_ERROR');});
+  p.display('reviews');
+  await p.run('searchStores()');
+  assert.ok(p.ids.results.innerHTML.includes('取得できませんでした'));
+  assert.ok(p.ids.results.innerHTML.includes('口コミ件数順の指定なし'));
+  assert.ok(!p.ids.results.innerHTML.includes('PRIVATE_KEY'));
+  assert.ok(!p.ids.results.innerHTML.includes('mock-key-for-tests-only'));
+  assert.equal(p.context.window.location.href, 'app');
+});
+
+test('changing the city while awaiting a search discards the old result', async () => {
+  const p = page();
+  let respond;
+  const delayed = new Promise(resolve => { respond = resolve; });
+  connectMockPlaces(p, () => delayed);
+  p.pref('山形'); p.city('山形市'); p.mode('ramen'); p.display('reviews');
+  const pending = p.run('searchStores()');
+  p.pref('岐阜'); p.city('岐阜市');
+  respond({places:[store('OLD-RESULT', 999)]});
+  await pending;
+  assert.ok(!p.ids.results.innerHTML.includes('OLD-RESULT'));
+  assert.ok(p.ids.results.innerHTML.includes('岐阜市'));
+});
+
+test('nearby review candidates must be within ten kilometres and have known coordinates', () => {
+  const p = page();
+  const ranked = p.context.window.GourmetReviews.rank([
+    store('near', 100, {location:{lat:35.4, lng:136.7}}),
+    store('far', 10000, {location:{lat:36.4, lng:136.7}}),
+    store('missing', 20000)
+  ], {text:'ラーメン店', mode:'ramen', term:'ラーメン店', coords:{lat:35.4, lng:136.7}});
+  assert.deepEqual(Array.from(ranked, s => s.id), ['near']);
+});
+
+test('shop names and data-provider labels are escaped; unsafe attribution links are excluded', async () => {
+  const p = page();
+  connectMockPlaces(p, () => ({places:[store('safe', undefined, {
+    displayName:'<img onerror=alert(1)>',
+    attributions:[
+      {provider:'Good provider', providerURI:'https://example.com/source'},
+      {provider:'<unsafe>', providerURI:'javascript:alert(1)'}
+    ]
+  })]}));
+  p.mode('ramen'); p.display('reviews');
+  await p.run('searchStores()');
+  assert.ok(p.ids.results.innerHTML.includes('&lt;img'));
+  assert.ok(p.ids.results.innerHTML.includes('件数不明'));
+  assert.ok(p.ids.results.innerHTML.includes('https://example.com/source'));
+  assert.ok(!p.ids.results.innerHTML.includes('javascript:'));
+  assert.ok(!p.ids.results.innerHTML.includes('<unsafe>'));
+});
+
+test('first API search loads the SDK once, and changing a loaded key requires a reload', async () => {
+  const p = page(), scripts = [], requests = [];
+  p.context.document.createElement = tag => ({tagName:tag, remove() {this.removed = true;}});
+  p.context.document.head = { appendChild(script) {
+    scripts.push(script);
+    p.context.window.google = {maps:{async importLibrary() {
+      return {Place:{async searchByText(request) {requests.push(request); return {places:[]};}}};
+    }}};
+    queueMicrotask(() => p.context.window.initGourmetPlaces());
+  }};
+  p.ids.placesKey.value = 'first-mock-key';
+  p.display('reviews');
+  await p.run('searchStores()');
+  await p.run('searchStores()');
+  assert.equal(scripts.length, 1);
+  assert.equal(new URL(scripts[0].src).searchParams.get('key'), 'first-mock-key');
+  assert.equal(requests.length, 2);
+  p.ids.placesKey.value = 'second-mock-key';
+  await p.run('searchStores()');
+  assert.equal(requests.length, 2);
+  assert.ok(p.ids.results.innerHTML.includes('ページを再読み込み'));
+  assert.ok(!p.ids.results.innerHTML.includes('second-mock-key'));
+});
+
+test('SDK load failures clear the pending load and display an actionable error', async () => {
+  const p = page();
+  let removed = false;
+  p.context.document.createElement = () => ({remove() {removed = true;}});
+  p.context.document.head = {appendChild(script) {queueMicrotask(() => script.onerror());}};
+  p.ids.placesKey.value = 'mock-key';
+  p.display('reviews');
+  await p.run('searchStores()');
+  assert.equal(removed, true);
+  assert.equal(p.context.window.initGourmetPlaces, undefined);
+  assert.ok(p.ids.results.innerHTML.includes('取得できませんでした'));
 });

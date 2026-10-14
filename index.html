@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <meta name="theme-color" content="#26324A">
-<title>ご当地グルメ検索 v7.3（カテゴリー別検索）</title>
+<title>ご当地グルメ検索 v7.4（市区町村検索）</title>
 <style>
 :root {
   --bg:#F5EFE0; --card:#FFFCF4; --ink:#263652; --soft:#66728A;
@@ -23,6 +23,18 @@ button,input,select{font:inherit}
 .primary{border:0;border-radius:12px;background:var(--red);color:white;padding:0 16px;font-weight:700;cursor:pointer}
 .row{display:flex;gap:8px;margin-top:10px}
 .row select,.ghost{flex:1;border:1px solid var(--border);border-radius:10px;background:var(--card);padding:10px;color:var(--ink)}
+.city-row{align-items:center}.city-row label{font-size:12px;flex:none}
+.city-row input{flex:1;min-width:0;border:1px solid var(--border);border-radius:10px;background:var(--card);padding:10px;color:var(--ink)}
+.city-note{margin:6px 0 0;font-size:11px;line-height:1.6;color:var(--soft)}
+.review-settings{margin-top:10px;font-size:12px;color:var(--soft);line-height:1.7}
+.review-settings summary{cursor:pointer;font-weight:700}
+.review-settings input{display:block;width:100%;margin-top:7px;border:1px solid var(--border);border-radius:10px;padding:10px;background:var(--card);color:var(--ink)}
+.review-settings a{color:var(--ink)}
+.sort-row{align-items:center}.sort-row label{flex:none;font-size:12px}
+.review-count{font-size:18px;font-weight:800;color:var(--ink)}
+.provider{font-size:11px;color:var(--soft);margin-top:6px}
+.provider a{color:inherit}
+.google-attribution{font-family:Roboto,Arial,sans-serif;font-weight:400;font-style:normal;font-size:12px;letter-spacing:normal;white-space:nowrap;color:#5E5E5E}
 .ghost{cursor:pointer}
 .chips{display:flex;gap:7px;overflow:auto;padding:10px 16px 5px;scrollbar-width:none}
 .chips::-webkit-scrollbar{display:none}
@@ -72,16 +84,37 @@ button,input,select{font:inherit}
 
 <section class="search-panel">
   <div class="searchbox">
-    <input id="q" autocomplete="off" aria-label="地域・店名・料理" placeholder="例：山形市 ラーメン / 高山 飛騨牛">
+    <input id="q" autocomplete="off" aria-label="店名・料理・追加条件" placeholder="例：味噌ラーメン / 辛くない / 店名">
     <button class="primary" id="searchBtn">店舗を検索</button>
   </div>
   <div class="row">
-    <select id="pref">
+    <select id="pref" aria-label="都道府県">
       <option value="">全国</option>
       <option>北海道</option><option>青森</option><option>岩手</option><option>宮城</option><option>秋田</option><option>山形</option><option>福島</option><option>茨城</option><option>栃木</option><option>群馬</option><option>埼玉</option><option>千葉</option><option>東京</option><option>神奈川</option><option>新潟</option><option>富山</option><option>石川</option><option>福井</option><option>山梨</option><option>長野</option><option>岐阜</option><option>静岡</option><option>愛知</option><option>三重</option><option>滋賀</option><option>京都</option><option>大阪</option><option>兵庫</option><option>奈良</option><option>和歌山</option><option>鳥取</option><option>島根</option><option>岡山</option><option>広島</option><option>山口</option><option>徳島</option><option>香川</option><option>愛媛</option><option>高知</option><option>福岡</option><option>佐賀</option><option>長崎</option><option>熊本</option><option>大分</option><option>宮崎</option><option>鹿児島</option><option>沖縄</option>
     </select>
     <button class="ghost" id="locBtn">📍 現在地を使う</button>
   </div>
+  <div class="row city-row">
+    <label for="city">市区町村</label>
+    <input id="city" type="search" list="citySuggestions" autocomplete="off" placeholder="例：山形市 / 岐阜市 / 名古屋市 中区">
+    <datalist id="citySuggestions"></datalist>
+  </div>
+  <p class="city-note" id="cityNote">都道府県を選ぶと、市区町村の候補から選べます。直接入力もできます。</p>
+  <p class="city-note">地域候補：<a href="https://maps.gsi.go.jp/js/muni.js" target="_blank" rel="noopener">国土地理院の名称データ</a>を加工</p>
+  <div class="row sort-row">
+    <label for="resultMode">表示方法</label>
+    <select id="resultMode">
+      <option value="maps">Googleマップで探す（無料）</option>
+      <option value="reviews">口コミ・評価件数の多い順（接続設定が必要）</option>
+    </select>
+  </div>
+  <details class="review-settings" id="reviewSettings">
+    <summary>口コミ件数順の接続設定</summary>
+    <p>Google Maps PlatformのAPIキーを入力すると、取得した候補を口コミ・評価件数順に10店まで表示します。利用量に応じてGoogleの料金が発生する場合があります。</p>
+    <label for="placesKey">Google Maps Platform APIキー（このタブでのみ使用）</label>
+    <input id="placesKey" type="password" autocomplete="off" spellcheck="false" placeholder="APIキーを入力">
+    <p>Maps JavaScript APIとPlaces API（New）を有効にし、このサイト向けに制限したキーを使用します。<a href="./usage.html#setup">設定手順</a> ／ <a href="./usage.html">利用条件・プライバシー</a></p>
+  </details>
 </section>
 
 <nav class="chips" id="chips">
@@ -100,7 +133,7 @@ button,input,select{font:inherit}
   <label for="kind">料理の種類</label>
   <select id="kind"></select>
 </div>
-<p class="search-hint">カテゴリーを選ぶときは、検索窓に市町村・駅名・店名を入力。料理の種類を選ぶとさらに絞り込めます。</p>
+<p class="search-hint">都道府県 → 市区町村 → カテゴリーの順で指定できます。料理の種類や駅名でさらに絞り込めます。</p>
 <div class="status" id="status">全国のグルメ情報を検索できます。</div>
 
 <section class="nearby-panel hidden" id="nearbyPanel">
@@ -133,6 +166,8 @@ button,input,select{font:inherit}
 </footer>
 </div>
 
+<script src="./municipalities.js"></script>
+<script src="./reviews.js"></script>
 <script>
 function readLastQuery() {
   try { return localStorage.getItem('gourmet-last-query-v2') || ''; }
@@ -148,8 +183,12 @@ const STATE = {
   kind:'',
   query:'',
   pref:'',
+  city:'',
+  resultMode:'maps',
   coords:null
 };
+const CITY_DATA = typeof MUNICIPALITIES === 'undefined' ? {} : MUNICIPALITIES;
+let reviewSequence = 0;
 
 // Each search uses one business type; alternatives belong in the selector.
 const MODES = {
@@ -211,18 +250,33 @@ function searchText() {
       !(FOOD_MODES.has(STATE.mode) && FOOD_WORDS.has(word)));
   }
   const pref = fullPrefName(STATE.pref);
-  words = words.filter(word => !pref || (word !== STATE.pref && word !== pref));
+  const area = [pref, ...queryWords(STATE.city)].filter(Boolean);
+  words = words.filter(word => word !== STATE.pref && !area.includes(word));
   const term = categoryTerm();
   // Avoid appending another generic restaurant type to an explicit dish search.
   const type = STATE.mode === 'all' && !words.length ? '飲食店' :
     STATE.mode === 'famous' && words.some(word => FOOD_WORDS.has(word)) ? '人気店' : term;
-  return [...new Set([pref, ...words, type].filter(Boolean))].join(' ') || '飲食店';
+  return [...new Set([...area, ...words, type].filter(Boolean))].join(' ') || '飲食店';
 }
 function fullPrefName(pref) {
   if(!pref || pref === '北海道') return pref;
   if(pref === '京都' || pref === '大阪') return pref + '府';
   if(pref === '東京') return '東京都';
   return /[都府県]$/.test(pref) ? pref : pref + '県';
+}
+function cityName() {
+  const city = normalizeQuery(document.getElementById('city').value);
+  const pref = fullPrefName(document.getElementById('pref').value);
+  return pref && city.startsWith(pref) ? city.slice(pref.length).trim() : city;
+}
+function refreshCitySuggestions() {
+  const pref = fullPrefName(document.getElementById('pref').value);
+  const cities = CITY_DATA[pref] || [];
+  document.getElementById('citySuggestions').innerHTML = cities.map(city =>
+    '<option value="' + esc(city) + '"></option>').join('');
+  document.getElementById('cityNote').textContent = cities.length ?
+    pref + 'の' + cities.length + '地域から候補を選べます。文字を入力して絞り込み、または直接入力できます。' :
+    '市区町村を直接入力できます。都道府県を選ぶと候補が表示されます。';
 }
 function setMode(mode, inferKind=true) {
   STATE.mode = Object.hasOwn(MODES, mode) ? mode : 'all';
@@ -276,6 +330,7 @@ function openNearby(mode, kind) {
     document.getElementById('kind').value = kind;
   }
   doSearch();
+  if(STATE.resultMode === 'reviews') return searchByReviews();
   window.open(mapsSearchUrl(), '_blank', 'noopener');
 }
 function webSearchUrl() {
@@ -284,12 +339,16 @@ function webSearchUrl() {
 }
 
 function render() {
+  reviewSequence++;
   const box = document.getElementById('results');
   const condition = (STATE.coords ? '現在地周辺・' : '') + searchText();
+  const description = STATE.resultMode === 'reviews' ?
+    '「店舗を検索」で、この画面に口コミ・評価件数順の店舗一覧を表示します。APIキーの接続設定が必要です。' :
+    '「店舗を検索」または下のボタンを押すと、Googleマップの店舗一覧を開きます。戻る操作でこの画面に戻れます。';
 
   box.innerHTML = `<div class="notice">
     <b>${esc(condition)}を検索</b><br>
-    「店舗を検索」または下のボタンを押すと、Googleマップの店舗一覧を開きます。戻る操作でこの画面に戻れます。
+    ${description}
     <div class="actions">
       <a target="_blank" rel="noopener" href="${mapsSearchUrl()}">Googleマップで店舗検索</a>
       <a target="_blank" rel="noopener" href="${webSearchUrl()}">Webで店舗情報を検索</a>
@@ -297,7 +356,8 @@ function render() {
     <small>表示される検索語を確認できます。Googleマップでは関連候補が表示される場合があります。</small>
   </div>`;
 
-  const label = STATE.pref ? STATE.pref + '・' : '';
+  const areaLabel = [STATE.pref, STATE.city].filter(Boolean).join('・');
+  const label = areaLabel ? areaLabel + '・' : '';
   document.getElementById('resultTitle').textContent = label + (STATE.query ? `「${STATE.query}」の検索リンク` : '検索リンク');
   document.getElementById('status').textContent =
     `オンライン店舗検索 ／ カテゴリー：${MODES[STATE.mode].label}` + (STATE.coords ? ' ／ 📍現在地周辺検索ON' : '');
@@ -306,14 +366,87 @@ function render() {
 function doSearch() {
   STATE.query = normalizeQuery(document.getElementById('q').value);
   STATE.pref = document.getElementById('pref').value;
-  if(STATE.pref && STATE.coords) clearLocation();
+  STATE.city = cityName();
+  STATE.resultMode = document.getElementById('resultMode').value || 'maps';
+  if((STATE.pref || STATE.city) && STATE.coords) clearLocation();
   saveLastQuery(STATE.query);
   render();
 }
 
 function searchStores() {
   doSearch();
+  if(STATE.resultMode === 'reviews') return searchByReviews();
   window.location.href = mapsSearchUrl();
+}
+
+function safeLink(url) {
+  try {
+    const parsed = new URL(url);
+    return parsed.protocol === 'https:' ? esc(parsed.href) : '';
+  } catch { return ''; }
+}
+function placeCard(place, index) {
+  const reviews = window.GourmetReviews.count(place);
+  const rating = window.GourmetReviews.rating(place);
+  const uri = safeLink(place.googleMapsURI) ||
+    'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(place.displayName || '店舗') +
+    '&query_place_id=' + encodeURIComponent(place.id);
+  const providers = (place.attributions || []).map(a => {
+    const link = safeLink(a.providerURI);
+    return link ? '<a href="' + link + '" target="_blank" rel="noopener">' + esc(a.provider || '') + '</a>' : esc(a.provider || '');
+  }).filter(Boolean).join(' ／ ');
+  return '<article class="card"><h2 class="title">' + (index+1) + '. ' + esc(place.displayName || '名称不明') +
+    '</h2><div class="meta"><span class="review-count">' +
+    (reviews < 0 ? '件数不明' : reviews.toLocaleString('ja-JP') + '件') +
+    '</span><span class="tag">' + (rating < 0 ? '評価不明' : '★ ' + rating.toFixed(1)) +
+    '</span></div><p class="desc">' + esc(place.formattedAddress || '住所不明') +
+    '</p><div class="actions"><a href="' + uri + '" target="_blank" rel="noopener">地図・最新情報</a></div>' +
+    (providers ? '<div class="provider">' + providers + '</div>' : '') + '</article>';
+}
+async function searchByReviews() {
+  const sequence = ++reviewSequence;
+  const key = document.getElementById('placesKey').value.trim();
+  const box = document.getElementById('results');
+  if(!key) {
+    document.getElementById('reviewSettings').open = true;
+    box.innerHTML = '<div class="notice">口コミ件数順の表示には接続設定のAPIキーが必要です。無料で探す場合は、表示方法を「Googleマップで探す」に戻してください。</div>';
+    document.getElementById('status').textContent = '口コミ件数順：接続設定が必要です。';
+    return;
+  }
+  if(!window.GourmetReviews) {
+    box.innerHTML = '<div class="notice">口コミ検索を読み込めませんでした。ページを再読み込みしてください。</div>';
+    return;
+  }
+  const options = {
+    text:searchText(), pref:fullPrefName(STATE.pref), city:STATE.city,
+    mode:STATE.mode, term:categoryTerm(), coords:STATE.coords ? {...STATE.coords} : null
+  };
+  box.innerHTML = '<div class="notice">店舗と口コミ・評価件数を取得しています…</div>';
+  document.getElementById('status').textContent = '口コミ・評価件数を取得中…';
+  try {
+    const result = await window.GourmetReviews.search(key, options);
+    if(sequence !== reviewSequence) return;
+    const list = result.places.slice(0, 10);
+    box.innerHTML = '<div class="notice"><b>' + esc(options.text) + '</b><br>' +
+      '取得した' + result.candidates + '候補のうち、条件に合う' + result.places.length +
+      '店を口コミ・評価件数の多い順に並べ、' + list.length + '店を表示しています。' +
+      '地域全店を網羅するランキングではありません。' +
+      (options.coords ? '<br>現在地から10km以内の候補です。' : '') +
+      '<br>件数は文章のない評価も含みます。<div class="google-attribution" translate="no">Google Maps</div></div>' +
+      (list.length ? list.map(placeCard).join('') :
+        '<div class="notice">条件に合う店舗が見つかりませんでした。市区町村や料理の種類を変えて再検索してください。</div>');
+    document.getElementById('resultTitle').textContent = '口コミ・評価件数順の店舗一覧';
+    document.getElementById('status').textContent = '口コミ・評価件数順 ／ ' + list.length + '店表示';
+  } catch(error) {
+    if(sequence !== reviewSequence) return;
+    const message = error.message === 'KEY_CHANGED' ?
+      'APIキーを変更する場合は、ページを再読み込みしてから新しいキーを入力してください。' :
+      '取得できませんでした。APIの有効化・キーのサイト制限・請求設定・通信状態を確認してください。';
+    box.innerHTML = '<div class="notice">' + message +
+      '<div class="actions"><a href="' + mapsSearchUrl() +
+      '" target="_blank" rel="noopener">Googleマップで探す（口コミ件数順の指定なし）</a></div></div>';
+    document.getElementById('status').textContent = '口コミ件数の取得に失敗しました。';
+  }
 }
 
 document.getElementById('searchBtn').addEventListener('click', searchStores);
@@ -321,6 +454,22 @@ document.getElementById('q').addEventListener('input', doSearch);
 document.getElementById('q').addEventListener('keydown', e => { if(e.key==='Enter' && !e.isComposing && e.keyCode !== 229) { e.preventDefault(); searchStores(); } });
 document.getElementById('pref').addEventListener('change', () => {
   clearLocation();
+  document.getElementById('city').value = '';
+  refreshCitySuggestions();
+  doSearch();
+});
+document.getElementById('city').addEventListener('input', () => {
+  if(document.getElementById('city').value.trim()) clearLocation();
+  doSearch();
+});
+document.getElementById('city').addEventListener('keydown', e => {
+  if(e.key === 'Enter' && !e.isComposing && e.keyCode !== 229) {
+    e.preventDefault();
+    searchStores();
+  }
+});
+document.getElementById('resultMode').addEventListener('change', () => {
+  if(document.getElementById('resultMode').value === 'reviews') document.getElementById('reviewSettings').open = true;
   doSearch();
 });
 
@@ -347,23 +496,33 @@ document.getElementById('locBtn').addEventListener('click', () => {
   if(!navigator.geolocation) {
     alert('この端末は位置情報に対応していません。'); return;
   }
-  const mapWindow = window.open('about:blank', '_blank');
+  const mapWindow = STATE.resultMode === 'reviews' ? null : window.open('about:blank', '_blank');
   const btn = document.getElementById('locBtn');
   btn.textContent = '位置情報を取得中…';
   btn.disabled = true;
   document.getElementById('pref').disabled = true;
+  document.getElementById('city').disabled = true;
   navigator.geolocation.getCurrentPosition(pos => {
     STATE.coords = {lat:pos.coords.latitude,lng:pos.coords.longitude};
     btn.disabled = false;
     document.getElementById('pref').disabled = false;
+    document.getElementById('city').disabled = false;
     btn.textContent = '📍 現在地検索を解除';
     document.getElementById('nearbyPanel').classList.remove('hidden');
     STATE.query = '';
     document.getElementById('q').value = STATE.query;
     STATE.pref = '';
+    STATE.city = '';
     document.getElementById('pref').value = '';
+    document.getElementById('city').value = '';
+    refreshCitySuggestions();
     saveLastQuery(STATE.query);
     render();
+    if(STATE.resultMode === 'reviews') {
+      if(mapWindow) mapWindow.close();
+      searchByReviews();
+      return;
+    }
     const url = mapsSearchUrl();
     if(mapWindow) {
       try { mapWindow.opener = null; } catch(e) {}
@@ -374,6 +533,7 @@ document.getElementById('locBtn').addEventListener('click', () => {
   }, err => {
     btn.disabled = false;
     document.getElementById('pref').disabled = false;
+    document.getElementById('city').disabled = false;
     btn.textContent = '📍 現在地を使う';
     if(mapWindow) mapWindow.close();
     alert('位置情報を取得できませんでした。ブラウザの位置情報許可を確認してください。');
@@ -386,6 +546,8 @@ document.querySelectorAll('[data-nearby]').forEach(btn => btn.addEventListener('
 
 document.getElementById('q').value = readLastQuery();
 STATE.query = document.getElementById('q').value;
+document.getElementById('resultMode').value = 'maps';
+refreshCitySuggestions();
 render();
 </script>
 </body>
