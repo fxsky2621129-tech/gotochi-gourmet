@@ -125,6 +125,8 @@ test('curated chain search uses only region and brand, ignoring national chain f
 test('unselected or unregistered chain searches never fall back to broad map or API search', async () => {
   const p=page(); p.pref('北海道'); p.quick('localchain');
   assert.equal(p.context.window.location.href,'app');
+  assert.ok(p.ids.results.innerHTML.includes('とんでん'));
+  p.kind('ローカルチェーン 回転寿司');
   assert.equal(p.ids.chain.disabled,true);
   assert.ok(p.ids.results.innerHTML.includes('まだ登録されていません'));
   assert.ok(!p.ids.results.innerHTML.includes('href='));
@@ -133,6 +135,39 @@ test('unselected or unregistered chain searches never fall back to broad map or 
   await p.run('searchStores()');
   assert.equal(requests.length,0);
   p.ids.locBtn.fire('click'); assert.equal(p.opened.length,0);
+});
+
+test('every prefecture has multiple curated chains and every entry has a source and supported kind', () => {
+  const p=page(); p.mode('localchain');
+  const prefs=[...html.match(/<select id="pref"[\s\S]*?<\/select>/)[0].matchAll(/<option>([^<]+)<\/option>/g)].map(m=>m[1]);
+  assert.equal(prefs.length,47);
+  for(const pref of prefs.filter(Boolean)) {
+    p.pref(pref);
+    assert.ok(p.run('chainCandidates().length')>=2, pref+' needs multiple candidates');
+    assert.equal(p.ids.chain.disabled,false);
+  }
+  const chains=p.run('LOCAL_CHAINS');
+  assert.equal(new Set(chains.map(c=>c.name)).size,chains.length);
+  const kinds=p.run('MODES.localchain.kinds.map(k=>k[1].replace("ローカルチェーン ",""))');
+  for(const chain of chains) {
+    assert.ok(kinds.includes(chain.kind),chain.name);
+    assert.ok(chain.prefs.every(pref=>prefs.includes(pref)),chain.name);
+    assert.equal(new URL(chain.source).protocol,'https:');
+    assert.ok(!['ガスト','サイゼリヤ','マクドナルド','ジョイフル','丸亀製麺'].includes(chain.name));
+  }
+});
+
+test('candidate cards keep the city, ignore saved free text, and escape brand names', () => {
+  const p=page({savedQuery:'ガスト'}); p.pref('沖縄'); p.city('那覇市'); p.mode('localchain');
+  const links=[...p.ids.results.innerHTML.matchAll(/href="([^"]+)"/g)].map(m=>m[1].replaceAll('&amp;','&'));
+  const maps=links.filter(url=>url.startsWith('https://www.google.com/maps/'));
+  assert.equal(maps.length,2);
+  assert.deepEqual(maps.map(mapsText),['沖縄県 那覇市 A&W','沖縄県 那覇市 ジェフ ハンバーガー']);
+  assert.ok(p.ids.results.innerHTML.includes('A&amp;W'));
+  p.pref('青森');
+  assert.ok(!p.ids.results.innerHTML.includes('A&amp;W'));
+  assert.ok(p.ids.results.innerHTML.includes('やまなか家'));
+  assert.ok(p.ids.chainNote.innerHTML.includes('支店・店舗数ではありません'));
 });
 
 test('prefecture and cuisine changes invalidate incompatible selected chains', () => {
@@ -163,6 +198,28 @@ test('review search excludes national chains even when they have more reviews', 
   assert.equal(requests[0].textQuery,'岐阜県 岐阜市 岐阜タンメン');
   assert.ok(p.ids.results.innerHTML.includes('岐阜タンメン 岐阜本店'));
   assert.ok(!p.ids.results.innerHTML.includes('ガスト'));
+});
+
+test('local chain review search displays all twenty matching branches', async () => {
+  const p=page(); p.pref('愛知'); p.mode('localchain');
+  p.ids.chain.value='あみやき亭'; p.ids.chain.fire('change'); p.display('reviews'); p.ids.placesKey.value='test';
+  connectMockPlaces(p,()=>({places:Array.from({length:20},(_,i)=>store('branch'+i,i+1,
+    {displayName:'あみやき亭 支店'+i,formattedAddress:'愛知県名古屋市'}))}));
+  await p.run('searchStores()');
+  assert.ok(p.ids.status.textContent.includes('20店表示'));
+  assert.ok(p.ids.results.innerHTML.includes('あみやき亭 支店0'));
+});
+
+test('takeaway chains can return food shops without admitting unrelated stores', () => {
+  const p=page();
+  const options={mode:'localchain',chainKind:'軽食・持ち帰り',chainName:'如月',pref:'高知県'};
+  assert.equal(p.context.window.GourmetReviews.request(options).includedType,undefined);
+  const places=[
+    store('takeaway',12,{displayName:'くいしんぼ如月',formattedAddress:'高知県高知市',types:['convenience_store','food'],primaryType:'convenience_store'}),
+    store('other',99,{displayName:'全国チェーン',formattedAddress:'高知県高知市',types:['restaurant']}),
+    store('unrelated',99,{displayName:'如月 電器',formattedAddress:'高知県高知市',types:['electronics_store'],primaryType:'electronics_store'})
+  ];
+  assert.deepEqual(Array.from(p.context.window.GourmetReviews.rank(places,options),s=>s.id),['takeaway']);
 });
 
 test('all selectable dish types keep the area and replace conflicting cuisine', async t => {

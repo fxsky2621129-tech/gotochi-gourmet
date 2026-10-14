@@ -52,7 +52,8 @@
       language:'ja', region:'jp', maxResultCount:20
     };
     const type = TYPES[options.term] ||
-      (options.mode === 'roadstation' || options.mode === 'sweets' ? '' : 'restaurant');
+      (options.mode === 'roadstation' || options.mode === 'sweets' ||
+       (options.mode === 'localchain' && options.chainKind === '軽食・持ち帰り') ? '' : 'restaurant');
     if (type) { req.includedType = type; req.useStrictTypeFiltering = true; }
     if (options.coords) req.locationBias = {
       center: {lat:options.coords.lat, lng:options.coords.lng}, radius:10000
@@ -85,6 +86,8 @@
       if (options.city && !address.includes(compact(options.city))) return false;
       const types = [...(place.types || []), place.primaryType].filter(Boolean);
       if (type && !types.includes(type)) return false;
+      if (!type && options.mode === 'localchain' &&
+        !types.some(t => t === 'food' || t === 'meal_takeaway' || t === 'convenience_store' || t.endsWith('restaurant'))) return false;
       if (!type && options.mode === 'sweets' && !types.some(t => DESSERT_TYPES.includes(t))) return false;
       if (options.mode === 'roadstation' && !compact(place.displayName).includes('道の駅')) return false;
       if (options.coords) {
