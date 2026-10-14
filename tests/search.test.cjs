@@ -89,7 +89,7 @@ test('every category searches the selected business type with the chosen region'
   const cases = {
     all: '飲食店', ramen: 'ラーメン店', famous: '人気の飲食店',
     tourist: '観光地 飲食店', roadstation: '道の駅', sweets: 'スイーツ店',
-    seafood: '海鮮料理店', noodle: '麺料理店', meat: '肉料理店'
+    seafood: '海鮮料理店', noodle: '麺料理店', meat: '肉料理店', localchain: 'ローカルチェーン 飲食店'
   };
   for (const [mode, term] of Object.entries(cases)) await t.test(mode, () => {
     const p = page();
@@ -111,6 +111,33 @@ test('noodle and meat searches do not combine alternative dishes', () => {
   p.kind('ステーキ店');
   assert.equal(mapsText(p.run('mapsSearchUrl()')), '長野 ステーキ店');
   assert.equal(p.context.window.location.href, 'app');
+});
+
+test('local chain kinds keep the selected municipality and shop name without conflicting cuisine', () => {
+  const p = page();
+  p.pref('岐阜');
+  p.city('岐阜市');
+  p.query('テスト店 ラーメン');
+  p.mode('localchain');
+  assert.equal(p.ids.chainNote.classList.contains('hidden'), false);
+  for (const kind of ['飲食店','ファミリーレストラン','ラーメン店','回転寿司','焼肉店']) {
+    p.kind('ローカルチェーン ' + kind);
+    const expected = '岐阜県 岐阜市 テスト店 ローカルチェーン ' + kind;
+    assert.equal(mapsText(p.run('mapsSearchUrl()')), expected);
+    assert.equal(new URL(p.run('webSearchUrl()')).searchParams.get('q'), expected);
+  }
+  p.mode('ramen');
+  assert.equal(p.ids.chainNote.classList.contains('hidden'), true);
+  assert.equal(p.run('searchText()').includes('ローカルチェーン'), false);
+});
+
+test('local chain quick search replaces the previous category and searches the selected area', () => {
+  const p = page();
+  p.pref('岐阜');
+  p.city('岐阜市');
+  p.mode('meat');
+  p.quick('localchain');
+  assert.equal(mapsText(p.context.window.location.href), '岐阜県 岐阜市 ローカルチェーン 飲食店');
 });
 
 test('all selectable dish types keep the area and replace conflicting cuisine', async t => {

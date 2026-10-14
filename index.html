@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <meta name="theme-color" content="#26324A">
-<title>ご当地グルメ検索 v7.6（市区町村プルダウン）</title>
+<title>ご当地グルメ検索 v7.7（ローカルチェーン検索）</title>
 <style>
 :root {
   --bg:#F5EFE0; --card:#FFFCF4; --ink:#263652; --soft:#66728A;
@@ -122,6 +122,7 @@ button,input,select{font:inherit}
 <nav class="chips" id="chips">
   <button class="chip active" data-mode="all" aria-pressed="true">すべて</button>
   <button class="chip" data-mode="ramen" aria-pressed="false">🍜 ラーメン</button>
+  <button class="chip" data-mode="localchain" aria-pressed="false">🏠 ローカルチェーン</button>
   <button class="chip" data-mode="famous" aria-pressed="false">有名店</button>
   <button class="chip" data-mode="tourist" aria-pressed="false">観光地グルメ</button>
   <button class="chip" data-mode="roadstation" aria-pressed="false">道の駅</button>
@@ -132,9 +133,10 @@ button,input,select{font:inherit}
 </nav>
 
 <div class="category-options hidden" id="categoryOptions">
-  <label for="kind">料理の種類</label>
+  <label for="kind">料理・店舗の種類</label>
   <select id="kind"></select>
 </div>
+<p class="search-hint hidden" id="chainNote">地域名と「ローカルチェーン」で検索します。全国チェーンが含まれる場合があります。チェーン名が分かる場合は上の検索窓に追加してください。</p>
 <p class="search-hint">都道府県 → 市区町村 → カテゴリーの順で指定できます。料理の種類や駅名でさらに絞り込めます。</p>
 <div class="status" id="status">全国のグルメ情報を検索できます。</div>
 
@@ -156,6 +158,7 @@ button,input,select{font:inherit}
   <a href="./gifu-chahan/"><b>🍚 全国チャーハン帖</b><span>47都道府県・食べ歩き記録</span></a>
   <button data-quick="tourist"><b>🚶 食べ歩き</b><span>観光地周辺を探す</span></button>
   <button data-quick="roadstation"><b>🛣️ 道の駅検索</b><span>地域から道の駅を探す</span></button>
+  <button data-quick="localchain"><b>🏠 ローカルチェーン検索</b><span>ファミレスなど地域のチェーンを探す</span></button>
   <button data-quick="sweets"><b>🍰 スイーツ</b><span>和菓子・洋菓子</span></button>
 </section>
 
@@ -195,6 +198,13 @@ let reviewSequence = 0;
 const MODES = {
   all:{label:'すべて', term:''},
   ramen:{label:'ラーメン', term:'ラーメン店'},
+  localchain:{label:'ローカルチェーン', term:'ローカルチェーン 飲食店', kinds:[
+    ['すべて','ローカルチェーン 飲食店'],
+    ['ファミレス','ローカルチェーン ファミリーレストラン'],
+    ['ラーメン','ローカルチェーン ラーメン店'],
+    ['回転寿司','ローカルチェーン 回転寿司'],
+    ['焼肉','ローカルチェーン 焼肉店']
+  ]},
   famous:{label:'有名店', term:'人気の飲食店'},
   tourist:{label:'観光地グルメ', term:'観光地 飲食店'},
   roadstation:{label:'道の駅', term:'道の駅'},
@@ -214,7 +224,7 @@ const MODES = {
     ['焼鳥','焼鳥店'], ['とんかつ','とんかつ店'], ['ハンバーグ','ハンバーグ専門店']
   ]}
 };
-const FOOD_MODES = new Set(['ramen','sweets','seafood','noodle','meat']);
+const FOOD_MODES = new Set(['ramen','sweets','seafood','noodle','meat','localchain']);
 // Only whole keywords are replaced. Names such as「九州ラーメンうまか」remain intact.
 const FOOD_TERMS = {
   ラーメン:'ラーメン店', 拉麺:'ラーメン店', らーめん:'ラーメン店',
@@ -228,7 +238,8 @@ const FOOD_TERMS = {
 };
 const FOOD_WORDS = new Set([
   ...Object.keys(FOOD_TERMS), ...Object.values(FOOD_TERMS),
-  'カフェ','喫茶店','カレー','チャーハン','炒飯','餃子','ピザ','飛騨牛','牛丼','焼きそば','定食'
+  'カフェ','喫茶店','カレー','チャーハン','炒飯','餃子','ピザ','飛騨牛','牛丼','焼きそば','定食',
+  'ファミレス','ファミリーレストラン','回転寿司'
 ]);
 const GENERAL_WORDS = new Set([
   '人気','人気店','人気グルメ','おすすめ','おすすめグルメ','有名店',
@@ -289,6 +300,7 @@ function refreshCitySuggestions() {
 function setMode(mode, inferKind=true) {
   STATE.mode = Object.hasOwn(MODES, mode) ? mode : 'all';
   const config = MODES[STATE.mode];
+  document.getElementById('chainNote').classList.toggle('hidden', STATE.mode !== 'localchain');
   STATE.kind = config.kinds ? config.term : '';
   if(inferKind && config.kinds) {
     const terms = new Set(queryWords(document.getElementById('q').value)
