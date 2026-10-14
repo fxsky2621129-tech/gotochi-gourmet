@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <meta name="theme-color" content="#26324A">
-<title>ご当地グルメ検索 v7.4（市区町村検索）</title>
+<title>ご当地グルメ検索 v7.5（市区町村プルダウン）</title>
 <style>
 :root {
   --bg:#F5EFE0; --card:#FFFCF4; --ink:#263652; --soft:#66728A;
@@ -24,7 +24,8 @@ button,input,select{font:inherit}
 .row{display:flex;gap:8px;margin-top:10px}
 .row select,.ghost{flex:1;border:1px solid var(--border);border-radius:10px;background:var(--card);padding:10px;color:var(--ink)}
 .city-row{align-items:center}.city-row label{font-size:12px;flex:none}
-.city-row input{flex:1;min-width:0;border:1px solid var(--border);border-radius:10px;background:var(--card);padding:10px;color:var(--ink)}
+.city-row select{flex:1;min-width:0;width:100%}
+.city-row select:disabled{opacity:.65}
 .city-note{margin:6px 0 0;font-size:11px;line-height:1.6;color:var(--soft)}
 .review-settings{margin-top:10px;font-size:12px;color:var(--soft);line-height:1.7}
 .review-settings summary{cursor:pointer;font-weight:700}
@@ -96,10 +97,11 @@ button,input,select{font:inherit}
   </div>
   <div class="row city-row">
     <label for="city">市区町村</label>
-    <input id="city" type="search" list="citySuggestions" autocomplete="off" placeholder="例：山形市 / 岐阜市 / 名古屋市 中区">
-    <datalist id="citySuggestions"></datalist>
+    <select id="city" aria-describedby="cityNote" disabled>
+      <option value="">先に都道府県を選択してください</option>
+    </select>
   </div>
-  <p class="city-note" id="cityNote">都道府県を選ぶと、市区町村の候補から選べます。直接入力もできます。</p>
+  <p class="city-note" id="cityNote" aria-live="polite">都道府県を選ぶと、市区町村をプルダウンから選べます。</p>
   <p class="city-note">地域候補：<a href="https://maps.gsi.go.jp/js/muni.js" target="_blank" rel="noopener">国土地理院の名称データ</a>を加工</p>
   <div class="row sort-row">
     <label for="resultMode">表示方法</label>
@@ -267,16 +269,23 @@ function fullPrefName(pref) {
 function cityName() {
   const city = normalizeQuery(document.getElementById('city').value);
   const pref = fullPrefName(document.getElementById('pref').value);
-  return pref && city.startsWith(pref) ? city.slice(pref.length).trim() : city;
+  return (CITY_DATA[pref] || []).includes(city) ? city : '';
 }
 function refreshCitySuggestions() {
   const pref = fullPrefName(document.getElementById('pref').value);
   const cities = CITY_DATA[pref] || [];
-  document.getElementById('citySuggestions').innerHTML = cities.map(city =>
-    '<option value="' + esc(city) + '"></option>').join('');
+  const select = document.getElementById('city');
+  const previous = select.value;
+  const placeholder = !pref ? '先に都道府県を選択してください' :
+    cities.length ? '市区町村すべて' : '市区町村データを読み込めません';
+  select.innerHTML = '<option value="">' + placeholder + '</option>' + cities.map(city =>
+    '<option value="' + esc(city) + '">' + esc(city) + '</option>').join('');
+  select.value = cities.includes(previous) ? previous : '';
+  select.disabled = !cities.length;
   document.getElementById('cityNote').textContent = cities.length ?
-    pref + 'の' + cities.length + '地域から候補を選べます。文字を入力して絞り込み、または直接入力できます。' :
-    '市区町村を直接入力できます。都道府県を選ぶと候補が表示されます。';
+    pref + 'の' + cities.length + '地域から選べます。「市区町村すべて」で都道府県全体を検索します。' :
+    pref ? '市区町村データを読み込めません。再読み込みするか、上の検索窓に市区町村名を入力してください。' :
+    '都道府県を選ぶと、市区町村をプルダウンから選べます。';
 }
 function setMode(mode, inferKind=true) {
   STATE.mode = Object.hasOwn(MODES, mode) ? mode : 'all';
@@ -458,15 +467,9 @@ document.getElementById('pref').addEventListener('change', () => {
   refreshCitySuggestions();
   doSearch();
 });
-document.getElementById('city').addEventListener('input', () => {
+document.getElementById('city').addEventListener('change', () => {
   if(document.getElementById('city').value.trim()) clearLocation();
   doSearch();
-});
-document.getElementById('city').addEventListener('keydown', e => {
-  if(e.key === 'Enter' && !e.isComposing && e.keyCode !== 229) {
-    e.preventDefault();
-    searchStores();
-  }
 });
 document.getElementById('resultMode').addEventListener('change', () => {
   if(document.getElementById('resultMode').value === 'reviews') document.getElementById('reviewSettings').open = true;
@@ -506,7 +509,7 @@ document.getElementById('locBtn').addEventListener('click', () => {
     STATE.coords = {lat:pos.coords.latitude,lng:pos.coords.longitude};
     btn.disabled = false;
     document.getElementById('pref').disabled = false;
-    document.getElementById('city').disabled = false;
+    refreshCitySuggestions();
     btn.textContent = '📍 現在地検索を解除';
     document.getElementById('nearbyPanel').classList.remove('hidden');
     STATE.query = '';
@@ -533,7 +536,7 @@ document.getElementById('locBtn').addEventListener('click', () => {
   }, err => {
     btn.disabled = false;
     document.getElementById('pref').disabled = false;
-    document.getElementById('city').disabled = false;
+    refreshCitySuggestions();
     btn.textContent = '📍 現在地を使う';
     if(mapWindow) mapWindow.close();
     alert('位置情報を取得できませんでした。ブラウザの位置情報許可を確認してください。');

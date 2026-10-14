@@ -70,7 +70,7 @@ function page({ savedQuery = '', storageBlocked = false, cityDataUnavailable = f
     run: expression => vm.runInContext(expression, context),
     query(value) { ids.q.value = value; ids.q.fire('input'); },
     pref(value) { ids.pref.value = value; ids.pref.fire('change'); },
-    city(value) { ids.city.value = value; ids.city.fire('input'); },
+    city(value) { ids.city.value = value; ids.city.fire('change'); },
     display(value) { ids.resultMode.value = value; ids.resultMode.fire('change'); },
     mode(value) { chips.find(n => n.dataset.mode === value).fire('click'); },
     kind(value) { ids.kind.value = value; ids.kind.fire('change'); },
@@ -269,14 +269,14 @@ test('city suggestions cover every prefecture and include towns, villages and ci
   const p = page();
   assert.equal(p.run('Object.keys(CITY_DATA).length'), 47);
   p.pref('山形');
-  assert.ok(p.ids.citySuggestions.innerHTML.includes('山形市'));
-  assert.ok(p.ids.citySuggestions.innerHTML.includes('大石田町'));
-  assert.ok(p.ids.citySuggestions.innerHTML.includes('鮭川村'));
+  assert.ok(p.ids.city.innerHTML.includes('山形市'));
+  assert.ok(p.ids.city.innerHTML.includes('大石田町'));
+  assert.ok(p.ids.city.innerHTML.includes('鮭川村'));
   p.pref('愛知');
-  assert.ok(p.ids.citySuggestions.innerHTML.includes('名古屋市 中区'));
-  assert.ok(!p.ids.citySuggestions.innerHTML.includes('山形市'));
+  assert.ok(p.ids.city.innerHTML.includes('名古屋市 中区'));
+  assert.ok(!p.ids.city.innerHTML.includes('山形市'));
   p.pref('東京');
-  assert.ok(p.ids.citySuggestions.innerHTML.includes('千代田区'));
+  assert.ok(p.ids.city.innerHTML.includes('千代田区'));
 });
 
 test('city and category are used in main, quick and web searches', () => {
@@ -304,29 +304,42 @@ test('prefecture changes remove the old city and never navigate automatically', 
 test('city entry normalizes spaces and avoids duplicate prefecture, city and ward names', () => {
   const p = page();
   p.pref('愛知');
-  p.city('愛知県　名古屋市　中区');
+  p.city('名古屋市 中区');
   p.query('名古屋市 中区 ステーキ');
   p.mode('meat');
   assert.equal(p.run('searchText()'), '愛知県 名古屋市 中区 ステーキ店');
   assert.ok(p.ids.resultTitle.textContent.includes('名古屋市 中区'));
 });
 
-test('a manually entered city still works when the suggestions file cannot load', () => {
+test('missing municipality data disables the dropdown and explains free-text fallback', () => {
   const p = page({ cityDataUnavailable: true });
   p.pref('岐阜');
-  p.city('岐阜市');
+  assert.equal(p.ids.city.disabled, true);
+  assert.ok(p.ids.cityNote.textContent.includes('読み込めません'));
+  p.query('岐阜市');
   p.mode('ramen');
   assert.equal(p.run('searchText()'), '岐阜県 岐阜市 ラーメン店');
-  assert.equal(p.ids.citySuggestions.innerHTML, '');
 });
 
-test('a city can be searched without a prefecture and empty all-category searches find restaurants', () => {
+test('dropdown requires a prefecture, offers all cities and rejects a mismatched city', () => {
   const p = page();
+  assert.match(html, /<select id="city"/);
+  assert.equal(p.ids.city.disabled, true);
   p.city('山形市');
-  assert.equal(p.run('searchText()'), '山形市 飲食店');
+  assert.equal(p.run('searchText()'), '飲食店');
+  p.pref('岐阜');
+  assert.equal(p.ids.city.disabled, false);
+  assert.ok(p.ids.city.innerHTML.includes('市区町村すべて'));
+  p.city('山形市');
+  assert.equal(p.run('searchText()'), '岐阜県 飲食店');
+  p.city('岐阜市');
+  p.city('');
+  assert.equal(p.run('searchText()'), '岐阜県 飲食店');
+  p.pref('');
+  assert.equal(p.ids.city.disabled, true);
 });
 
-test('city entry and current-location search are mutually exclusive', () => {
+test('city selection and current-location search are mutually exclusive', () => {
   const p = page();
   p.pref('山形');
   p.city('山形市');
@@ -335,22 +348,44 @@ test('city entry and current-location search are mutually exclusive', () => {
   assert.equal(p.ids.city.disabled, true);
   p.geolocate();
   assert.equal(p.ids.city.value, '');
-  assert.equal(p.ids.city.disabled, false);
+  assert.equal(p.ids.city.disabled, true);
   assert.equal(mapsText(p.opened[0].location.href), 'ラーメン店');
+  p.pref('岐阜');
   p.city('岐阜市');
   assert.equal(p.run('STATE.coords'), null);
-  assert.equal(mapsText(p.run('mapsSearchUrl()')), '岐阜市 ラーメン店');
+  assert.equal(mapsText(p.run('mapsSearchUrl()')), '岐阜県 岐阜市 ラーメン店');
 });
 
-test('Enter in the city input searches while IME conversion stays in the input', () => {
+test('location errors restore the appropriate dropdown state and selection', () => {
+  for (const pref of ['', '山形']) {
+    const p = page();
+    p.pref(pref);
+    if (pref) p.city('山形市');
+    p.ids.locBtn.fire('click');
+    p.locationFail();
+    assert.equal(p.ids.city.disabled, !pref);
+    assert.equal(p.ids.city.value, pref ? '山形市' : '');
+  }
+});
+
+test('selecting a city or pressing Enter on the dropdown does not navigate', () => {
   const p = page();
   p.pref('岐阜');
   p.city('岐阜市');
   p.mode('ramen');
-  p.ids.city.fire('keydown', { key: 'Enter', isComposing: true, preventDefault() {} });
+  p.ids.city.fire('keydown', {key:'Enter', preventDefault() {}});
   assert.equal(p.context.window.location.href, 'app');
-  p.ids.city.fire('keydown', { key: 'Enter', preventDefault() {} });
+  p.ids.searchBtn.fire('click');
   assert.equal(mapsText(p.context.window.location.href), '岐阜県 岐阜市 ラーメン店');
+});
+
+test('hamburg steak searches do not require the hamburger restaurant type', () => {
+  const p = page();
+  const options = {text:'ハンバーグ専門店', term:'ハンバーグ専門店', mode:'meat'};
+  const api = p.context.window.GourmetReviews;
+  assert.equal(api.request(options).includedType, 'restaurant');
+  const candidates = [{id:'steak', displayName:'ハンバーグ店', types:['restaurant'], userRatingCount:20}];
+  assert.equal(api.rank(candidates, options).length, 1);
 });
 
 function store(id, reviews, extra = {}) {

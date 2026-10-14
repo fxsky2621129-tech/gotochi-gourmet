@@ -6,7 +6,7 @@
     ラーメン店:'ramen_restaurant', つけ麺店:'ramen_restaurant',
     海鮮料理店:'seafood_restaurant', 海鮮丼専門店:'seafood_restaurant', 寿司店:'sushi_restaurant',
     ステーキ店:'steak_house', 焼肉店:'yakiniku_restaurant', 焼鳥店:'yakitori_restaurant',
-    とんかつ店:'tonkatsu_restaurant', ハンバーグ専門店:'hamburger_restaurant',
+    とんかつ店:'tonkatsu_restaurant',
     ケーキ店:'cake_shop', 和菓子店:'confectionery', 洋菓子店:'pastry_shop'
   };
   const DESSERT_TYPES = ['dessert_shop','dessert_restaurant','cake_shop','confectionery',
