@@ -89,7 +89,7 @@ test('every category searches the selected business type with the chosen region'
   const cases = {
     all: '飲食店', ramen: 'ラーメン店', famous: '人気の飲食店',
     tourist: '観光地 飲食店', roadstation: '道の駅', sweets: 'スイーツ店',
-    seafood: '海鮮料理店', noodle: '麺料理店', meat: '肉料理店', localchain: 'ローカルチェーン 飲食店'
+    seafood: '海鮮料理店', noodle: '麺料理店', meat: '肉料理店'
   };
   for (const [mode, term] of Object.entries(cases)) await t.test(mode, () => {
     const p = page();
@@ -113,31 +113,56 @@ test('noodle and meat searches do not combine alternative dishes', () => {
   assert.equal(p.context.window.location.href, 'app');
 });
 
-test('local chain kinds keep the selected municipality and shop name without conflicting cuisine', () => {
-  const p = page();
-  p.pref('岐阜');
-  p.city('岐阜市');
-  p.query('テスト店 ラーメン');
-  p.mode('localchain');
-  assert.equal(p.ids.chainNote.classList.contains('hidden'), false);
-  for (const kind of ['飲食店','ファミリーレストラン','ラーメン店','回転寿司','焼肉店']) {
-    p.kind('ローカルチェーン ' + kind);
-    const expected = '岐阜県 岐阜市 テスト店 ローカルチェーン ' + kind;
-    assert.equal(mapsText(p.run('mapsSearchUrl()')), expected);
-    assert.equal(new URL(p.run('webSearchUrl()')).searchParams.get('q'), expected);
-  }
-  p.mode('ramen');
-  assert.equal(p.ids.chainNote.classList.contains('hidden'), true);
-  assert.equal(p.run('searchText()').includes('ローカルチェーン'), false);
+test('curated chain search uses only region and brand, ignoring national chain free text', () => {
+  const p=page(); p.pref('岐阜'); p.city('岐阜市'); p.query('ガスト サイゼリヤ'); p.mode('localchain');
+  p.ids.chain.value='岐阜タンメン'; p.ids.chain.fire('change');
+  assert.equal(p.run('searchText()'),'岐阜県 岐阜市 岐阜タンメン');
+  assert.equal(new URL(p.run('webSearchUrl()')).searchParams.get('q'),'岐阜県 岐阜市 岐阜タンメン');
+  p.ids.searchBtn.fire('click');
+  assert.equal(mapsText(p.context.window.location.href),'岐阜県 岐阜市 岐阜タンメン');
 });
 
-test('local chain quick search replaces the previous category and searches the selected area', () => {
-  const p = page();
-  p.pref('岐阜');
-  p.city('岐阜市');
-  p.mode('meat');
-  p.quick('localchain');
-  assert.equal(mapsText(p.context.window.location.href), '岐阜県 岐阜市 ローカルチェーン 飲食店');
+test('unselected or unregistered chain searches never fall back to broad map or API search', async () => {
+  const p=page(); p.pref('北海道'); p.quick('localchain');
+  assert.equal(p.context.window.location.href,'app');
+  assert.equal(p.ids.chain.disabled,true);
+  assert.ok(p.ids.results.innerHTML.includes('まだ登録されていません'));
+  assert.ok(!p.ids.results.innerHTML.includes('href='));
+  p.display('reviews'); p.ids.placesKey.value='test';
+  const requests=connectMockPlaces(p,()=>({places:[]}));
+  await p.run('searchStores()');
+  assert.equal(requests.length,0);
+  p.ids.locBtn.fire('click'); assert.equal(p.opened.length,0);
+});
+
+test('prefecture and cuisine changes invalidate incompatible selected chains', () => {
+  const p=page(); p.pref('岐阜'); p.mode('localchain');
+  p.ids.chain.value='岐阜タンメン'; p.ids.chain.fire('change');
+  p.kind('ローカルチェーン 回転寿司');
+  assert.equal(p.ids.chain.value,'');
+  assert.ok(p.ids.chain.innerHTML.includes('魚魚丸'));
+  assert.ok(!p.ids.chain.innerHTML.includes('岐阜タンメン'));
+  p.pref('群馬'); assert.equal(p.ids.chain.disabled,true);
+  p.kind('ローカルチェーン ファミリーレストラン');
+  assert.ok(p.ids.chain.innerHTML.includes('フライングガーデン'));
+  p.ids.chain.value='フライングガーデン'; p.ids.chain.fire('change');
+  p.pref('静岡'); assert.equal(p.ids.chain.value,'');
+  assert.ok(p.ids.chain.innerHTML.includes('さわやか'));
+  p.mode('ramen'); assert.equal(p.ids.chainOptions.classList.contains('hidden'),true);
+});
+
+test('review search excludes national chains even when they have more reviews', async () => {
+  const p=page(); p.pref('岐阜'); p.city('岐阜市'); p.mode('localchain');
+  p.ids.chain.value='岐阜タンメン'; p.ids.chain.fire('change'); p.display('reviews'); p.ids.placesKey.value='test';
+  const candidates=[
+    store('local',10,{displayName:'岐阜タンメン 岐阜本店',formattedAddress:'岐阜県岐阜市'}),
+    store('national',99999,{displayName:'ガスト 岐阜店',formattedAddress:'岐阜県岐阜市'})
+  ];
+  const requests=connectMockPlaces(p,()=>({places:candidates}));
+  await p.run('searchStores()');
+  assert.equal(requests[0].textQuery,'岐阜県 岐阜市 岐阜タンメン');
+  assert.ok(p.ids.results.innerHTML.includes('岐阜タンメン 岐阜本店'));
+  assert.ok(!p.ids.results.innerHTML.includes('ガスト'));
 });
 
 test('all selectable dish types keep the area and replace conflicting cuisine', async t => {

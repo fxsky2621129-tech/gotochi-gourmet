@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <meta name="theme-color" content="#26324A">
-<title>ご当地グルメ検索 v7.7（ローカルチェーン検索）</title>
+<title>ご当地グルメ検索 v7.8（地域チェーン名指定）</title>
 <style>
 :root {
   --bg:#F5EFE0; --card:#FFFCF4; --ink:#263652; --soft:#66728A;
@@ -136,7 +136,10 @@ button,input,select{font:inherit}
   <label for="kind">料理・店舗の種類</label>
   <select id="kind"></select>
 </div>
-<p class="search-hint hidden" id="chainNote">地域名と「ローカルチェーン」で検索します。全国チェーンが含まれる場合があります。チェーン名が分かる場合は上の検索窓に追加してください。</p>
+<div class="category-options hidden" id="chainOptions">
+  <label for="chain">チェーン名</label><select id="chain" aria-describedby="chainNote"></select>
+</div>
+<p class="search-hint hidden" id="chainNote"></p>
 <p class="search-hint">都道府県 → 市区町村 → カテゴリーの順で指定できます。料理の種類や駅名でさらに絞り込めます。</p>
 <div class="status" id="status">全国のグルメ情報を検索できます。</div>
 
@@ -192,6 +195,15 @@ const STATE = {
   coords:null
 };
 const CITY_DATA = typeof MUNICIPALITIES === 'undefined' ? {} : MUNICIPALITIES;
+// Curated, partial coverage. Prefectures are confirmed examples, not a complete store inventory.
+// Checked 2026-10-14 against each brand's official store directory.
+const LOCAL_CHAINS = [
+  {name:'岐阜タンメン', query:'岐阜タンメン', kind:'ラーメン店', prefs:['岐阜','愛知'], source:'https://gifu-tanmen.com/99_access/'},
+  {name:'魚魚丸', query:'魚魚丸', kind:'回転寿司', prefs:['愛知','岐阜','静岡'], source:'https://comline.co.jp/list.html'},
+  {name:'あみやき亭', query:'あみやき亭', kind:'焼肉店', prefs:['岐阜'], source:'https://shop.amiyakitei.co.jp/%E5%B2%90%E9%98%9C%E7%9C%8C/'},
+  {name:'炭焼きレストランさわやか', query:'炭焼きレストランさわやか', match:'さわやか', kind:'ファミリーレストラン', prefs:['静岡'], source:'https://www.genkotsu-hb.com/shop'},
+  {name:'フライングガーデン', query:'フライングガーデン', kind:'ファミリーレストラン', prefs:['群馬','栃木','茨城','埼玉','千葉'], source:'https://www.fgarden.co.jp/restaurant/'}
+];
 let reviewSequence = 0;
 
 // Each search uses one business type; alternatives belong in the selector.
@@ -255,7 +267,38 @@ function queryWords(query) {
 function categoryTerm() {
   return STATE.kind || MODES[STATE.mode].term;
 }
+function chainCandidates() {
+  const pref = document.getElementById('pref').value;
+  const kind = (STATE.kind || '').replace('ローカルチェーン ', '');
+  return LOCAL_CHAINS.filter(c => (!pref || c.prefs.includes(pref)) &&
+    (!kind || kind === '飲食店' || c.kind === kind));
+}
+function selectedChain() {
+  return chainCandidates().find(c => c.name === document.getElementById('chain').value);
+}
+function refreshChains() {
+  const active = STATE.mode === 'localchain';
+  document.getElementById('chainOptions').classList.toggle('hidden', !active);
+  document.getElementById('chainNote').classList.toggle('hidden', !active);
+  if(!active) return;
+  const select = document.getElementById('chain'), previous = select.value;
+  const candidates = chainCandidates();
+  select.innerHTML = '<option value="">' + (candidates.length ? 'チェーンを選択してください' : 'この条件の登録チェーンはありません') + '</option>' +
+    candidates.map(c => '<option value="' + esc(c.name) + '">' + esc(c.name) + '</option>').join('');
+  select.value = candidates.some(c => c.name === previous) ? previous : '';
+  select.disabled = !candidates.length;
+  const chain = selectedChain();
+  document.getElementById('chainNote').innerHTML =
+    '公式店舗情報を確認した5ブランドの一部地域を登録しています。全国網羅ではありません。種類・地域に合うチェーン名を選んで検索します。市区町村内の出店は公式サイトで確認してください。' +
+    (chain ? ' <a target="_blank" rel="noopener" href="' + chain.source + '">選択チェーンの公式店舗一覧</a>' : '') +
+    ' このカテゴリでは自由入力欄を使わず、地域とチェーン名だけで検索します。Googleマップ側では関連候補が混ざる場合があります。';
+}
 function searchText() {
+  if(STATE.mode === 'localchain') {
+    const chain = selectedChain();
+    // Do not mix saved free text (possibly a national chain name) into curated searches.
+    return [fullPrefName(STATE.pref), STATE.city, chain ? chain.query : ''].filter(Boolean).join(' ');
+  }
   let words = queryWords(STATE.query);
   if(STATE.mode !== 'all') {
     words = words.filter(word => !GENERAL_WORDS.has(word) &&
@@ -314,6 +357,7 @@ function setMode(mode, inferKind=true) {
   select.innerHTML = (config.kinds || []).map(([label, value]) =>
     `<option value="${value}">${label}</option>`).join('');
   select.value = STATE.kind;
+  refreshChains();
   document.querySelectorAll('.chip').forEach(chip => {
     const active = chip.dataset.mode === STATE.mode;
     chip.classList.toggle('active', active);
@@ -361,6 +405,14 @@ function webSearchUrl() {
 function render() {
   reviewSequence++;
   const box = document.getElementById('results');
+  if(STATE.mode === 'localchain' && !selectedChain()) {
+    document.getElementById('resultTitle').textContent = '地域チェーンを選択';
+    document.getElementById('status').textContent = 'ローカルチェーン ／ チェーン名指定';
+    box.innerHTML = '<div class="notice">' + (chainCandidates().length ?
+      '上の「チェーン名」から選択してください。ローカルチェーン検索では自由入力欄を使わず、地域と選択チェーン名だけで検索します。' :
+      'この地域・種類のチェーンはまだ登録されていません。種類を「すべて」にするか、都道府県を変更してください。全国チェーンを含む一般検索には切り替えません。') + '</div>';
+    return;
+  }
   const condition = (STATE.coords ? '現在地周辺・' : '') + searchText();
   const description = STATE.resultMode === 'reviews' ?
     '「店舗を検索」で、この画面に口コミ・評価件数順の店舗一覧を表示します。APIキーの接続設定が必要です。' :
@@ -395,6 +447,7 @@ function doSearch() {
 
 function searchStores() {
   doSearch();
+  if(STATE.mode === 'localchain' && !selectedChain()) return;
   if(STATE.resultMode === 'reviews') return searchByReviews();
   window.location.href = mapsSearchUrl();
 }
@@ -424,6 +477,7 @@ function placeCard(place, index) {
     (providers ? '<div class="provider">' + providers + '</div>' : '') + '</article>';
 }
 async function searchByReviews() {
+  if(STATE.mode === 'localchain' && !selectedChain()) { render(); return; }
   const sequence = ++reviewSequence;
   const key = document.getElementById('placesKey').value.trim();
   const box = document.getElementById('results');
@@ -439,7 +493,8 @@ async function searchByReviews() {
   }
   const options = {
     text:searchText(), pref:fullPrefName(STATE.pref), city:STATE.city,
-    mode:STATE.mode, term:categoryTerm(), coords:STATE.coords ? {...STATE.coords} : null
+    mode:STATE.mode, term:categoryTerm(), coords:STATE.coords ? {...STATE.coords} : null,
+    chainName: STATE.mode === 'localchain' ? (selectedChain().match || selectedChain().name) : ''
   };
   box.innerHTML = '<div class="notice">店舗と口コミ・評価件数を取得しています…</div>';
   document.getElementById('status').textContent = '口コミ・評価件数を取得中…';
@@ -476,6 +531,7 @@ document.getElementById('pref').addEventListener('change', () => {
   clearLocation();
   document.getElementById('city').value = '';
   refreshCitySuggestions();
+  refreshChains();
   doSearch();
 });
 document.getElementById('city').addEventListener('change', () => {
@@ -493,8 +549,10 @@ document.querySelectorAll('.chip').forEach(btn => btn.addEventListener('click', 
 }));
 document.getElementById('kind').addEventListener('change', event => {
   STATE.kind = event.target.value;
+  refreshChains();
   doSearch();
 });
+document.getElementById('chain').addEventListener('change', () => { refreshChains(); doSearch(); });
 
 document.querySelectorAll('[data-quick]').forEach(btn => btn.addEventListener('click', () => {
   setMode(btn.dataset.quick);
@@ -502,6 +560,7 @@ document.querySelectorAll('[data-quick]').forEach(btn => btn.addEventListener('c
 }));
 
 document.getElementById('locBtn').addEventListener('click', () => {
+  if(STATE.mode === 'localchain' && !selectedChain()) { render(); return; }
   if(STATE.coords) {
     clearLocation();
     doSearch();
