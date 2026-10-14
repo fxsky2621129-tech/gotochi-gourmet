@@ -163,7 +163,8 @@ test('quick search replaces the previous category and keeps typed location', () 
   assert.equal(p.ids.q.value, '山形市 ラーメン');
   p.pref('千葉');
   p.query('人気グルメ・千葉');
-  p.quick('famous');
+  p.mode('famous');
+  p.ids.searchBtn.fire('click');
   assert.equal(mapsText(p.context.window.location.href), '千葉県 人気の飲食店');
 });
 
@@ -180,7 +181,8 @@ test('all prefectures use unambiguous suffixes and do not duplicate the selected
 test('famous searches keep an explicitly requested cuisine', () => {
   const p = page();
   p.query('山形市 ラーメン 人気 グルメ');
-  p.quick('famous');
+  p.mode('famous');
+  p.ids.searchBtn.fire('click');
   assert.equal(mapsText(p.context.window.location.href), '山形市 ラーメン 人気店');
 });
 

@@ -1,4 +1,4 @@
-# ご当地グルメ検索 v7.5
+# ご当地グルメ検索 v7.6
 
 公開URL：https://fxsky2621129-tech.github.io/gotochi-gourmet/
 
@@ -25,7 +25,7 @@
 
 参考：[Google Maps JavaScript APIのText Search](https://developers.google.com/maps/documentation/javascript/place-search)、[SearchByTextRequest仕様](https://developers.google.com/maps/documentation/javascript/reference/place#SearchByTextRequest)、[Google Maps Platform APIセキュリティ](https://developers.google.com/maps/api-security-best-practices)、[Text Searchの料金対象フィールド](https://developers.google.com/maps/documentation/places/web-service/text-search)、[利用条件・プライバシー](./usage.html)。
 
-例：「人気グルメ・千葉」と入力して検索。または都道府県で千葉を選び「人気グルメ」を押します。クイック検索は入力済みの地名も保持します。都道府県とカテゴリの変更は条件を更新し、自動では画面移動しません。
+クイック検索の「人気グルメ」ボタンを削除しました。「道の駅検索」は指定地域の道の駅を検索します。クイック検索は入力済みの地名も保持します。都道府県とカテゴリの変更は条件を更新し、自動では画面移動しません。
 
 「ラーメン」カテゴリーを追加しました。スイーツ・海鮮・麺・肉では「料理の種類」を選択できます。うどん・そば・焼肉・ステーキなどは一種類ずつ検索し、複数の業態を一度に検索語へ追加しません。カテゴリー選択時は、検索窓に市町村・駅名・店名を入力してください。
 
