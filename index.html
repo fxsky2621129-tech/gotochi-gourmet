@@ -112,7 +112,7 @@ button,input,select{font:inherit}
   </div>
   <details class="review-settings" id="reviewSettings">
     <summary>口コミ件数順の接続設定</summary>
-    <p>Google Maps PlatformのAPIキーを入力すると、取得した候補を口コミ・評価件数順に10店まで表示します。利用量に応じてGoogleの料金が発生する場合があります。</p>
+    <p>Google Maps PlatformのAPIキーを入力すると、取得した候補を口コミ・評価件数順に10店（ローカルチェーンは20店）まで表示します。利用量に応じてGoogleの料金が発生する場合があります。</p>
     <label for="placesKey">Google Maps Platform APIキー（このタブでのみ使用）</label>
     <input id="placesKey" type="password" autocomplete="off" spellcheck="false" placeholder="APIキーを入力">
     <p>Maps JavaScript APIとPlaces API（New）を有効にし、このサイト向けに制限したキーを使用します。<a href="./usage.html#setup">設定手順</a> ／ <a href="./usage.html">利用条件・プライバシー</a></p>
@@ -174,7 +174,7 @@ button,input,select{font:inherit}
 </div>
 
 <script src="./municipalities.js"></script>
-<script src="./reviews.js"></script>
+<script src="./reviews.js?v=7.9"></script>
 <script>
 function readLastQuery() {
   try { return localStorage.getItem('gourmet-last-query-v2') || ''; }
