@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <meta name="theme-color" content="#26324A">
-<title>ご当地グルメ検索 v7.11（47都道府県の地域チェーン）</title>
+<title>ご当地グルメ検索 v7.12（地域のファミレス検索）</title>
 <style>
 :root {
   --bg:#F5EFE0; --card:#FFFCF4; --ink:#263652; --soft:#66728A;
@@ -74,6 +74,10 @@ button,input,select{font:inherit}
 .nearby-grid button{border:1px solid var(--border);background:#fff;color:var(--ink);border-radius:10px;padding:9px 8px;font-size:11.5px;font-weight:700;cursor:pointer;text-align:left}
 .nearby-main{grid-column:1/-1;background:var(--ink)!important;color:#fff!important;border-color:var(--ink)!important;text-align:center!important}
 @media(min-width:600px){body{padding:20px} .app{border-radius:22px;overflow:hidden;box-shadow:0 20px 55px rgba(0,0,0,.2)}}
+.family-filters{display:flex;flex-wrap:wrap;gap:8px;margin:10px 16px}
+.family-filters button{border:1px solid var(--border);border-radius:8px;background:var(--card);color:var(--ink);padding:10px 14px;cursor:pointer}
+.family-filters button[aria-pressed="true"]{background:var(--ink);color:white}
+.family-filters.hidden{display:none}
 </style>
 </head>
 <body>
@@ -122,7 +126,7 @@ button,input,select{font:inherit}
 <nav class="chips" id="chips">
   <button class="chip active" data-mode="all" aria-pressed="true">すべて</button>
   <button class="chip" data-mode="ramen" aria-pressed="false">🍜 ラーメン</button>
-  <button class="chip" data-mode="localchain" aria-pressed="false">🏠 ローカルチェーン</button>
+  <button class="chip" data-mode="localchain" aria-pressed="false">🏠 ローカルファミレス</button>
   <button class="chip" data-mode="famous" aria-pressed="false">有名店</button>
   <button class="chip" data-mode="tourist" aria-pressed="false">観光地グルメ</button>
   <button class="chip" data-mode="roadstation" aria-pressed="false">道の駅</button>
@@ -135,6 +139,12 @@ button,input,select{font:inherit}
 <div class="category-options hidden" id="categoryOptions">
   <label for="kind">料理・店舗の種類</label>
   <select id="kind"></select>
+</div>
+<div class="family-filters hidden" id="familyFilters" role="group" aria-label="ファミレスの種類を直接選択">
+  <button type="button" data-family-kind="ファミリーレストラン" aria-pressed="true">すべてのファミレス</button>
+  <button type="button" data-family-kind="和食" aria-pressed="false">和食</button>
+  <button type="button" data-family-kind="洋食" aria-pressed="false">洋食</button>
+  <button type="button" data-family-kind="中華" aria-pressed="false">中華</button>
 </div>
 <div class="category-options hidden" id="chainOptions">
   <label for="chain">チェーン名</label><select id="chain" aria-describedby="chainNote"></select>
@@ -161,7 +171,7 @@ button,input,select{font:inherit}
   <a href="./gifu-chahan/"><b>🍚 全国チャーハン帖</b><span>47都道府県・食べ歩き記録</span></a>
   <button data-quick="tourist"><b>🚶 食べ歩き</b><span>観光地周辺を探す</span></button>
   <button data-quick="roadstation"><b>🛣️ 道の駅検索</b><span>地域から道の駅を探す</span></button>
-  <button data-quick="localchain"><b>🏠 ローカルチェーン検索</b><span>ファミレスなど地域のチェーンを探す</span></button>
+  <button data-quick="localchain"><b>🏠 ローカルファミレス検索</b><span>地域のファミレスだけを全件表示</span></button>
   <button data-quick="sweets"><b>🍰 スイーツ</b><span>和菓子・洋菓子</span></button>
 </section>
 
@@ -199,109 +209,32 @@ const CITY_DATA = typeof MUNICIPALITIES === 'undefined' ? {} : MUNICIPALITIES;
 // Reviewed 2026-10-14. Sources are brand directories or official tourism listings.
 // Coverage is by prefecture; it does not assert a branch exists in every municipality.
 const LOCAL_CHAINS = [
-  {"name":"越前つるきそば","query":"越前つるきそば","match":"つるきそば","kind":"うどん・そば","prefs":["福井"],"source":"https://www.echizen-tsurukisoba.com/"},
-  {"name":"長崎ちゃんめん","query":"長崎ちゃんめん","kind":"ラーメン店","prefs":["山口","広島","岡山","兵庫","大阪"],"source":"https://ys-holdings.co.jp/nagasakichanmen/?page_id=676"},
-  {"name":"寿司めいじん","query":"寿司めいじん","kind":"回転寿司","prefs":["大分","佐賀"],"source":"https://www.sushimeijin.com/shop/"},
-  {"name":"ポーたま","query":"ポーたま","kind":"軽食・持ち帰り","prefs":["沖縄","東京","愛知","大阪","福岡","熊本"],"source":"https://porktamago.com/shop/"},
-  {"name":"麺屋ひしお","query":"麺屋ひしお","kind":"ラーメン店","prefs":["和歌山"],"source":"https://sp-ad.jp/hishio_honten/"},
-  {"name":"とんでん","query":"和食処 とんでん","kind":"ファミリーレストラン","prefs":["北海道","群馬","埼玉","千葉","東京","神奈川"],"source":"https://www.tonden.co.jp/shop"},
-  {"name":"みよしの","query":"みよしの ぎょうざ","kind":"中華・餃子","prefs":["北海道"],"source":"https://miyoshino-sapporo.jp/menu-shop-list/"},
-  {"name":"まるまつ","query":"和風レストラン まるまつ","kind":"ファミリーレストラン","prefs":["青森","岩手","宮城","秋田","山形","福島","栃木"],"source":"https://www.re-marumatu.co.jp/information/restaurant_list.html"},
-  {"name":"やまなか家","query":"やまなか家","kind":"焼肉店","prefs":["青森","岩手","宮城","秋田","山形","福島"],"source":"https://stores.yamanakaya.jp/"},
-  {"name":"ばんどう太郎","query":"ばんどう太郎","kind":"ファミリーレストラン","prefs":["茨城","栃木","千葉"],"source":"https://shop.bandotaro.co.jp/"},
-  {"name":"ぎょうざの満洲","query":"ぎょうざの満洲","kind":"中華・餃子","prefs":["群馬","埼玉","東京","神奈川","大阪","兵庫"],"source":"https://www.mansyu.co.jp/shop/"},
-  {"name":"みかづき","query":"みかづき イタリアン","kind":"軽食・持ち帰り","prefs":["新潟"],"source":"https://www.mikazuki-italian.com/"},
-  {"name":"フレンド","query":"フレンド イタリアン","kind":"軽食・持ち帰り","prefs":["新潟"],"source":"https://www.e-friend.co.jp/"},
-  {"name":"８番らーめん","query":"８番らーめん","kind":"ラーメン店","prefs":["富山","石川","福井"],"source":"https://www.hachiban.jp/shop/"},
-  {"name":"すし食いねぇ！","query":"すし食いねぇ","match":"すし食いねぇ","kind":"回転寿司","prefs":["石川","富山"],"source":"https://www.sushikuine.co.jp/shops/"},
-  {"name":"ヨーロッパ軒","query":"ヨーロッパ軒","kind":"定食・郷土料理","prefs":["福井"],"source":"https://yo-roppaken.gourmet.coocan.jp/sub3.htm"},
-  {"name":"小作","query":"小作 ほうとう","kind":"うどん・そば","prefs":["山梨","長野"],"source":"https://www.kosaku.co.jp/"},
-  {"name":"ほうとう不動","query":"ほうとう不動","kind":"うどん・そば","prefs":["山梨"],"source":"https://www.yamanashi-kankou.jp/kankou/eat/p3_0111.html","sourceLabel":"県公式観光情報"},
-  {"name":"テンホウ","query":"テンホウ","kind":"ラーメン店","prefs":["長野"],"source":"https://tenhoo.jp/stores/"},
-  {"name":"岐阜タンメン","query":"岐阜タンメン","kind":"ラーメン店","prefs":["岐阜","愛知"],"source":"https://gifu-tanmen.com/99_access/"},
-  {"name":"魚魚丸","query":"魚魚丸","kind":"回転寿司","prefs":["愛知","岐阜","静岡"],"source":"https://comline.co.jp/list.html"},
-  {"name":"あみやき亭","query":"あみやき亭","kind":"焼肉店","prefs":["愛知","岐阜","三重","滋賀"],"source":"https://shop.amiyakitei.co.jp/"},
-  {"name":"炭焼きレストランさわやか","query":"炭焼きレストランさわやか","match":"さわやか","kind":"ファミリーレストラン","prefs":["静岡"],"source":"https://www.genkotsu-hb.com/shop"},
-  {"name":"フライングガーデン","query":"フライングガーデン","kind":"ファミリーレストラン","prefs":["群馬","栃木","茨城","埼玉","千葉"],"source":"https://www.fgarden.co.jp/restaurant/"},
-  {"name":"おにぎりの桃太郎","query":"おにぎりの桃太郎","kind":"軽食・持ち帰り","prefs":["三重"],"source":"https://onigiri-momotaro.jp/store/"},
-  {"name":"にぎり長次郎","query":"にぎり長次郎","match":"長次郎","kind":"回転寿司","prefs":["埼玉","愛知","滋賀","京都","大阪","兵庫","奈良","和歌山"],"source":"https://www.chojiro.jp/shop/"},
-  {"name":"香の川製麺","query":"香の川製麺","kind":"うどん・そば","prefs":["京都","大阪","兵庫","奈良"],"source":"https://kanokawa.joyfull.co.jp/shop"},
-  {"name":"グリーンコーナー","query":"玉林園 グリーンコーナー","match":"グリーンコーナー","kind":"ラーメン店","prefs":["和歌山"],"source":"https://www.city.wakayama.wakayama.jp/kankou/kankouspot/1027585/1036196.html","sourceLabel":"市公式観光情報"},
-  {"name":"たまき","query":"たまき うどん","kind":"うどん・そば","prefs":["鳥取","島根"],"source":"https://izumo-tamaki.com/web/locations/"},
-  {"name":"回転すし北海道","query":"回転すし北海道","kind":"回転寿司","prefs":["鳥取","島根"],"source":"https://sushibenkei.co.jp/shop"},
-  {"name":"すわき後楽中華そば","query":"すわき後楽中華そば","kind":"ラーメン店","prefs":["岡山"],"source":"https://ffn.co.jp/store/"},
-  {"name":"ちから","query":"ちから うどん","kind":"うどん・そば","prefs":["広島"],"source":"https://www.chikara.jp/"},
-  {"name":"どんどん","query":"どんどん うどん","kind":"うどん・そば","prefs":["東京","岡山","広島","島根","山口","福岡"],"source":"https://www.s-dondon.co.jp/shoplist/"},
-  {"name":"こがね製麺所","query":"こがね製麺所","kind":"うどん・そば","prefs":["東京","神奈川","富山","石川","兵庫","岡山","徳島","香川","愛媛","高知"],"source":"https://www.koganeseimensyo.com/guide.html"},
-  {"name":"こだわり麺や","query":"こだわり麺や","kind":"うどん・そば","prefs":["香川"],"source":"https://kodawarimenya.com/shop_list.html"},
-  {"name":"セルフうどんやま","query":"セルフうどんやま","kind":"うどん・そば","prefs":["徳島"],"source":"https://yumekubo.com/"},
-  {"name":"じゃんじゃか","query":"焼肉 じゃんじゃか","kind":"焼肉店","prefs":["愛媛","徳島","広島","山口"],"source":"https://the-fff.com/?cn=100009"},
-  {"name":"くいしんぼ如月","query":"くいしんぼ如月","match":"如月","kind":"軽食・持ち帰り","prefs":["高知"],"source":"https://www.nanban-tabetai.jp/shopinfo"},
-  {"name":"庄屋","query":"和食レストラン 庄屋","kind":"ファミリーレストラン","prefs":["福岡","佐賀","長崎","熊本","大分"],"source":"https://www.sho-ya.co.jp/shop/archives/category/shoya"},
-  {"name":"どんどん亭","query":"どんどん亭 お好み焼き","kind":"お好み焼き","prefs":["山口","福岡","佐賀","長崎","熊本","大分"],"source":"https://www.dondontei.com/shop/"},
-  {"name":"味のおぐら","query":"味のおぐら","match":"おぐら","kind":"ファミリーレストラン","prefs":["宮崎"],"source":"https://www.ogurachain.com/"},
-  {"name":"おぐらきんなべ","query":"おぐらきんなべ","kind":"ファミリーレストラン","prefs":["宮崎"],"source":"https://www.ogurakinnabe.jp/store/"},
-  {"name":"ふく福","query":"ふく福","kind":"ファミリーレストラン","prefs":["鹿児島"],"source":"https://www.jf-group.co.jp/brand/fukufuku"},
-  {"name":"寿庵","query":"寿庵 黒豚","kind":"定食・郷土料理","prefs":["鹿児島"],"source":"https://www.jf-group.co.jp/brand/juan/juan-shops/"},
-  {"name":"A&W","query":"A&W","kind":"軽食・持ち帰り","prefs":["沖縄"],"source":"https://www.awok.co.jp/shopsearch/"},
-  {"name":"ジェフ","query":"ジェフ ハンバーガー","kind":"軽食・持ち帰り","prefs":["沖縄"],"source":"https://jefokinawa.co.jp/"},
-  {"name":"ラッキーピエロ","query":"ラッキーピエロ","kind":"軽食・持ち帰り","prefs":["北海道"],"source":"https://luckypierrot.jp/shop/"},
-  {"name":"なごやか亭","query":"なごやか亭","kind":"回転寿司","prefs":["北海道","滋賀"],"source":"https://www.mitsuboshi.net/nagoyakatei/nagoyakatei_sidemenu/"},
-  {"name":"半田屋","query":"半田屋","kind":"定食・郷土料理","prefs":["北海道","青森","岩手","宮城","埼玉"],"source":"https://www.handaya.jp/shop"},
-  {"name":"南部家敷","query":"南部家敷","kind":"ファミリーレストラン","prefs":["岩手","宮城","秋田","山形"],"source":"https://www.nanbuyashiki.jp/shoplist/shoplist.html"},
-  {"name":"三宝亭","query":"三宝亭","kind":"ラーメン店","prefs":["新潟","秋田","宮城","山形","福島","埼玉","長野","愛知","東京"],"source":"https://sanpou-g.co.jp/map/","aliases":["三宝亭","さんぽう亭"]},
-  {"name":"いっちょう","query":"いっちょう","kind":"ファミリーレストラン","prefs":["栃木","群馬","埼玉","茨城","長野"],"source":"https://www.icho.co.jp/"},
-  {"name":"山田うどん","query":"山田うどん","kind":"うどん・そば","prefs":["埼玉","東京","神奈川","千葉","栃木","茨城","群馬"],"source":"https://www.yamada-udon.co.jp/shop"},
-  {"name":"五味八珍","query":"五味八珍","kind":"中華・餃子","prefs":["静岡","愛知","山梨","神奈川"],"source":"https://gomihattin.co.jp/info/"},
-  {"name":"スガキヤ","query":"スガキヤ","kind":"ラーメン店","prefs":["愛知","岐阜","三重","静岡","大阪","京都","奈良","兵庫","滋賀"],"source":"https://www.sugakico.co.jp/brand/sugakiya/?post_type=area&prefectures="},
-  {"name":"丸田屋","query":"丸田屋","kind":"ラーメン店","prefs":["和歌山","大阪"],"source":"https://www.chukasoba.com/"},
-  {"name":"天理スタミナラーメン","query":"天理スタミナラーメン","kind":"ラーメン店","prefs":["奈良","三重"],"source":"https://www.tensuta.jp/"},
-  {"name":"りょう花","query":"りょう花","kind":"ラーメン店","prefs":["愛媛","香川","徳島","高知"],"source":"https://ryoka-ism.com/shopmenu/"},
-  {"name":"寿司まどか","query":"寿司まどか","kind":"回転寿司","prefs":["鹿児島","宮崎","熊本","大分"],"source":"https://www.kousei-grp.co.jp/madoka/tenpoitiran/"},
-  {"name":"若竹丸","query":"若竹丸","kind":"回転寿司","prefs":["長崎","佐賀","福岡","熊本","神奈川"],"source":"https://wakatakemaru.com/shop/"},
-  {"name":"ステーキハウス88","query":"ステーキハウス88","kind":"ステーキ・ハンバーグ","prefs":["沖縄"],"source":"https://s88.co.jp/","aliases":["ステーキハウス88","ステーキハウス８８","ステーキハウス ハチハチ"]},
-  {"name":"海鮮アトム","query":"海鮮アトム","kind":"回転寿司","prefs":["福井"],"source":"https://www.kaisenatom.com/shop/"},
-  {"name":"すし玉","query":"すし玉","kind":"回転寿司","prefs":["富山","石川"],"source":"https://sushitama.co.jp/locations/"},
-  {"name":"あっぷるぐりむ","query":"あっぷるぐりむ","kind":"ファミリーレストラン","prefs":["長野","新潟"],"source":"https://appleivy.co.jp/applegrimm/shop/"},
-  {"name":"奥出雲そば処一福","query":"奥出雲そば処一福","kind":"うどん・そば","prefs":["島根","広島","岡山","兵庫"],"source":"https://www.ippuku.co.jp/shopinfo.html"},
-  {"name":"幡龍","query":"幡龍","kind":"中華・餃子","prefs":["青森"],"source":"https://banryu.stores.jp/about"},
-  {"name":"豚太郎","query":"豚太郎","kind":"ラーメン店","prefs":["高知","愛媛"],"source":"https://www.tontaro-kochi.com/wdoc/?group=grp04","additionalSources":["https://mys1115.com/"]},
-  {"name":"天領うどん","query":"天領うどん","kind":"うどん・そば","prefs":["宮崎"],"source":"https://www.tenryo-udon.com/company.html"},
-  {"name":"ふぁみり庵はいから亭","query":"ふぁみり庵はいから亭","kind":"ファミリーレストラン","prefs":["鹿児島","宮崎"],"source":"https://www.kousei-grp.co.jp/familian/tenpo/"},
-  {"name":"一鶴","query":"一鶴 骨付鳥","kind":"定食・郷土料理","prefs":["香川","神奈川","大阪","福岡"],"source":"https://www.ikkaku.co.jp/profile.html"},
-  {"name":"メヒコ","query":"メヒコ","kind":"ファミリーレストラン","prefs":["福島","茨城","東京"],"source":"https://mehico.com/shop/index.html"},
-  {"name":"新福菜館","query":"新福菜館","kind":"ラーメン店","prefs":["京都","大阪"],"source":"https://shinpukusaikan.net/"},
-  {"name":"歩成","query":"歩成 ほうとう","kind":"うどん・そば","prefs":["山梨"],"source":"https://www.funari.jp/"},
-  {"name":"徳川","query":"徳川 お好み焼き","kind":"お好み焼き","prefs":["広島"],"source":"https://www.tokugawa.jp/shops.html"},
-  {"name":"拉麺屋神楽","query":"拉麺屋神楽","kind":"ラーメン店","prefs":["鳥取","島根"],"source":"https://page.line.me/227dwnst/showcase/1177368800478316"},
-  {"name":"レストラン三宝","query":"レストラン三宝","kind":"ファミリーレストラン","prefs":["新潟"],"source":"https://sanpou-g.co.jp/map/","match":"三宝"},
-  {"name":"黒亭","query":"黒亭","kind":"ラーメン店","prefs":["熊本"],"source":"https://kokutei.co.jp/access/"},
-  {"name":"牧のうどん","query":"牧のうどん","kind":"うどん・そば","prefs":["福岡","佐賀","長崎"],"source":"https://www.makinoudon.jp/cont6/main.html"},
-  {"name":"ハングリータイガー","query":"ハングリータイガー","kind":"ステーキ・ハンバーグ","prefs":["神奈川"],"source":"https://hungrytiger.co.jp/location/"},
-  {"name":"るーぱん","query":"るーぱん","kind":"ピザ・パスタ","prefs":["埼玉"],"source":"https://www.ru-pan.com/store"},
-  {"name":"小嶋屋総本店","query":"小嶋屋総本店","kind":"うどん・そば","prefs":["新潟"],"source":"https://www.kojimaya.co.jp/kojimaya/tenpo.html"},
-  {"name":"彩華ラーメン","query":"彩華ラーメン","kind":"ラーメン店","prefs":["奈良","大阪","京都","愛知"],"source":"https://www.saikaramen.com/shop/","match":"彩華","aliases":["サイカラーメン"]},
-  {"name":"もっこす","query":"もっこす","kind":"ラーメン店","prefs":["兵庫"],"source":"https://moccos.jp/shop/"},
-  {"name":"味千拉麺","query":"味千拉麺","kind":"ラーメン店","prefs":["熊本"],"source":"https://www.aji1000.co.jp/shop/","aliases":["味千ラーメン"]},
-  {"name":"さか枝うどん","query":"さか枝うどん","kind":"うどん・そば","prefs":["香川"],"source":"https://www.my-kagawa.jp/udon/511","match":"さか枝","sourceLabel":"県公式観光情報","additionalSources":["https://www.kensanpin.org/toshiakeudonmap/detail.php?id=40"]},
-  {"name":"どんどん庵","query":"どんどん庵","kind":"うどん・そば","prefs":["愛知","岐阜","三重"],"source":"https://www.sagami.co.jp/dondonan/"},
-  {"name":"福しん","query":"福しん","kind":"中華・餃子","prefs":["東京","埼玉"],"source":"https://www.fuku-sin.co.jp/shop.html"},
-  {"name":"みっちゃん総本店","query":"みっちゃん総本店","kind":"お好み焼き","prefs":["広島"],"source":"https://www.okonomi.co.jp/"},
-  {"name":"ぎょうざの美鈴","query":"ぎょうざの美鈴","kind":"中華・餃子","prefs":["三重"],"source":"https://www.gyouzanomisuzu.com/","aliases":["駅裏の美鈴","美鈴本店"]},
-  {"name":"すなば珈琲","query":"すなば珈琲","kind":"カフェ・喫茶","prefs":["鳥取","岩手"],"source":"https://sunaba.coffee/store/"},
-  {"name":"ヒライ","query":"おべんとうのヒライ","kind":"軽食・持ち帰り","prefs":["熊本","福岡","大分"],"source":"https://www.hirai-wa.com/shop_map/"},
-  {"name":"焼肉・冷麺ヤマト","query":"焼肉・冷麺ヤマト","kind":"焼肉店","prefs":["岩手","宮城"],"source":"https://yamato55.com/tenpo/","aliases":["焼肉冷麺ヤマト","焼肉ヤマト"]},
-  {"name":"インデアンカレー（大阪発祥）","query":"インデアンカレー","kind":"カレー","prefs":["大阪","兵庫","東京"],"source":"https://www.indiancurry.jp/","match":"インデアンカレー"},
-  {"name":"寧々家","query":"寧々家","kind":"居酒屋","prefs":["岩手","宮城","秋田","山形","福島","茨城","栃木","新潟","長野","静岡","愛知"],"source":"https://www.d-neneya.com/shop/"},
-  {"name":"さぶろうべい","query":"さぶろうべい","kind":"定食・郷土料理","prefs":["石川","富山"],"source":"https://saburoubei.jp/","additionalSources":["https://su-bee.jp/news"]},
-  {"name":"チャンピオンカレー","query":"チャンピオンカレー","kind":"カレー","prefs":["石川","富山","福井"],"source":"https://chancurry.com/area/hokuriku/","aliases":["カレーのチャンピオン"]},
-  {"name":"かつ時","query":"かつ時","kind":"とんかつ","prefs":["石川","福井","長野","岐阜","愛知"],"source":"https://www.atom-corp.co.jp/brand/brand.php?brand_no=82"},
-  {"name":"牛右衛門","query":"牛右衛門","kind":"ファミリーレストラン","prefs":["長崎"],"source":"https://gyuemon.com/shoplist/"},
-  {"name":"岡田珈琲","query":"岡田珈琲","kind":"カフェ・喫茶","prefs":["熊本"],"source":"https://okada-coffee.com/shopinfo"},
-  {"name":"焼肉なべしま","query":"焼肉なべしま","kind":"焼肉店","prefs":["鹿児島","宮崎","熊本","福岡","佐賀"],"source":"https://www.nabeshima-jp.com/company/"},
-  {"name":"平禄寿司","query":"平禄寿司","kind":"回転寿司","prefs":["北海道","青森","岩手","宮城","東京"],"source":"https://ys-holdings.co.jp/shop/?f=&shop-brand%5B%5D=heiroku-sushi&shop-prefectures="},
-  {"name":"金沢まいもん寿司","query":"金沢まいもん寿司","kind":"寿司","prefs":["石川","東京","神奈川","埼玉","千葉","愛知","京都","大阪","兵庫","福岡","沖縄","広島"],"source":"https://www.maimon-susi.com/shop/"},
-  {"name":"むすびのむさし","query":"むすびのむさし","kind":"軽食・持ち帰り","prefs":["広島"],"source":"https://www.city.hiroshima.lg.jp/hiroshima-brand/tokusan/1026502/1026504/1014706.html","sourceLabel":"市公式情報"}
+  {"name":"とんでん","query":"和食処 とんでん","kind":"ファミリーレストラン","prefs":["北海道","群馬","埼玉","千葉","東京","神奈川"],"source":"https://www.tonden.co.jp/shop","cuisines":["和食"]},
+  {"name":"まるまつ","query":"和風レストラン まるまつ","kind":"ファミリーレストラン","prefs":["青森","岩手","宮城","秋田","山形","福島","栃木"],"source":"https://www.re-marumatu.co.jp/information/restaurant_list.html","cuisines":["和食"]},
+  {"name":"ばんどう太郎","query":"ばんどう太郎","kind":"ファミリーレストラン","prefs":["茨城","栃木","千葉","埼玉"],"source":"https://shop.bandotaro.co.jp/all/","cuisines":["和食"]},
+  {"name":"炭焼きレストランさわやか","query":"炭焼きレストランさわやか","match":"さわやか","kind":"ファミリーレストラン","prefs":["静岡"],"source":"https://www.genkotsu-hb.com/shop","cuisines":["洋食"]},
+  {"name":"フライングガーデン","query":"フライングガーデン","kind":"ファミリーレストラン","prefs":["群馬","栃木","茨城","埼玉","千葉"],"source":"https://www.fgarden.co.jp/restaurant/","cuisines":["洋食"]},
+  {"name":"庄屋","query":"和食レストラン 庄屋","kind":"ファミリーレストラン","prefs":["福岡","佐賀","長崎","熊本","大分"],"source":"https://www.sho-ya.co.jp/shop/archives/category/shoya","cuisines":["和食"]},
+  {"name":"味のおぐら","query":"味のおぐら","match":"おぐら","kind":"ファミリーレストラン","prefs":["宮崎"],"source":"https://www.ogurachain.com/","cuisines":["洋食"]},
+  {"name":"おぐらきんなべ","query":"おぐらきんなべ","kind":"ファミリーレストラン","prefs":["宮崎"],"source":"https://www.ogurakinnabe.jp/store/","cuisines":["洋食"]},
+  {"name":"ふく福","query":"ふく福","kind":"ファミリーレストラン","prefs":["鹿児島"],"source":"https://www.jf-group.co.jp/brand/fukufuku","cuisines":["和食"]},
+  {"name":"南部家敷","query":"南部家敷","kind":"ファミリーレストラン","prefs":["岩手","宮城","秋田","山形"],"source":"https://www.nanbuyashiki.jp/shoplist/shoplist.html","cuisines":["和食"]},
+  {"name":"いっちょう","query":"いっちょう","kind":"ファミリーレストラン","prefs":["栃木","群馬","埼玉","茨城","長野"],"source":"https://www.icho.co.jp/","cuisines":["和食"]},
+  {"name":"あっぷるぐりむ","query":"あっぷるぐりむ","kind":"ファミリーレストラン","prefs":["長野","新潟"],"source":"https://appleivy.co.jp/applegrimm/shop/","cuisines":["洋食"]},
+  {"name":"ふぁみり庵はいから亭","query":"ふぁみり庵はいから亭","kind":"ファミリーレストラン","prefs":["鹿児島","宮崎"],"source":"https://www.kousei-grp.co.jp/familian/tenpo/","cuisines":["和食"]},
+  {"name":"メヒコ","query":"メヒコ","kind":"ファミリーレストラン","prefs":["福島","茨城","東京"],"source":"https://mehico.com/shop/index.html","cuisines":["洋食"]},
+  {"name":"レストラン三宝","query":"レストラン三宝","kind":"ファミリーレストラン","prefs":["新潟"],"source":"https://sanpou-g.co.jp/map/","match":"レストラン三宝","cuisines":["和食","洋食","中華"]},
+  {"name":"ハングリータイガー","query":"ハングリータイガー","kind":"ファミリーレストラン","prefs":["神奈川"],"source":"https://hungrytiger.co.jp/location/","cuisines":["洋食"]},
+  {"name":"牛右衛門","query":"牛右衛門","kind":"ファミリーレストラン","prefs":["長崎"],"source":"https://gyuemon.com/shoplist/","cuisines":["洋食"]},
+  {"name":"徳樹庵","query":"徳樹庵","kind":"ファミリーレストラン","cuisines":["和食"],"prefs":["埼玉","東京","神奈川","千葉","茨城","群馬"],"source":"https://www.bashamichi.co.jp/brand04/"},
+  {"name":"レストラン馬車道","query":"レストラン馬車道","kind":"ファミリーレストラン","cuisines":["洋食"],"prefs":["埼玉","神奈川","千葉"],"source":"https://www.bashamichi.co.jp/brand01/"},
+  {"name":"いっさく","query":"いっさく","kind":"ファミリーレストラン","cuisines":["和食","洋食","中華"],"prefs":["新潟"],"source":"https://issaku.jp/index.html"},
+  {"name":"ヴィクトリアステーション","query":"ヴィクトリアステーション","kind":"ファミリーレストラン","cuisines":["洋食"],"prefs":["北海道"],"source":"https://www.bigboyjapan.co.jp/group/","aliases":["ビクトリアステーション"]},
+  {"name":"浜木綿","query":"浜木綿","kind":"ファミリーレストラン","cuisines":["中華"],"prefs":["愛知","岐阜","三重","滋賀","東京","静岡","大阪"],"source":"https://www.hamayuu.co.jp/tenpo/"},
+  {"name":"八仙閣","query":"八仙閣","kind":"ファミリーレストラン","cuisines":["中華"],"prefs":["福岡"],"source":"https://8000.co.jp/"},
+  {"name":"華屋与兵衛","query":"華屋与兵衛","kind":"ファミリーレストラン","cuisines":["和食"],"prefs":["東京","千葉","神奈川","茨城","埼玉"],"source":"https://www.hanayayohei.co.jp/reservation/official.html"},
+  {"name":"和食れすとらん天狗","query":"和食れすとらん天狗","kind":"ファミリーレストラン","cuisines":["和食"],"prefs":["埼玉","東京","神奈川","千葉","静岡"],"source":"https://www.teng.co.jp/washoku/food.html","aliases":["和食レストラン天狗"]},
+  {"name":"和食どんと","query":"和食どんと","kind":"ファミリーレストラン","cuisines":["和食"],"prefs":["愛媛","高知","広島","山口"],"source":"https://the-fff.com/?cn=100312","additionalSources":["https://fujifamilyfoods-saiyou.jp/job/-/info/list","https://www.the-fuji.com/company/docs/20240510_release_danbara.pdf"]}
 ];
 let reviewSequence = 0;
 
@@ -309,24 +242,11 @@ let reviewSequence = 0;
 const MODES = {
   all:{label:'すべて', term:''},
   ramen:{label:'ラーメン', term:'ラーメン店'},
-  localchain:{label:'ローカルチェーン', term:'ローカルチェーン 飲食店', kinds:[
-    ['すべて','ローカルチェーン 飲食店'],
-    ['ファミレス','ローカルチェーン ファミリーレストラン'],
-    ['ラーメン','ローカルチェーン ラーメン店'],
-    ['回転寿司','ローカルチェーン 回転寿司'],
-    ['焼肉','ローカルチェーン 焼肉店'],
-    ['うどん・そば','ローカルチェーン うどん・そば'],
-    ['中華・餃子','ローカルチェーン 中華・餃子'],
-    ['定食・郷土料理','ローカルチェーン 定食・郷土料理'],
-    ['お好み焼き','ローカルチェーン お好み焼き'],
-    ['軽食・持ち帰り','ローカルチェーン 軽食・持ち帰り'],
-    ['ステーキ・ハンバーグ','ローカルチェーン ステーキ・ハンバーグ'],
-    ['ピザ・パスタ','ローカルチェーン ピザ・パスタ'],
-    ['カフェ・喫茶','ローカルチェーン カフェ・喫茶'],
-    ['カレー','ローカルチェーン カレー'],
-    ['とんかつ','ローカルチェーン とんかつ'],
-    ['居酒屋','ローカルチェーン 居酒屋'],
-    ['寿司','ローカルチェーン 寿司']
+  localchain:{label:'ローカルファミレス', term:'ローカルチェーン ファミリーレストラン', kinds:[
+    ['すべてのファミレス','ローカルチェーン ファミリーレストラン'],
+    ['和食','ローカルチェーン 和食'],
+    ['洋食','ローカルチェーン 洋食'],
+    ['中華','ローカルチェーン 中華']
   ]},
   famous:{label:'有名店', term:'人気の飲食店'},
   tourist:{label:'観光地グルメ', term:'観光地 飲食店'},
@@ -382,7 +302,7 @@ function chainCandidates() {
   const pref = document.getElementById('pref').value;
   const kind = (STATE.kind || '').replace('ローカルチェーン ', '');
   return LOCAL_CHAINS.filter(c => (!pref || c.prefs.includes(pref)) &&
-    (!kind || kind === '飲食店' || c.kind === kind));
+    (!kind || kind === '飲食店' || kind === 'ファミリーレストラン' || c.cuisines.includes(kind)));
 }
 function selectedChain() {
   return chainCandidates().find(c => c.name === document.getElementById('chain').value);
@@ -391,7 +311,11 @@ function refreshChains() {
   const active = STATE.mode === 'localchain';
   document.getElementById('chainOptions').classList.toggle('hidden', !active);
   document.getElementById('chainNote').classList.toggle('hidden', !active);
+  document.getElementById('familyFilters').classList.toggle('hidden', !active);
   if(!active) return;
+  document.querySelectorAll('[data-family-kind]').forEach(button => {
+    button.setAttribute('aria-pressed', String(STATE.kind === 'ローカルチェーン ' + button.dataset.familyKind));
+  });
   const select = document.getElementById('chain'), previous = select.value;
   const candidates = chainCandidates();
   select.innerHTML = '<option value="">' + (candidates.length ? 'すべての候補（' + candidates.length + 'チェーン）' : 'この条件の登録チェーンはありません') + '</option>' +
@@ -400,7 +324,7 @@ function refreshChains() {
   select.disabled = !candidates.length;
   const chain = selectedChain();
   document.getElementById('chainNote').innerHTML =
-    '登録' + LOCAL_CHAINS.length + 'チェーン・47都道府県に対応。件数はチェーン数で、支店・店舗数ではありません。県内の候補を表示しています。市区町村内の出店は店舗検索で確認できます。' +
+    '登録' + LOCAL_CHAINS.length + 'ファミレスチェーンを登録。和食・洋食・中華の家族向けレストランを対象にしています。件数はチェーン数で、支店・店舗数ではありません。市区町村内の出店は店舗検索で確認できます。' +
     (chain ? ' <a target="_blank" rel="noopener" href="' + esc(chain.source) + '">' + esc(chain.sourceLabel || '公式店舗情報') + '</a>' : '') +
     ' 地域とチェーン名で検索し、自由入力欄は使いません。登録候補は件数制限なしで全件表示します。未登録のチェーンもあります。';
 }
@@ -410,7 +334,7 @@ function chainSearchText(chain) {
 function chainCard(chain) {
   const query = chainSearchText(chain);
   return '<div class="card"><h3 class="title">' + esc(chain.name) + '</h3>' +
-    '<div class="meta"><span class="tag">' + esc(chain.kind) + '</span></div>' +
+    '<div class="meta"><span class="tag">' + esc(chain.kind + '／' + chain.cuisines.join('・')) + '</span></div>' +
     '<p class="desc">検索地域：' + esc([fullPrefName(STATE.pref), STATE.city].filter(Boolean).join(' ') || '全国') + '</p>' +
     '<div class="actions"><a target="_blank" rel="noopener" href="' + esc(nearbyMapsUrl(query)) + '">' + esc(chain.name) + 'の店舗を探す</a>' +
     '<a target="_blank" rel="noopener" href="' + esc(chain.source) + '">' + esc(chain.sourceLabel || '公式店舗情報') + '</a></div></div>';
@@ -466,7 +390,8 @@ function setMode(mode, inferKind=true) {
   STATE.mode = Object.hasOwn(MODES, mode) ? mode : 'all';
   const config = MODES[STATE.mode];
   document.getElementById('chainNote').classList.toggle('hidden', STATE.mode !== 'localchain');
-  STATE.kind = config.kinds ? config.term : '';
+  const previousKind = STATE.kind;
+  STATE.kind = config.kinds?.some(([, value]) => value === previousKind) ? previousKind : (config.kinds ? config.term : '');
   if(inferKind && config.kinds) {
     const terms = new Set(queryWords(document.getElementById('q').value)
       .map(word => Object.hasOwn(FOOD_TERMS, word) ? FOOD_TERMS[word] : word)
@@ -533,7 +458,7 @@ function render() {
     document.getElementById('status').textContent = 'ローカルチェーン ／ ' + candidates.length + 'チェーン';
     box.innerHTML = '<div class="notice">' + (candidates.length ?
       '各チェーンの「店舗を探す」から、選んだ地域の支店を検索できます。口コミ件数順で探す場合は、上の「チェーン名」を1つ選んで「店舗を検索」を押してください。市区町村に店舗がない場合は「市区町村すべて」で県全体を探せます。Googleマップでは関連候補が混ざる場合があります。' :
-      'この地域・種類のチェーンはまだ登録されていません。種類を「すべて」にするか、都道府県を変更してください。') + '</div>' + candidates.map(chainCard).join('');
+      'この地域・種類のローカルファミレスはまだ登録されていません。「すべてのファミレス」または都道府県の「全国」で登録候補を確認できます。') + '</div>' + candidates.map(chainCard).join('');
     return;
   }
   const condition = (STATE.coords ? '現在地周辺・' : '') + searchText();
@@ -672,11 +597,17 @@ document.querySelectorAll('.chip').forEach(btn => btn.addEventListener('click', 
   setMode(btn.dataset.mode);
   doSearch();
 }));
-document.getElementById('kind').addEventListener('change', event => {
-  STATE.kind = event.target.value;
+function selectKind(value) {
+  if(!MODES[STATE.mode].kinds?.some(([, kind]) => kind === value)) return;
+  STATE.kind = value;
+  document.getElementById('kind').value = value;
   refreshChains();
   doSearch();
-});
+}
+document.getElementById('kind').addEventListener('change', event => selectKind(event.target.value));
+document.querySelectorAll('[data-family-kind]').forEach(button => button.addEventListener('click', () => {
+  if(STATE.mode === 'localchain') selectKind('ローカルチェーン ' + button.dataset.familyKind);
+}));
 document.getElementById('chain').addEventListener('change', () => { refreshChains(); doSearch(); });
 
 document.querySelectorAll('[data-quick]').forEach(btn => btn.addEventListener('click', () => {
