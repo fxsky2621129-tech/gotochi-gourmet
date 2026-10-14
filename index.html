@@ -198,6 +198,8 @@ const CITY_DATA = typeof MUNICIPALITIES === 'undefined' ? {} : MUNICIPALITIES;
 // Curated, partial coverage. Prefectures are confirmed examples, not a complete store inventory.
 // Checked 2026-10-14 against each brand's official store directory.
 const LOCAL_CHAINS = [
+  {name:'８番らーめん', query:'８番らーめん', kind:'ラーメン店', prefs:['石川'], source:'https://www.hachiban.jp/shop/ishikawa/'},
+  {name:'すし食いねぇ！', query:'すし食いねぇ', match:'すし食いねぇ', kind:'回転寿司', prefs:['石川','富山'], source:'https://www.sushikuine.co.jp/shops/'},
   {name:'岐阜タンメン', query:'岐阜タンメン', kind:'ラーメン店', prefs:['岐阜','愛知'], source:'https://gifu-tanmen.com/99_access/'},
   {name:'魚魚丸', query:'魚魚丸', kind:'回転寿司', prefs:['愛知','岐阜','静岡'], source:'https://comline.co.jp/list.html'},
   {name:'あみやき亭', query:'あみやき亭', kind:'焼肉店', prefs:['岐阜'], source:'https://shop.amiyakitei.co.jp/%E5%B2%90%E9%98%9C%E7%9C%8C/'},
@@ -289,7 +291,7 @@ function refreshChains() {
   select.disabled = !candidates.length;
   const chain = selectedChain();
   document.getElementById('chainNote').innerHTML =
-    '公式店舗情報を確認した5ブランドの一部地域を登録しています。全国網羅ではありません。種類・地域に合うチェーン名を選んで検索します。市区町村内の出店は公式サイトで確認してください。' +
+    '公式店舗情報を確認した7ブランドの一部地域を登録しています。全国網羅ではありません。種類・地域に合うチェーン名を選んで検索します。市区町村内の出店は公式サイトで確認してください。' +
     (chain ? ' <a target="_blank" rel="noopener" href="' + chain.source + '">選択チェーンの公式店舗一覧</a>' : '') +
     ' このカテゴリでは自由入力欄を使わず、地域とチェーン名だけで検索します。Googleマップ側では関連候補が混ざる場合があります。';
 }

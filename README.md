@@ -55,10 +55,13 @@
 
 ## v7.8 登録範囲
 
-2026-10-14に公式店舗情報を確認した5ブランドの一部地域を登録。全国網羅・全出店県網羅ではありません。店舗がない市区町村にも県単位の候補を表示するため、出店は公式一覧で確認できます。地元発祥でも広域展開するブランドの扱いには幅があり、地域中心のブランドを手動選定しています。
+2026-10-14に公式店舗情報を確認した7ブランドの一部地域を登録。全国網羅・全出店県網羅ではありません。店舗がない市区町村にも県単位の候補を表示するため、出店は公式一覧で確認できます。地元発祥でも広域展開するブランドの扱いには幅があり、地域中心のブランドを手動選定しています。
 
 - 岐阜タンメン：岐阜・愛知 https://gifu-tanmen.com/99_access/ https://gifu-tanmen.com/99_access/a-aichi.html
 - 魚魚丸：愛知・岐阜・静岡 https://comline.co.jp/list.html
 - あみやき亭：岐阜（他県は未登録） https://shop.amiyakitei.co.jp/%E5%B2%90%E9%98%9C%E7%9C%8C/
 - 炭焼きレストランさわやか：静岡 https://www.genkotsu-hb.com/shop https://www.genkotsu-hb.com/faq
 - フライングガーデン：群馬・栃木・茨城・埼玉・千葉 https://www.fgarden.co.jp/restaurant/
+
+- ８番らーめん：石川（他県は未登録） https://www.hachiban.jp/shop/ishikawa/
+- すし食いねぇ！：石川・富山 https://www.sushikuine.co.jp/shops/
