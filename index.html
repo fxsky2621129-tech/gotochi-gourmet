@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <meta name="theme-color" content="#26324A">
-<title>ご当地グルメ検索 v7.2（現在地周辺検索）</title>
+<title>ご当地グルメ検索 v7.3（カテゴリー別検索）</title>
 <style>
 :root {
   --bg:#F5EFE0; --card:#FFFCF4; --ink:#263652; --soft:#66728A;
@@ -29,6 +29,9 @@ button,input,select{font:inherit}
 .chip{white-space:nowrap;border:1px solid var(--border);background:var(--card);color:var(--soft);padding:7px 11px;border-radius:999px;font-size:12px;cursor:pointer}
 .chip.active{background:var(--ink);border-color:var(--ink);color:white}
 .status{padding:8px 16px;font-size:12px;color:var(--soft)}
+.category-options{margin:10px 16px 0;display:flex;gap:8px;align-items:center;font-size:12px}
+.category-options select{flex:1;min-width:0;border:1px solid var(--border);border-radius:10px;background:var(--card);padding:10px;color:var(--ink)}
+.search-hint{margin:8px 16px 0;font-size:11px;color:var(--soft);line-height:1.6}
 .quick{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;padding:8px 16px 12px}
 .quick button,.quick a{border:1px solid var(--border);background:var(--card);border-radius:12px;padding:11px;text-align:left;color:var(--ink);cursor:pointer}
 .quick a{grid-column:1/-1;text-decoration:none}.quick b{display:block;font-size:13px} .quick span{display:block;font-size:11px;color:var(--soft);margin-top:3px}
@@ -69,7 +72,7 @@ button,input,select{font:inherit}
 
 <section class="search-panel">
   <div class="searchbox">
-    <input id="q" autocomplete="off" placeholder="例：高山 飛騨牛 / 白川郷 食べ歩き / 道の駅 海鮮">
+    <input id="q" autocomplete="off" aria-label="地域・店名・料理" placeholder="例：山形市 ラーメン / 高山 飛騨牛">
     <button class="primary" id="searchBtn">店舗を検索</button>
   </div>
   <div class="row">
@@ -82,38 +85,44 @@ button,input,select{font:inherit}
 </section>
 
 <nav class="chips" id="chips">
-  <button class="chip active" data-mode="all">すべて</button>
-  <button class="chip" data-mode="famous">有名店</button>
-  <button class="chip" data-mode="tourist">観光地グルメ</button>
-  <button class="chip" data-mode="roadstation">道の駅</button>
-  <button class="chip" data-mode="sweets">スイーツ</button>
-  <button class="chip" data-mode="seafood">海鮮</button>
-  <button class="chip" data-mode="noodle">麺</button>
-  <button class="chip" data-mode="meat">肉</button>
+  <button class="chip active" data-mode="all" aria-pressed="true">すべて</button>
+  <button class="chip" data-mode="ramen" aria-pressed="false">🍜 ラーメン</button>
+  <button class="chip" data-mode="famous" aria-pressed="false">有名店</button>
+  <button class="chip" data-mode="tourist" aria-pressed="false">観光地グルメ</button>
+  <button class="chip" data-mode="roadstation" aria-pressed="false">道の駅</button>
+  <button class="chip" data-mode="sweets" aria-pressed="false">スイーツ</button>
+  <button class="chip" data-mode="seafood" aria-pressed="false">海鮮</button>
+  <button class="chip" data-mode="noodle" aria-pressed="false">麺</button>
+  <button class="chip" data-mode="meat" aria-pressed="false">肉</button>
 </nav>
 
+<div class="category-options hidden" id="categoryOptions">
+  <label for="kind">料理の種類</label>
+  <select id="kind"></select>
+</div>
+<p class="search-hint">カテゴリーを選ぶときは、検索窓に市町村・駅名・店名を入力。料理の種類を選ぶとさらに絞り込めます。</p>
 <div class="status" id="status">全国のグルメ情報を検索できます。</div>
 
 <section class="nearby-panel hidden" id="nearbyPanel">
   <div class="nearby-title">📍 現在地周辺から探す</div>
   <div class="nearby-note">位置情報を使って、周辺のおすすめグルメをGoogleマップで検索します。</div>
   <div class="nearby-grid">
-    <button class="nearby-main" data-nearby="おすすめ グルメ">🔥 周辺のおすすめグルメ</button>
-    <button data-nearby="有名店 グルメ">⭐ 有名店</button>
-    <button data-nearby="ラーメン">🍜 ラーメン</button>
-    <button data-nearby="海鮮">🐟 海鮮</button>
-    <button data-nearby="焼肉 肉料理">🥩 焼肉・肉料理</button>
-    <button data-nearby="スイーツ カフェ">🍰 スイーツ・カフェ</button>
-    <button data-nearby="道の駅 グルメ">🛣️ 道の駅グルメ</button>
+    <button class="nearby-main" data-nearby="all">🔥 周辺のおすすめグルメ</button>
+    <button data-nearby="famous">⭐ 有名店</button>
+    <button data-nearby="ramen">🍜 ラーメン</button>
+    <button data-nearby="seafood">🐟 海鮮</button>
+    <button data-nearby="meat" data-kind="焼肉店">🥩 焼肉</button>
+    <button data-nearby="sweets">🍰 スイーツ</button>
+    <button data-nearby="roadstation">🛣️ 道の駅</button>
   </div>
 </section>
 
 <section class="quick">
   <a href="./gifu-chahan/"><b>🍚 全国チャーハン帖</b><span>47都道府県・食べ歩き記録</span></a>
-  <button data-quick="人気 グルメ"><b>🔥 人気グルメ</b><span>地域＋人気店で探す</span></button>
-  <button data-quick="食べ歩き"><b>🚶 食べ歩き</b><span>観光地周辺を探す</span></button>
-  <button data-quick="道の駅 グルメ"><b>🛣️ 道の駅グルメ</b><span>食事・軽食・土産</span></button>
-  <button data-quick="名物 スイーツ"><b>🍰 名物スイーツ</b><span>和菓子・洋菓子</span></button>
+  <button data-quick="famous"><b>🔥 人気グルメ</b><span>地域＋人気店で探す</span></button>
+  <button data-quick="tourist"><b>🚶 食べ歩き</b><span>観光地周辺を探す</span></button>
+  <button data-quick="roadstation"><b>🛣️ 道の駅グルメ</b><span>食事・軽食・土産</span></button>
+  <button data-quick="sweets"><b>🍰 スイーツ</b><span>和菓子・洋菓子</span></button>
 </section>
 
 <div class="section-title" id="resultTitle">検索リンク</div>
@@ -136,21 +145,107 @@ function saveLastQuery(query) {
 
 const STATE = {
   mode:'all',
+  kind:'',
   query:'',
   pref:'',
   coords:null
 };
 
-const MODE_WORDS = {
-  all:'',
-  famous:'有名店',
-  tourist:'観光地 グルメ',
-  roadstation:'道の駅',
-  sweets:'スイーツ',
-  seafood:'海鮮',
-  noodle:'麺 ラーメン うどん そば',
-  meat:'肉 焼肉 ステーキ'
+// Each search uses one business type; alternatives belong in the selector.
+const MODES = {
+  all:{label:'すべて', term:''},
+  ramen:{label:'ラーメン', term:'ラーメン店'},
+  famous:{label:'有名店', term:'人気の飲食店'},
+  tourist:{label:'観光地グルメ', term:'観光地 飲食店'},
+  roadstation:{label:'道の駅', term:'道の駅'},
+  sweets:{label:'スイーツ', term:'スイーツ店', kinds:[
+    ['スイーツ全般','スイーツ店'], ['和菓子','和菓子店'], ['洋菓子','洋菓子店'],
+    ['ケーキ','ケーキ店'], ['パフェ','パフェ専門店']
+  ]},
+  seafood:{label:'海鮮', term:'海鮮料理店', kinds:[
+    ['海鮮料理全般','海鮮料理店'], ['海鮮丼','海鮮丼専門店'], ['寿司','寿司店']
+  ]},
+  noodle:{label:'麺', term:'麺料理店', kinds:[
+    ['麺料理全般','麺料理店'], ['ラーメン','ラーメン店'], ['うどん','うどん店'],
+    ['そば','そば店'], ['つけ麺','つけ麺店'], ['パスタ','パスタ専門店']
+  ]},
+  meat:{label:'肉', term:'肉料理店', kinds:[
+    ['肉料理全般','肉料理店'], ['焼肉','焼肉店'], ['ステーキ','ステーキ店'],
+    ['焼鳥','焼鳥店'], ['とんかつ','とんかつ店'], ['ハンバーグ','ハンバーグ専門店']
+  ]}
 };
+const FOOD_MODES = new Set(['ramen','sweets','seafood','noodle','meat']);
+// Only whole keywords are replaced. Names such as「九州ラーメンうまか」remain intact.
+const FOOD_TERMS = {
+  ラーメン:'ラーメン店', 拉麺:'ラーメン店', らーめん:'ラーメン店',
+  中華そば:'ラーメン店', うどん:'うどん店', そば:'そば店', 蕎麦:'そば店',
+  つけ麺:'つけ麺店', パスタ:'パスタ専門店', 麺:'麺料理店',
+  肉:'肉料理店', 肉料理:'肉料理店', 焼肉:'焼肉店', ステーキ:'ステーキ店',
+  焼鳥:'焼鳥店', 焼き鳥:'焼鳥店', とんかつ:'とんかつ店',
+  ハンバーグ:'ハンバーグ専門店', スイーツ:'スイーツ店',
+  和菓子:'和菓子店', 洋菓子:'洋菓子店', ケーキ:'ケーキ店', パフェ:'パフェ専門店',
+  海鮮:'海鮮料理店', 海鮮料理:'海鮮料理店', 海鮮丼:'海鮮丼専門店', 寿司:'寿司店', すし:'寿司店'
+};
+const FOOD_WORDS = new Set([
+  ...Object.keys(FOOD_TERMS), ...Object.values(FOOD_TERMS),
+  'カフェ','喫茶店','カレー','チャーハン','炒飯','餃子','ピザ','飛騨牛','牛丼','焼きそば','定食'
+]);
+const GENERAL_WORDS = new Set([
+  '人気','人気店','人気グルメ','おすすめ','おすすめグルメ','有名店',
+  'グルメ','飲食店','レストラン','観光地グルメ','食べ歩き','名物'
+]);
+
+function normalizeQuery(query='') {
+  return query.normalize('NFKC').replace(/[・、,]+/g, ' ').replace(/\s+/g, ' ').trim();
+}
+function queryWords(query) {
+  return normalizeQuery(query).split(' ').filter(Boolean);
+}
+function categoryTerm() {
+  return STATE.kind || MODES[STATE.mode].term;
+}
+function searchText() {
+  let words = queryWords(STATE.query);
+  if(STATE.mode !== 'all') {
+    words = words.filter(word => !GENERAL_WORDS.has(word) &&
+      !(FOOD_MODES.has(STATE.mode) && FOOD_WORDS.has(word)));
+  }
+  const pref = fullPrefName(STATE.pref);
+  words = words.filter(word => !pref || (word !== STATE.pref && word !== pref));
+  const term = categoryTerm();
+  // Avoid appending another generic restaurant type to an explicit dish search.
+  const type = STATE.mode === 'all' && !words.length ? '飲食店' :
+    STATE.mode === 'famous' && words.some(word => FOOD_WORDS.has(word)) ? '人気店' : term;
+  return [...new Set([pref, ...words, type].filter(Boolean))].join(' ') || '飲食店';
+}
+function fullPrefName(pref) {
+  if(!pref || pref === '北海道') return pref;
+  if(pref === '京都' || pref === '大阪') return pref + '府';
+  if(pref === '東京') return '東京都';
+  return /[都府県]$/.test(pref) ? pref : pref + '県';
+}
+function setMode(mode, inferKind=true) {
+  STATE.mode = Object.hasOwn(MODES, mode) ? mode : 'all';
+  const config = MODES[STATE.mode];
+  STATE.kind = config.kinds ? config.term : '';
+  if(inferKind && config.kinds) {
+    const terms = new Set(queryWords(document.getElementById('q').value)
+      .map(word => Object.hasOwn(FOOD_TERMS, word) ? FOOD_TERMS[word] : word)
+      .filter(term => config.kinds.some(([, value]) => value === term)));
+    if(terms.size === 1) STATE.kind = [...terms][0];
+  }
+  const options = document.getElementById('categoryOptions');
+  options.classList.toggle('hidden', !config.kinds);
+  const select = document.getElementById('kind');
+  select.innerHTML = (config.kinds || []).map(([label, value]) =>
+    `<option value="${value}">${label}</option>`).join('');
+  select.value = STATE.kind;
+  document.querySelectorAll('.chip').forEach(chip => {
+    const active = chip.dataset.mode === STATE.mode;
+    chip.classList.toggle('active', active);
+    chip.setAttribute('aria-pressed', String(active));
+  });
+}
 
 function esc(s='') {
   return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
@@ -161,60 +256,55 @@ function clearLocation() {
   document.getElementById('nearbyPanel').classList.add('hidden');
 }
 function mapsSearchUrl() {
-  const parts = [];
-  if(STATE.query) parts.push(STATE.query);
-  if(MODE_WORDS[STATE.mode]) parts.push(MODE_WORDS[STATE.mode]);
-  if(STATE.pref) parts.push(STATE.pref);
-  if(!parts.length) parts.push('グルメ');
-  const query = parts.join(' ');
-  if(STATE.coords) return nearbyMapsUrl(query);
-  return 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(query);
+  return nearbyMapsUrl(searchText());
 }
-function nearbyMapsUrl(term='おすすめ グルメ') {
+function nearbyMapsUrl(term='飲食店') {
   const q = encodeURIComponent(term);
   if(!STATE.coords) return 'https://www.google.com/maps/search/?api=1&query=' + q;
   const {lat,lng} = STATE.coords;
   return `https://www.google.com/maps/search/${q}/@${lat},${lng},14z`;
 }
-function openNearby(term) {
+function openNearby(mode, kind) {
   if(!STATE.coords) {
     alert('先に「現在地を使う」を押してください。');
     return;
   }
-  window.open(nearbyMapsUrl(term), '_blank', 'noopener');
+  document.getElementById('q').value = '';
+  setMode(mode, false);
+  if(MODES[STATE.mode].kinds?.some(([, value]) => value === kind)) {
+    STATE.kind = kind;
+    document.getElementById('kind').value = kind;
+  }
+  doSearch();
+  window.open(mapsSearchUrl(), '_blank', 'noopener');
 }
 function webSearchUrl() {
-  const parts = [STATE.query, MODE_WORDS[STATE.mode], STATE.pref, 'グルメ'].filter(Boolean);
-  return 'https://www.google.com/search?q=' + encodeURIComponent(parts.join(' '));
-}
-function roadSearchUrl() {
-  const parts = ['道の駅', STATE.pref, STATE.query, MODE_WORDS[STATE.mode]].filter(Boolean);
-  return nearbyMapsUrl(parts.join(' '));
+  const location = STATE.coords ? ` ${STATE.coords.lat},${STATE.coords.lng} 周辺` : '';
+  return 'https://www.google.com/search?q=' + encodeURIComponent(searchText() + location);
 }
 
 function render() {
   const box = document.getElementById('results');
-  const parts = [STATE.pref, STATE.query, MODE_WORDS[STATE.mode]].filter(Boolean);
-  const condition = parts.length ? parts.join('・') : '全国のグルメ';
+  const condition = (STATE.coords ? '現在地周辺・' : '') + searchText();
 
   box.innerHTML = `<div class="notice">
     <b>${esc(condition)}を検索</b><br>
     「店舗を検索」または下のボタンを押すと、Googleマップの店舗一覧を開きます。戻る操作でこの画面に戻れます。
     <div class="actions">
       <a target="_blank" rel="noopener" href="${mapsSearchUrl()}">Googleマップで店舗検索</a>
-      <a target="_blank" rel="noopener" href="${webSearchUrl()}">Webで有名店を検索</a>
-      <a target="_blank" rel="noopener" href="${roadSearchUrl()}">道の駅を検索</a>
+      <a target="_blank" rel="noopener" href="${webSearchUrl()}">Webで店舗情報を検索</a>
     </div>
+    <small>表示される検索語を確認できます。Googleマップでは関連候補が表示される場合があります。</small>
   </div>`;
 
   const label = STATE.pref ? STATE.pref + '・' : '';
   document.getElementById('resultTitle').textContent = label + (STATE.query ? `「${STATE.query}」の検索リンク` : '検索リンク');
   document.getElementById('status').textContent =
-    `オンライン店舗検索 ／ モード：${document.querySelector('.chip.active')?.textContent||'すべて'}` + (STATE.coords ? ' ／ 📍現在地周辺検索ON' : '');
+    `オンライン店舗検索 ／ カテゴリー：${MODES[STATE.mode].label}` + (STATE.coords ? ' ／ 📍現在地周辺検索ON' : '');
 }
 
 function doSearch() {
-  STATE.query = document.getElementById('q').value.trim().replace(/[・、,]+/g, ' ').replace(/\s+/g, ' ');
+  STATE.query = normalizeQuery(document.getElementById('q').value);
   STATE.pref = document.getElementById('pref').value;
   if(STATE.pref && STATE.coords) clearLocation();
   saveLastQuery(STATE.query);
@@ -227,6 +317,7 @@ function searchStores() {
 }
 
 document.getElementById('searchBtn').addEventListener('click', searchStores);
+document.getElementById('q').addEventListener('input', doSearch);
 document.getElementById('q').addEventListener('keydown', e => { if(e.key==='Enter' && !e.isComposing && e.keyCode !== 229) { e.preventDefault(); searchStores(); } });
 document.getElementById('pref').addEventListener('change', () => {
   clearLocation();
@@ -234,16 +325,16 @@ document.getElementById('pref').addEventListener('change', () => {
 });
 
 document.querySelectorAll('.chip').forEach(btn => btn.addEventListener('click', () => {
-  document.querySelectorAll('.chip').forEach(x=>x.classList.remove('active'));
-  btn.classList.add('active');
-  STATE.mode = btn.dataset.mode;
+  setMode(btn.dataset.mode);
   doSearch();
 }));
+document.getElementById('kind').addEventListener('change', event => {
+  STATE.kind = event.target.value;
+  doSearch();
+});
 
 document.querySelectorAll('[data-quick]').forEach(btn => btn.addEventListener('click', () => {
-  const input = document.getElementById('q');
-  const words = (input.value + ' ' + btn.dataset.quick).replace(/[・、,]+/g, ' ').split(/\s+/).filter(Boolean);
-  input.value = [...new Set(words)].join(' ');
+  setMode(btn.dataset.quick);
   searchStores();
 }));
 
@@ -267,18 +358,13 @@ document.getElementById('locBtn').addEventListener('click', () => {
     document.getElementById('pref').disabled = false;
     btn.textContent = '📍 現在地検索を解除';
     document.getElementById('nearbyPanel').classList.remove('hidden');
-    STATE.query = 'おすすめ グルメ';
+    STATE.query = '';
     document.getElementById('q').value = STATE.query;
     STATE.pref = '';
     document.getElementById('pref').value = '';
-    STATE.mode = 'all';
-    document.querySelectorAll('.chip').forEach(chip => {
-      chip.classList.remove('active');
-      if(chip.dataset.mode === 'all') chip.classList.add('active');
-    });
     saveLastQuery(STATE.query);
     render();
-    const url = nearbyMapsUrl('おすすめ グルメ');
+    const url = mapsSearchUrl();
     if(mapWindow) {
       try { mapWindow.opener = null; } catch(e) {}
       mapWindow.location.href = url;
@@ -295,7 +381,7 @@ document.getElementById('locBtn').addEventListener('click', () => {
 });
 
 document.querySelectorAll('[data-nearby]').forEach(btn => btn.addEventListener('click', () => {
-  openNearby(btn.dataset.nearby);
+  openNearby(btn.dataset.nearby, btn.dataset.kind);
 }));
 
 document.getElementById('q').value = readLastQuery();
