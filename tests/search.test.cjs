@@ -45,7 +45,7 @@ function page({ savedQuery = '', storageBlocked = false, cityDataUnavailable = f
   const context = vm.createContext({
     document: {
       getElementById: id => ids[id],
-      querySelectorAll: selector => ({ '.chip': chips, '[data-quick]': quick, '[data-nearby]': nearby, '[data-family-kind]': family }[selector] || [])
+      querySelectorAll: selector => ({ '.chip': chips, '.chip[data-mode]': chips, '[data-quick]': quick, '[data-nearby]': nearby, '[data-family-kind]': family }[selector] || [])
     },
     window: {
       location: { href: 'app' },
@@ -90,7 +90,7 @@ function mapsText(url) {
 test('every category searches the selected business type with the chosen region', async t => {
   const cases = {
     all: '飲食店', ramen: 'ラーメン店', famous: '人気の飲食店',
-    tourist: '観光地 飲食店', roadstation: '道の駅', sweets: 'スイーツ店',
+    tourist: '観光地 飲食店', roadstation: '道の駅',
     seafood: '海鮮料理店', noodle: '麺料理店', meat: '肉料理店'
   };
   for (const [mode, term] of Object.entries(cases)) await t.test(mode, () => {
@@ -148,8 +148,8 @@ test('dropdown and direct buttons stay synchronized and survive region and categ
   }
   p.kind('ローカルチェーン 和食');assert.equal(p.run('STATE.kind'),'ローカルチェーン 和食');
   p.familyKind('ファミリーレストラン');assert.equal(p.run('chainCandidates().length'),p.run('LOCAL_CHAINS.length'));
-  p.mode('sweets');assert.equal(p.ids.familyFilters.classList.contains('hidden'),true);
-  p.kind('ケーキ店');assert.equal(p.run('categoryTerm()'),'ケーキ店');
+  p.mode('meat');assert.equal(p.ids.familyFilters.classList.contains('hidden'),true);
+  p.kind('焼肉店');assert.equal(p.run('categoryTerm()'),'焼肉店');
 });
 
 test('changing cuisine invalidates an incompatible chain and does not navigate', () => {
@@ -201,7 +201,6 @@ test('family review search displays all twenty matching branches', async () => {
 
 test('all selectable dish types keep the area and replace conflicting cuisine', async t => {
   const cases = {
-    sweets: ['スイーツ店', '和菓子店', '洋菓子店', 'ケーキ店', 'パフェ専門店'],
     seafood: ['海鮮料理店', '海鮮丼専門店', '寿司店'],
     noodle: ['麺料理店', 'ラーメン店', 'うどん店', 'そば店', 'つけ麺店', 'パスタ専門店'],
     meat: ['肉料理店', '焼肉店', 'ステーキ店', '焼鳥店', 'とんかつ店', 'ハンバーグ専門店']
@@ -242,10 +241,10 @@ test('quick search replaces the previous category and keeps typed location', () 
   const p = page();
   p.query('山形市 ラーメン');
   p.mode('ramen');
-  p.quick('sweets');
-  assert.equal(mapsText(p.context.window.location.href), '山形市 スイーツ店');
-  p.quick('sweets');
-  assert.equal(mapsText(p.context.window.location.href), '山形市 スイーツ店');
+  p.quick('roadstation');
+  assert.equal(mapsText(p.context.window.location.href), '山形市 ラーメン 道の駅');
+  p.quick('roadstation');
+  assert.equal(mapsText(p.context.window.location.href), '山形市 ラーメン 道の駅');
   assert.equal(p.ids.q.value, '山形市 ラーメン');
   p.pref('千葉');
   p.query('人気グルメ・千葉');
@@ -374,8 +373,8 @@ test('city and category are used in main, quick and web searches', () => {
   p.mode('ramen');
   assert.equal(p.run('searchText()'), '山形県 山形市 ラーメン店');
   assert.equal(new URL(p.run('webSearchUrl()')).searchParams.get('q'), '山形県 山形市 ラーメン店');
-  p.quick('sweets');
-  assert.equal(mapsText(p.context.window.location.href), '山形県 山形市 スイーツ店');
+  p.quick('roadstation');
+  assert.equal(mapsText(p.context.window.location.href), '山形県 山形市 道の駅');
 });
 
 test('prefecture changes remove the old city and never navigate automatically', () => {
@@ -654,3 +653,4 @@ test('SDK load failures clear the pending load and display an actionable error',
   assert.equal(p.context.window.initGourmetPlaces, undefined);
   assert.ok(p.ids.results.innerHTML.includes('取得できませんでした'));
 });
+

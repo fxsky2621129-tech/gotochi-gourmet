@@ -37,7 +37,7 @@ button,input,select{font:inherit}
 .provider a{color:inherit}
 .google-attribution{font-family:Roboto,Arial,sans-serif;font-weight:400;font-style:normal;font-size:12px;letter-spacing:normal;white-space:nowrap;color:#5E5E5E}
 .ghost{cursor:pointer}
-.chips{display:flex;gap:7px;overflow:auto;padding:10px 16px 5px;scrollbar-width:none}
+.chips{display:flex;flex-wrap:wrap;gap:7px;padding:10px 16px 5px;scrollbar-width:none}
 .chips::-webkit-scrollbar{display:none}
 .chip{white-space:nowrap;border:1px solid var(--border);background:var(--card);color:var(--soft);padding:7px 11px;border-radius:999px;font-size:12px;cursor:pointer}
 .chip.active{background:var(--ink);border-color:var(--ink);color:white}
@@ -78,6 +78,17 @@ button,input,select{font:inherit}
 .family-filters button{border:1px solid var(--border);border-radius:8px;background:var(--card);color:var(--ink);padding:10px 14px;cursor:pointer}
 .family-filters button[aria-pressed="true"]{background:var(--ink);color:white}
 .family-filters.hidden{display:none}
+/* Keep native selects and long text inside narrow mobile viewports. */
+.row > *, .quick > *, .controls > *{min-width:0}
+.row select{min-width:0;max-width:100%}
+.sort-row select{width:0}
+.app{width:100%}
+.chip{text-decoration:none}
+.quick{grid-template-columns:repeat(2,minmax(0,1fr))}
+.quick .sns-quick{grid-column:auto}
+.nearby-grid a{border:1px solid var(--border);background:white;border-radius:10px;padding:9px 8px;font-size:11.5px;font-weight:700;color:var(--ink);text-decoration:none}
+.cover,.card,.notice,.quick,.bottom,.nearby-grid{overflow-wrap:anywhere}
+@media(max-width:360px){.category-options{align-items:stretch;flex-direction:column}.category-options select{width:100%}.primary{padding:0 10px}.row .ghost{font-size:12px}}
 </style>
 </head>
 <body>
@@ -85,7 +96,6 @@ button,input,select{font:inherit}
 <header class="cover">
   <h1>ご当地グルメ検索</h1>
   <p>有名店・観光地グルメ・道の駅・食全般をひとつの検索窓から｜検索するとGoogleマップの店舗一覧を表示</p>
-  <p><a href="./trending.html" style="color:inherit">🔥 SNS・ネット話題グルメ →</a></p>
 </header>
 
 <section class="search-panel">
@@ -131,7 +141,7 @@ button,input,select{font:inherit}
   <button class="chip" data-mode="famous" aria-pressed="false">有名店</button>
   <button class="chip" data-mode="tourist" aria-pressed="false">観光地グルメ</button>
   <button class="chip" data-mode="roadstation" aria-pressed="false">道の駅</button>
-  <button class="chip" data-mode="sweets" aria-pressed="false">スイーツ</button>
+  <a class="chip" href="./trending.html">🔥 SNSグルメ</a>
   <button class="chip" data-mode="seafood" aria-pressed="false">海鮮</button>
   <button class="chip" data-mode="noodle" aria-pressed="false">麺</button>
   <button class="chip" data-mode="meat" aria-pressed="false">肉</button>
@@ -163,7 +173,7 @@ button,input,select{font:inherit}
     <button data-nearby="ramen">🍜 ラーメン</button>
     <button data-nearby="seafood">🐟 海鮮</button>
     <button data-nearby="meat" data-kind="焼肉店">🥩 焼肉</button>
-    <button data-nearby="sweets">🍰 スイーツ</button>
+    <a href="./trending.html">🔥 SNSグルメ（全国の記事）</a>
     <button data-nearby="roadstation">🛣️ 道の駅</button>
   </div>
 </section>
@@ -173,7 +183,7 @@ button,input,select{font:inherit}
   <button data-quick="tourist"><b>🚶 食べ歩き</b><span>観光地周辺を探す</span></button>
   <button data-quick="roadstation"><b>🛣️ 道の駅検索</b><span>地域から道の駅を探す</span></button>
   <button data-quick="localchain"><b>🏠 ローカルファミレス検索</b><span>地域のファミレスだけを全件表示</span></button>
-  <button data-quick="sweets"><b>🍰 スイーツ</b><span>和菓子・洋菓子</span></button>
+  <a class="sns-quick" href="./trending.html"><b>🔥 SNSグルメ</b><span>SNSに言及したグルメ記事</span></a>
 </section>
 
 <div class="section-title" id="resultTitle">検索リンク</div>
@@ -594,7 +604,7 @@ document.getElementById('resultMode').addEventListener('change', () => {
   doSearch();
 });
 
-document.querySelectorAll('.chip').forEach(btn => btn.addEventListener('click', () => {
+document.querySelectorAll('.chip[data-mode]').forEach(btn => btn.addEventListener('click', () => {
   setMode(btn.dataset.mode);
   doSearch();
 }));
