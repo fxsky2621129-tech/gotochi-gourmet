@@ -29,7 +29,9 @@ if(typeof document==='undefined')return;
 const $=id=>document.getElementById(id),pref=$('pref'),genre=$('genre'),days=$('days'),search=$('search'),results=$('results');
 let items=[];
 for(const p of Object.keys(typeof MUNICIPALITIES==='undefined'?{}:MUNICIPALITIES))pref.add(new Option(p,p));
-function render(){const list=selected(items,{pref:pref.value,genre:genre.value,days:days.value,q:search.value.trim()});results.innerHTML=list.length?'<p class="small">新着順・最大10件（人気順ではありません）</p>'+list.map(card).join(''):'<div class="notice">該当する記事はありません。地域・期間を広げてください。地域未特定の記事は全国で表示します。</div>'}
+const initialPref=new URLSearchParams(location.search).get('pref')||'';
+if(Array.from(pref.options).some(o=>o.value===initialPref))pref.value=initialPref;
+function render(){const list=selected(items,{pref:pref.value,genre:genre.value,days:days.value,q:search.value.trim()});results.innerHTML='<p class="small">検索地域：'+escape(pref.value||'全国')+' ／ '+list.length+'件</p>'+(list.length?'<p class="small">新着順・最大10件（人気順ではありません）</p>'+list.map(card).join(''):'<div class="notice">該当する記事はありません。地域・期間を広げてください。地域未特定の記事は全国で表示します。</div>')}
 for(const x of [pref,genre,days])x.addEventListener('change',render);
 search.addEventListener('input',render);
 load(fetch,location.hostname==='fxsky2621129-tech.github.io').then(({data,fallback})=>{

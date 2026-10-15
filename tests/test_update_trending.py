@@ -19,6 +19,9 @@ class CollectorTests(unittest.TestCase):
   for date in ['bad','Fri, 16 Oct 2026 00:00:00 GMT','Tue, 01 Sep 2026 00:00:00 GMT']:
    self.assertEqual(m.parse(self.rss(date=date),self.now),[])
   self.assertEqual(m.parse(self.rss(url='https://evil.example'),self.now),[])
+ def test_region_aliases_cities_and_publisher_exclusion(self):
+  for title,pref in [('愛知のSNSスイーツ','愛知県'),('神戸市須磨区 SNSグルメ','兵庫県'),('東京都 SNSケーキ','東京都'),('東京と大阪のSNSグルメ',''),('SNSケーキ - 東京バーゲンマニア',''),('SNSケーキ（東京バーゲンマニア） - Yahoo!ニュース','')]:
+   self.assertEqual(m.headline_prefecture(title),pref)
  def test_deduplication(self):
   i=m.parse(self.rss(),self.now)[0];self.assertEqual(len(m.deduplicate([i,i,None,{}],self.now)),1)
   syndicated={**i,'title':i['title']+'（媒体） - Yahoo!ニュース','source':'Yahoo!ニュース'}

@@ -24,6 +24,26 @@ FOOD = re.compile(r'スイーツ|ケーキ|パフェ|プリン|カフェ|和菓�
 SNS = re.compile(r'SNS|TikTok|インスタ|Instagram|Xで話題|SNSで話題',re.I)
 SWEET = re.compile(r'スイーツ|ケーキ|パフェ|プリン|和菓子|洋菓子|ドーナツ|かき氷|クレープ|ジェラート')
 PREFS = '北海道 青森県 岩手県 宮城県 秋田県 山形県 福島県 茨城県 栃木県 群馬県 埼玉県 千葉県 東京都 神奈川県 新潟県 富山県 石川県 福井県 山梨県 長野県 岐阜県 静岡県 愛知県 三重県 滋賀県 京都府 大阪府 兵庫県 奈良県 和歌山県 鳥取県 島根県 岡山県 広島県 山口県 徳島県 香川県 愛媛県 高知県 福岡県 佐賀県 長崎県 熊本県 大分県 宮崎県 鹿児島県 沖縄県'.split()
+def headline_prefecture(title):
+    # Only classify regions mentioned in the headline, never the publisher suffix.
+    headline = re.sub(r'[（(][^()（）]*[）)]\s*$', '', title.split(' - ')[0])
+    matches = {p for p in PREFS if p in headline}
+    remainder = headline
+    for p in matches: remainder = remainder.replace(p, '')
+    for p in PREFS:
+        short = p if p == '北海道' else p[:-1]
+        if short in remainder: matches.add(p)
+    raw = (ROOT / 'municipalities.js').read_text(encoding='utf-8')
+    cities = json.loads(re.sub(r',\s*}', '}', raw[raw.index('{'):raw.rindex('}')+1]))
+    owners = {}
+    for pref, names in cities.items():
+        for name in names:
+            if name.endswith('市'):
+                owners.setdefault(name, set()).add(pref)
+    for name, prefs in owners.items():
+        if name in headline: matches.update(prefs)
+    return next(iter(matches)) if len(matches) == 1 else ''
+
 def fetch(query):
     params=urllib.parse.urlencode({'q':query,'hl':'ja','gl':'JP','ceid':'JP:ja'})
     url='https://news.google.com/rss/search?'+params
@@ -83,8 +103,7 @@ def parse(root,now):
         source=e.find('source')
         provider=source.text.strip() if source is not None and source.text else 'Google ニュース'
         # Location is only marked when the exact prefecture name is in the headline.
-        matched=[p for p in PREFS if p in title]
-        prefecture=matched[0] if len(matched)==1 else ''
+        prefecture=headline_prefecture(title)
         result.append({'title':title[:240],'url':link,'source':provider[:120],
            'published':published.isoformat().replace('+00:00','Z'),
            'classification':'sns-article','genre':'sweets' if SWEET.search(title) else 'food',
