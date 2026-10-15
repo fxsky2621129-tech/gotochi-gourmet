@@ -95,3 +95,14 @@
 | 和食どんと | 和食 | 愛媛・高知・広島・山口 | [公式情報](https://the-fff.com/?cn=100312) [補足](https://fujifamilyfoods-saiyou.jp/job/-/info/list) [補足](https://www.the-fuji.com/company/docs/20240510_release_danbara.pdf) |
 
 南部家敷の秋田・山形の補足公式情報：https://www.nanbuyashiki.co.jp/store/
+
+## SNS・ネット話題グルメ（初期版）
+
+`trending.html` は既存検索と独立した記事検索画面です。Googleニュースの公開RSSを4クエリで取得し、見出しにSNSと飲食関連語を含む記事を新着順・最大10件表示します。全国、見出しに明記された都道府県、ジャンル、7日／30日、キーワードで絞れます。本文・SNS投稿数は収集せず、人気ランキングや確認済み店舗として扱いません。地域未特定の記事は全国のみ表示します。市区町村照合、確認済み店舗の地図リンク、Googleトレンド収集は未実装です。
+
+公開リポジトリの標準GitHub Actionsランナーと無料RSSを利用し、有料API・追加APIキーを使いません。毎日09:17頃（日本時間、遅延あり）にJSONを更新します。定期処理はmainへのマージ後に有効になります。全取得失敗時はファイルと最終取得日時を保持し、ジョブを失敗扱いにします。一部失敗時は前回の有効記事と結合し、30日を超える記事は表示しません。第三者サービスの提供条件・継続性は別途適用されます。
+
+GITHUB_TOKENのコミットはPagesビルドを起動しないため、公開画面はmainのraw JSONを読み込みます。取得失敗時だけ同梱JSONに戻し、画面に通知します。2日以上更新がない場合も通知します。ローカルでは同梱JSONを使います。[GitHub公式の説明](https://docs.github.com/en/pages/getting-started-with-github-pages/configuring-a-publishing-source-for-your-github-pages-site)
+
+検証: `node --test tests/*.test.cjs` と `python -m unittest discover -s tests -p 'test_*.py'`。収集: `python scripts/update_trending.py`。初回収集データを同梱しています。
+
