@@ -16,7 +16,7 @@ function selected(items,opts,now=Date.now()){
   if(seen.has(key))return false;seen.add(key);return true;
  }).slice(0,10);
 }
-function card(i){return '<article class="card"><h2>'+escape(i.title)+'</h2><div class="meta">'+escape(i.source)+' ／ '+escape(i.published.slice(0,10))+'</div><span class="pill">'+(i.genre==='sweets'?'スイーツ':'飲食店・料理')+'</span><span class="pill">SNSに言及したグルメ記事</span><p class="small">'+(i.prefecture?'見出しの地域：'+escape(i.prefecture):'地域未特定')+' ／ 店舗所在地は未確認</p><div class="actions"><a href="'+escape(url(i.url))+'" target="_blank" rel="noopener noreferrer">記事を読む ↗</a></div></article>'}
+function card(i){return '<article class="card"><a class="card-link" href="'+escape(url(i.url))+'"><h2>'+escape(i.title)+'</h2><div class="meta">'+escape(i.source)+' ／ '+escape(i.published.slice(0,10))+'</div><span class="pill">'+(i.genre==='sweets'?'スイーツ':'飲食店・料理')+'</span><span class="pill">SNSに言及したグルメ記事</span><p class="small">'+(i.prefecture?'見出しの地域：'+escape(i.prefecture):'地域未特定')+' ／ 店舗所在地は未確認</p><div class="actions"><span>記事サイトへ →</span></div></a></article>'}
 async function load(fetcher,production){
  const local='./data/trending-gourmet.json';
  const paths=production?['https://raw.githubusercontent.com/fxsky2621129-tech/gotochi-gourmet/main/data/trending-gourmet.json',local]:[local];
