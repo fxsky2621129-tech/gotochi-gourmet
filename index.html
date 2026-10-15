@@ -324,7 +324,7 @@ function refreshChains() {
   select.disabled = !candidates.length;
   const chain = selectedChain();
   document.getElementById('chainNote').innerHTML =
-    '登録' + LOCAL_CHAINS.length + 'ファミレスチェーンを登録。和食・洋食・中華の家族向けレストランを対象にしています。件数はチェーン数で、支店・店舗数ではありません。市区町村内の出店は店舗検索で確認できます。' +
+    '地域のファミレス' + LOCAL_CHAINS.length + 'チェーンを登録。和食・洋食・中華の家族向けレストランを対象にしています。件数はチェーン数で、支店・店舗数ではありません。市区町村内の出店は店舗検索で確認できます。' +
     (chain ? ' <a target="_blank" rel="noopener" href="' + esc(chain.source) + '">' + esc(chain.sourceLabel || '公式店舗情報') + '</a>' : '') +
     ' 地域とチェーン名で検索し、自由入力欄は使いません。登録候補は件数制限なしで全件表示します。未登録のチェーンもあります。';
 }
