@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <meta name="theme-color" content="#26324A">
-<title>ご当地グルメ検索 v7.8（地域チェーン名指定）</title>
+<title>ご当地グルメ検索 v7.12（地域のファミレス検索）</title>
 <style>
 :root {
   --bg:#F5EFE0; --card:#FFFCF4; --ink:#263652; --soft:#66728A;
@@ -74,6 +74,10 @@ button,input,select{font:inherit}
 .nearby-grid button{border:1px solid var(--border);background:#fff;color:var(--ink);border-radius:10px;padding:9px 8px;font-size:11.5px;font-weight:700;cursor:pointer;text-align:left}
 .nearby-main{grid-column:1/-1;background:var(--ink)!important;color:#fff!important;border-color:var(--ink)!important;text-align:center!important}
 @media(min-width:600px){body{padding:20px} .app{border-radius:22px;overflow:hidden;box-shadow:0 20px 55px rgba(0,0,0,.2)}}
+.family-filters{display:flex;flex-wrap:wrap;gap:8px;margin:10px 16px}
+.family-filters button{border:1px solid var(--border);border-radius:8px;background:var(--card);color:var(--ink);padding:10px 14px;cursor:pointer}
+.family-filters button[aria-pressed="true"]{background:var(--ink);color:white}
+.family-filters.hidden{display:none}
 </style>
 </head>
 <body>
@@ -81,6 +85,7 @@ button,input,select{font:inherit}
 <header class="cover">
   <h1>ご当地グルメ検索</h1>
   <p>有名店・観光地グルメ・道の駅・食全般をひとつの検索窓から｜検索するとGoogleマップの店舗一覧を表示</p>
+  <p><a href="./trending.html" style="color:inherit">🔥 SNS・ネット話題グルメ →</a></p>
 </header>
 
 <section class="search-panel">
@@ -112,7 +117,7 @@ button,input,select{font:inherit}
   </div>
   <details class="review-settings" id="reviewSettings">
     <summary>口コミ件数順の接続設定</summary>
-    <p>Google Maps PlatformのAPIキーを入力すると、取得した候補を口コミ・評価件数順に10店まで表示します。利用量に応じてGoogleの料金が発生する場合があります。</p>
+    <p>Google Maps PlatformのAPIキーを入力すると、取得した候補を口コミ・評価件数順に10店（ローカルチェーンは20店）まで表示します。利用量に応じてGoogleの料金が発生する場合があります。</p>
     <label for="placesKey">Google Maps Platform APIキー（このタブでのみ使用）</label>
     <input id="placesKey" type="password" autocomplete="off" spellcheck="false" placeholder="APIキーを入力">
     <p>Maps JavaScript APIとPlaces API（New）を有効にし、このサイト向けに制限したキーを使用します。<a href="./usage.html#setup">設定手順</a> ／ <a href="./usage.html">利用条件・プライバシー</a></p>
@@ -122,7 +127,7 @@ button,input,select{font:inherit}
 <nav class="chips" id="chips">
   <button class="chip active" data-mode="all" aria-pressed="true">すべて</button>
   <button class="chip" data-mode="ramen" aria-pressed="false">🍜 ラーメン</button>
-  <button class="chip" data-mode="localchain" aria-pressed="false">🏠 ローカルチェーン</button>
+  <button class="chip" data-mode="localchain" aria-pressed="false">🏠 ローカルファミレス</button>
   <button class="chip" data-mode="famous" aria-pressed="false">有名店</button>
   <button class="chip" data-mode="tourist" aria-pressed="false">観光地グルメ</button>
   <button class="chip" data-mode="roadstation" aria-pressed="false">道の駅</button>
@@ -135,6 +140,12 @@ button,input,select{font:inherit}
 <div class="category-options hidden" id="categoryOptions">
   <label for="kind">料理・店舗の種類</label>
   <select id="kind"></select>
+</div>
+<div class="family-filters hidden" id="familyFilters" role="group" aria-label="ファミレスの種類を直接選択">
+  <button type="button" data-family-kind="ファミリーレストラン" aria-pressed="true">すべてのファミレス</button>
+  <button type="button" data-family-kind="和食" aria-pressed="false">和食</button>
+  <button type="button" data-family-kind="洋食" aria-pressed="false">洋食</button>
+  <button type="button" data-family-kind="中華" aria-pressed="false">中華</button>
 </div>
 <div class="category-options hidden" id="chainOptions">
   <label for="chain">チェーン名</label><select id="chain" aria-describedby="chainNote"></select>
@@ -158,11 +169,10 @@ button,input,select{font:inherit}
 </section>
 
 <section class="quick">
-  <a href="./trending.html"><b>🔥 SNS・ネット話題グルメ</b><span>無料公開記事を毎日自動更新・新着順</span></a>
   <a href="./gifu-chahan/"><b>🍚 全国チャーハン帖</b><span>47都道府県・食べ歩き記録</span></a>
   <button data-quick="tourist"><b>🚶 食べ歩き</b><span>観光地周辺を探す</span></button>
   <button data-quick="roadstation"><b>🛣️ 道の駅検索</b><span>地域から道の駅を探す</span></button>
-  <button data-quick="localchain"><b>🏠 ローカルチェーン検索</b><span>ファミレスなど地域のチェーンを探す</span></button>
+  <button data-quick="localchain"><b>🏠 ローカルファミレス検索</b><span>地域のファミレスだけを全件表示</span></button>
   <button data-quick="sweets"><b>🍰 スイーツ</b><span>和菓子・洋菓子</span></button>
 </section>
 
@@ -175,7 +185,7 @@ button,input,select{font:inherit}
 </div>
 
 <script src="./municipalities.js"></script>
-<script src="./reviews.js"></script>
+<script src="./reviews.js?v=7.9"></script>
 <script>
 function readLastQuery() {
   try { return localStorage.getItem('gourmet-last-query-v2') || ''; }
@@ -197,15 +207,35 @@ const STATE = {
 };
 const CITY_DATA = typeof MUNICIPALITIES === 'undefined' ? {} : MUNICIPALITIES;
 // Curated, partial coverage. Prefectures are confirmed examples, not a complete store inventory.
-// Checked 2026-10-14 against each brand's official store directory.
+// Reviewed 2026-10-14. Sources are brand directories or official tourism listings.
+// Coverage is by prefecture; it does not assert a branch exists in every municipality.
 const LOCAL_CHAINS = [
-  {name:'８番らーめん', query:'８番らーめん', kind:'ラーメン店', prefs:['石川'], source:'https://www.hachiban.jp/shop/ishikawa/'},
-  {name:'すし食いねぇ！', query:'すし食いねぇ', match:'すし食いねぇ', kind:'回転寿司', prefs:['石川','富山'], source:'https://www.sushikuine.co.jp/shops/'},
-  {name:'岐阜タンメン', query:'岐阜タンメン', kind:'ラーメン店', prefs:['岐阜','愛知'], source:'https://gifu-tanmen.com/99_access/'},
-  {name:'魚魚丸', query:'魚魚丸', kind:'回転寿司', prefs:['愛知','岐阜','静岡'], source:'https://comline.co.jp/list.html'},
-  {name:'あみやき亭', query:'あみやき亭', kind:'焼肉店', prefs:['岐阜'], source:'https://shop.amiyakitei.co.jp/%E5%B2%90%E9%98%9C%E7%9C%8C/'},
-  {name:'炭焼きレストランさわやか', query:'炭焼きレストランさわやか', match:'さわやか', kind:'ファミリーレストラン', prefs:['静岡'], source:'https://www.genkotsu-hb.com/shop'},
-  {name:'フライングガーデン', query:'フライングガーデン', kind:'ファミリーレストラン', prefs:['群馬','栃木','茨城','埼玉','千葉'], source:'https://www.fgarden.co.jp/restaurant/'}
+  {"name":"とんでん","query":"和食処 とんでん","kind":"ファミリーレストラン","prefs":["北海道","群馬","埼玉","千葉","東京","神奈川"],"source":"https://www.tonden.co.jp/shop","cuisines":["和食"]},
+  {"name":"まるまつ","query":"和風レストラン まるまつ","kind":"ファミリーレストラン","prefs":["青森","岩手","宮城","秋田","山形","福島","栃木"],"source":"https://www.re-marumatu.co.jp/information/restaurant_list.html","cuisines":["和食"]},
+  {"name":"ばんどう太郎","query":"ばんどう太郎","kind":"ファミリーレストラン","prefs":["茨城","栃木","千葉","埼玉"],"source":"https://shop.bandotaro.co.jp/all/","cuisines":["和食"]},
+  {"name":"炭焼きレストランさわやか","query":"炭焼きレストランさわやか","match":"さわやか","kind":"ファミリーレストラン","prefs":["静岡"],"source":"https://www.genkotsu-hb.com/shop","cuisines":["洋食"]},
+  {"name":"フライングガーデン","query":"フライングガーデン","kind":"ファミリーレストラン","prefs":["群馬","栃木","茨城","埼玉","千葉"],"source":"https://www.fgarden.co.jp/restaurant/","cuisines":["洋食"]},
+  {"name":"庄屋","query":"和食レストラン 庄屋","kind":"ファミリーレストラン","prefs":["福岡","佐賀","長崎","熊本","大分"],"source":"https://www.sho-ya.co.jp/shop/archives/category/shoya","cuisines":["和食"]},
+  {"name":"味のおぐら","query":"味のおぐら","match":"おぐら","kind":"ファミリーレストラン","prefs":["宮崎"],"source":"https://www.ogurachain.com/","cuisines":["洋食"]},
+  {"name":"おぐらきんなべ","query":"おぐらきんなべ","kind":"ファミリーレストラン","prefs":["宮崎"],"source":"https://www.ogurakinnabe.jp/store/","cuisines":["洋食"]},
+  {"name":"ふく福","query":"ふく福","kind":"ファミリーレストラン","prefs":["鹿児島"],"source":"https://www.jf-group.co.jp/brand/fukufuku","cuisines":["和食"]},
+  {"name":"南部家敷","query":"南部家敷","kind":"ファミリーレストラン","prefs":["岩手","宮城","秋田","山形"],"source":"https://www.nanbuyashiki.jp/shoplist/shoplist.html","cuisines":["和食"]},
+  {"name":"いっちょう","query":"いっちょう","kind":"ファミリーレストラン","prefs":["栃木","群馬","埼玉","茨城","長野"],"source":"https://www.icho.co.jp/","cuisines":["和食"]},
+  {"name":"あっぷるぐりむ","query":"あっぷるぐりむ","kind":"ファミリーレストラン","prefs":["長野","新潟"],"source":"https://appleivy.co.jp/applegrimm/shop/","cuisines":["洋食"]},
+  {"name":"ふぁみり庵はいから亭","query":"ふぁみり庵はいから亭","kind":"ファミリーレストラン","prefs":["鹿児島","宮崎"],"source":"https://www.kousei-grp.co.jp/familian/tenpo/","cuisines":["和食"]},
+  {"name":"メヒコ","query":"メヒコ","kind":"ファミリーレストラン","prefs":["福島","茨城","東京"],"source":"https://mehico.com/shop/index.html","cuisines":["洋食"]},
+  {"name":"レストラン三宝","query":"レストラン三宝","kind":"ファミリーレストラン","prefs":["新潟"],"source":"https://sanpou-g.co.jp/map/","match":"レストラン三宝","cuisines":["和食","洋食","中華"]},
+  {"name":"ハングリータイガー","query":"ハングリータイガー","kind":"ファミリーレストラン","prefs":["神奈川"],"source":"https://hungrytiger.co.jp/location/","cuisines":["洋食"]},
+  {"name":"牛右衛門","query":"牛右衛門","kind":"ファミリーレストラン","prefs":["長崎"],"source":"https://gyuemon.com/shoplist/","cuisines":["洋食"]},
+  {"name":"徳樹庵","query":"徳樹庵","kind":"ファミリーレストラン","cuisines":["和食"],"prefs":["埼玉","東京","神奈川","千葉","茨城","群馬"],"source":"https://www.bashamichi.co.jp/brand04/"},
+  {"name":"レストラン馬車道","query":"レストラン馬車道","kind":"ファミリーレストラン","cuisines":["洋食"],"prefs":["埼玉","神奈川","千葉"],"source":"https://www.bashamichi.co.jp/brand01/"},
+  {"name":"いっさく","query":"いっさく","kind":"ファミリーレストラン","cuisines":["和食","洋食","中華"],"prefs":["新潟"],"source":"https://issaku.jp/index.html"},
+  {"name":"ヴィクトリアステーション","query":"ヴィクトリアステーション","kind":"ファミリーレストラン","cuisines":["洋食"],"prefs":["北海道"],"source":"https://www.bigboyjapan.co.jp/group/","aliases":["ビクトリアステーション"]},
+  {"name":"浜木綿","query":"浜木綿","kind":"ファミリーレストラン","cuisines":["中華"],"prefs":["愛知","岐阜","三重","滋賀","東京","静岡","大阪"],"source":"https://www.hamayuu.co.jp/tenpo/"},
+  {"name":"八仙閣","query":"八仙閣","kind":"ファミリーレストラン","cuisines":["中華"],"prefs":["福岡"],"source":"https://8000.co.jp/"},
+  {"name":"華屋与兵衛","query":"華屋与兵衛","kind":"ファミリーレストラン","cuisines":["和食"],"prefs":["東京","千葉","神奈川","茨城","埼玉"],"source":"https://www.hanayayohei.co.jp/reservation/official.html"},
+  {"name":"和食れすとらん天狗","query":"和食れすとらん天狗","kind":"ファミリーレストラン","cuisines":["和食"],"prefs":["埼玉","東京","神奈川","千葉","静岡"],"source":"https://www.teng.co.jp/washoku/food.html","aliases":["和食レストラン天狗"]},
+  {"name":"和食どんと","query":"和食どんと","kind":"ファミリーレストラン","cuisines":["和食"],"prefs":["愛媛","高知","広島","山口"],"source":"https://the-fff.com/?cn=100312","additionalSources":["https://fujifamilyfoods-saiyou.jp/job/-/info/list","https://www.the-fuji.com/company/docs/20240510_release_danbara.pdf"]}
 ];
 let reviewSequence = 0;
 
@@ -213,12 +243,11 @@ let reviewSequence = 0;
 const MODES = {
   all:{label:'すべて', term:''},
   ramen:{label:'ラーメン', term:'ラーメン店'},
-  localchain:{label:'ローカルチェーン', term:'ローカルチェーン 飲食店', kinds:[
-    ['すべて','ローカルチェーン 飲食店'],
-    ['ファミレス','ローカルチェーン ファミリーレストラン'],
-    ['ラーメン','ローカルチェーン ラーメン店'],
-    ['回転寿司','ローカルチェーン 回転寿司'],
-    ['焼肉','ローカルチェーン 焼肉店']
+  localchain:{label:'ローカルファミレス', term:'ローカルチェーン ファミリーレストラン', kinds:[
+    ['すべてのファミレス','ローカルチェーン ファミリーレストラン'],
+    ['和食','ローカルチェーン 和食'],
+    ['洋食','ローカルチェーン 洋食'],
+    ['中華','ローカルチェーン 中華']
   ]},
   famous:{label:'有名店', term:'人気の飲食店'},
   tourist:{label:'観光地グルメ', term:'観光地 飲食店'},
@@ -274,7 +303,7 @@ function chainCandidates() {
   const pref = document.getElementById('pref').value;
   const kind = (STATE.kind || '').replace('ローカルチェーン ', '');
   return LOCAL_CHAINS.filter(c => (!pref || c.prefs.includes(pref)) &&
-    (!kind || kind === '飲食店' || c.kind === kind));
+    (!kind || kind === '飲食店' || kind === 'ファミリーレストラン' || c.cuisines.includes(kind)));
 }
 function selectedChain() {
   return chainCandidates().find(c => c.name === document.getElementById('chain').value);
@@ -283,18 +312,33 @@ function refreshChains() {
   const active = STATE.mode === 'localchain';
   document.getElementById('chainOptions').classList.toggle('hidden', !active);
   document.getElementById('chainNote').classList.toggle('hidden', !active);
+  document.getElementById('familyFilters').classList.toggle('hidden', !active);
   if(!active) return;
+  document.querySelectorAll('[data-family-kind]').forEach(button => {
+    button.setAttribute('aria-pressed', String(STATE.kind === 'ローカルチェーン ' + button.dataset.familyKind));
+  });
   const select = document.getElementById('chain'), previous = select.value;
   const candidates = chainCandidates();
-  select.innerHTML = '<option value="">' + (candidates.length ? 'チェーンを選択してください' : 'この条件の登録チェーンはありません') + '</option>' +
+  select.innerHTML = '<option value="">' + (candidates.length ? 'すべての候補（' + candidates.length + 'チェーン）' : 'この条件の登録チェーンはありません') + '</option>' +
     candidates.map(c => '<option value="' + esc(c.name) + '">' + esc(c.name) + '</option>').join('');
   select.value = candidates.some(c => c.name === previous) ? previous : '';
   select.disabled = !candidates.length;
   const chain = selectedChain();
   document.getElementById('chainNote').innerHTML =
-    '公式店舗情報を確認した7ブランドの一部地域を登録しています。全国網羅ではありません。種類・地域に合うチェーン名を選んで検索します。市区町村内の出店は公式サイトで確認してください。' +
-    (chain ? ' <a target="_blank" rel="noopener" href="' + chain.source + '">選択チェーンの公式店舗一覧</a>' : '') +
-    ' このカテゴリでは自由入力欄を使わず、地域とチェーン名だけで検索します。Googleマップ側では関連候補が混ざる場合があります。';
+    '地域のファミレス' + LOCAL_CHAINS.length + 'チェーンを登録。和食・洋食・中華の家族向けレストランを対象にしています。件数はチェーン数で、支店・店舗数ではありません。市区町村内の出店は店舗検索で確認できます。' +
+    (chain ? ' <a target="_blank" rel="noopener" href="' + esc(chain.source) + '">' + esc(chain.sourceLabel || '公式店舗情報') + '</a>' : '') +
+    ' 地域とチェーン名で検索し、自由入力欄は使いません。登録候補は件数制限なしで全件表示します。未登録のチェーンもあります。';
+}
+function chainSearchText(chain) {
+  return [fullPrefName(STATE.pref), STATE.city, chain.query].filter(Boolean).join(' ');
+}
+function chainCard(chain) {
+  const query = chainSearchText(chain);
+  return '<div class="card"><h3 class="title">' + esc(chain.name) + '</h3>' +
+    '<div class="meta"><span class="tag">' + esc(chain.kind + '／' + chain.cuisines.join('・')) + '</span></div>' +
+    '<p class="desc">検索地域：' + esc([fullPrefName(STATE.pref), STATE.city].filter(Boolean).join(' ') || '全国') + '</p>' +
+    '<div class="actions"><a target="_blank" rel="noopener" href="' + esc(nearbyMapsUrl(query)) + '">' + esc(chain.name) + 'の店舗を探す</a>' +
+    '<a target="_blank" rel="noopener" href="' + esc(chain.source) + '">' + esc(chain.sourceLabel || '公式店舗情報') + '</a></div></div>';
 }
 function searchText() {
   if(STATE.mode === 'localchain') {
@@ -347,7 +391,8 @@ function setMode(mode, inferKind=true) {
   STATE.mode = Object.hasOwn(MODES, mode) ? mode : 'all';
   const config = MODES[STATE.mode];
   document.getElementById('chainNote').classList.toggle('hidden', STATE.mode !== 'localchain');
-  STATE.kind = config.kinds ? config.term : '';
+  const previousKind = STATE.kind;
+  STATE.kind = config.kinds?.some(([, value]) => value === previousKind) ? previousKind : (config.kinds ? config.term : '');
   if(inferKind && config.kinds) {
     const terms = new Set(queryWords(document.getElementById('q').value)
       .map(word => Object.hasOwn(FOOD_TERMS, word) ? FOOD_TERMS[word] : word)
@@ -409,11 +454,12 @@ function render() {
   reviewSequence++;
   const box = document.getElementById('results');
   if(STATE.mode === 'localchain' && !selectedChain()) {
-    document.getElementById('resultTitle').textContent = '地域チェーンを選択';
-    document.getElementById('status').textContent = 'ローカルチェーン ／ チェーン名指定';
-    box.innerHTML = '<div class="notice">' + (chainCandidates().length ?
-      '上の「チェーン名」から選択してください。ローカルチェーン検索では自由入力欄を使わず、地域と選択チェーン名だけで検索します。' :
-      'この地域・種類のチェーンはまだ登録されていません。種類を「すべて」にするか、都道府県を変更してください。全国チェーンを含む一般検索には切り替えません。') + '</div>';
+    const candidates = chainCandidates();
+    document.getElementById('resultTitle').textContent = (STATE.pref || '全国') + 'の地域チェーン候補：' + candidates.length + '件';
+    document.getElementById('status').textContent = 'ローカルチェーン ／ ' + candidates.length + 'チェーン';
+    box.innerHTML = '<div class="notice">' + (candidates.length ?
+      '各チェーンの「店舗を探す」から、選んだ地域の支店を検索できます。口コミ件数順で探す場合は、上の「チェーン名」を1つ選んで「店舗を検索」を押してください。市区町村に店舗がない場合は「市区町村すべて」で県全体を探せます。Googleマップでは関連候補が混ざる場合があります。' :
+      'この地域・種類のローカルファミレスはまだ登録されていません。「すべてのファミレス」または都道府県の「全国」で登録候補を確認できます。') + '</div>' + candidates.map(chainCard).join('');
     return;
   }
   const condition = (STATE.coords ? '現在地周辺・' : '') + searchText();
@@ -497,14 +543,16 @@ async function searchByReviews() {
   const options = {
     text:searchText(), pref:fullPrefName(STATE.pref), city:STATE.city,
     mode:STATE.mode, term:categoryTerm(), coords:STATE.coords ? {...STATE.coords} : null,
-    chainName: STATE.mode === 'localchain' ? (selectedChain().match || selectedChain().name) : ''
+    chainName: STATE.mode === 'localchain' ? (selectedChain().match || selectedChain().name) : '',
+    chainAliases: STATE.mode === 'localchain' ? (selectedChain().aliases || []) : [],
+    chainKind: STATE.mode === 'localchain' ? selectedChain().kind : ''
   };
   box.innerHTML = '<div class="notice">店舗と口コミ・評価件数を取得しています…</div>';
   document.getElementById('status').textContent = '口コミ・評価件数を取得中…';
   try {
     const result = await window.GourmetReviews.search(key, options);
     if(sequence !== reviewSequence) return;
-    const list = result.places.slice(0, 10);
+    const list = result.places.slice(0, options.mode === 'localchain' ? 20 : 10);
     box.innerHTML = '<div class="notice"><b>' + esc(options.text) + '</b><br>' +
       '取得した' + result.candidates + '候補のうち、条件に合う' + result.places.length +
       '店を口コミ・評価件数の多い順に並べ、' + list.length + '店を表示しています。' +
@@ -550,11 +598,17 @@ document.querySelectorAll('.chip').forEach(btn => btn.addEventListener('click', 
   setMode(btn.dataset.mode);
   doSearch();
 }));
-document.getElementById('kind').addEventListener('change', event => {
-  STATE.kind = event.target.value;
+function selectKind(value) {
+  if(!MODES[STATE.mode].kinds?.some(([, kind]) => kind === value)) return;
+  STATE.kind = value;
+  document.getElementById('kind').value = value;
   refreshChains();
   doSearch();
-});
+}
+document.getElementById('kind').addEventListener('change', event => selectKind(event.target.value));
+document.querySelectorAll('[data-family-kind]').forEach(button => button.addEventListener('click', () => {
+  if(STATE.mode === 'localchain') selectKind('ローカルチェーン ' + button.dataset.familyKind);
+}));
 document.getElementById('chain').addEventListener('change', () => { refreshChains(); doSearch(); });
 
 document.querySelectorAll('[data-quick]').forEach(btn => btn.addEventListener('click', () => {
@@ -628,3 +682,4 @@ render();
 </script>
 </body>
 </html>
+

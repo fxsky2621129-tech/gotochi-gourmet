@@ -16,7 +16,7 @@ function page({ savedQuery = '', storageBlocked = false, cityDataUnavailable = f
     const node = {
       value: '', textContent: '', innerHTML: '', disabled: false,
       dataset: Object.fromEntries(Object.entries(attrs).filter(([k]) => k.startsWith('data-'))
-        .map(([k, v]) => [k.slice(5), v])),
+        .map(([k, v]) => [k.slice(5).replace(/-([a-z])/g, (_, c) => c.toUpperCase()), v])),
       attrs: { ...attrs }, listeners: {},
       classList: {
         add: c => classes.add(c), remove: c => classes.delete(c),
@@ -39,12 +39,13 @@ function page({ savedQuery = '', storageBlocked = false, cityDataUnavailable = f
   const chips = nodes.filter(n => n.dataset.mode);
   const quick = nodes.filter(n => n.dataset.quick);
   const nearby = nodes.filter(n => n.dataset.nearby);
+  const family = nodes.filter(n => n.dataset.familyKind);
   const opened = [], alerts = [], saved = new Map([['gourmet-last-query-v2', savedQuery]]);
   let locationRequest;
   const context = vm.createContext({
     document: {
       getElementById: id => ids[id],
-      querySelectorAll: selector => ({ '.chip': chips, '[data-quick]': quick, '[data-nearby]': nearby }[selector] || [])
+      querySelectorAll: selector => ({ '.chip': chips, '[data-quick]': quick, '[data-nearby]': nearby, '[data-family-kind]': family }[selector] || [])
     },
     window: {
       location: { href: 'app' },
@@ -73,6 +74,7 @@ function page({ savedQuery = '', storageBlocked = false, cityDataUnavailable = f
     city(value) { ids.city.value = value; ids.city.fire('change'); },
     display(value) { ids.resultMode.value = value; ids.resultMode.fire('change'); },
     mode(value) { chips.find(n => n.dataset.mode === value).fire('click'); },
+    familyKind(value) { family.find(n => n.dataset.familyKind === value).fire('click'); },
     kind(value) { ids.kind.value = value; ids.kind.fire('change'); },
     quick(value) { quick.find(n => n.dataset.quick === value).fire('click'); },
     nearby(value) { nearby.find(n => n.dataset.nearby === value).fire('click'); },
@@ -113,56 +115,88 @@ test('noodle and meat searches do not combine alternative dishes', () => {
   assert.equal(p.context.window.location.href, 'app');
 });
 
-test('curated chain search uses only region and brand, ignoring national chain free text', () => {
-  const p=page(); p.pref('岐阜'); p.city('岐阜市'); p.query('ガスト サイゼリヤ'); p.mode('localchain');
-  p.ids.chain.value='岐阜タンメン'; p.ids.chain.fire('change');
-  assert.equal(p.run('searchText()'),'岐阜県 岐阜市 岐阜タンメン');
-  assert.equal(new URL(p.run('webSearchUrl()')).searchParams.get('q'),'岐阜県 岐阜市 岐阜タンメン');
-  p.ids.searchBtn.fire('click');
-  assert.equal(mapsText(p.context.window.location.href),'岐阜県 岐阜市 岐阜タンメン');
+
+test('family catalog excludes other business types and lists every registered candidate in all 47 prefectures', () => {
+  const p=page();p.mode('localchain');
+  const chains=p.run('LOCAL_CHAINS');assert.ok(chains.length>=26);
+  const prefs=[...html.match(/<select id="pref"[\s\S]*?<\/select>/)[0].matchAll(/<option>([^<]+)<\/option>/g)].map(m=>m[1]);
+  assert.equal(prefs.length,47);assert.equal(new Set(chains.map(c=>c.name)).size,chains.length);
+  for(const c of chains){
+    assert.equal(c.kind,'ファミリーレストラン');
+    assert.ok(c.cuisines.length && c.cuisines.every(k=>['和食','洋食','中華'].includes(k)));
+    assert.ok(c.prefs.every(pref=>prefs.includes(pref)));assert.equal(new URL(c.source).protocol,'https:');
+  }
+  for(const name of ['ガスト','ジョイフル','サイゼリヤ','マクドナルド','岐阜タンメン','すなば珈琲','回転すし北海道']) assert.ok(!chains.some(c=>c.name===name));
+  for(const pref of ['',...prefs]) {
+    p.pref(pref);const count=chains.filter(c=>!pref||c.prefs.includes(pref)).length;
+    assert.equal(p.run('chainCandidates().length'),count);
+    assert.equal((p.ids.results.innerHTML.match(/class="card/g)||[]).length,count);
+    assert.equal(p.ids.chain.disabled,count===0);
+    if(!count) assert.ok(p.ids.results.innerHTML.includes('まだ登録されていません'));
+  }
 });
 
-test('unselected or unregistered chain searches never fall back to broad map or API search', async () => {
-  const p=page(); p.pref('北海道'); p.quick('localchain');
-  assert.equal(p.context.window.location.href,'app');
-  assert.equal(p.ids.chain.disabled,true);
-  assert.ok(p.ids.results.innerHTML.includes('まだ登録されていません'));
-  assert.ok(!p.ids.results.innerHTML.includes('href='));
-  p.display('reviews'); p.ids.placesKey.value='test';
-  const requests=connectMockPlaces(p,()=>({places:[]}));
-  await p.run('searchStores()');
-  assert.equal(requests.length,0);
-  p.ids.locBtn.fire('click'); assert.equal(p.opened.length,0);
+test('dropdown and direct buttons stay synchronized and survive region and category reselection', () => {
+  const p=page();p.mode('localchain');
+  for(const k of ['和食','洋食','中華']) {
+    p.familyKind(k);assert.equal(p.ids.kind.value,'ローカルチェーン '+k);
+    assert.ok(p.run('chainCandidates().length')>0);
+    assert.ok(p.run('chainCandidates()').every(c=>c.cuisines.includes(k)));
+    p.mode('localchain');assert.equal(p.ids.kind.value,'ローカルチェーン '+k);
+    p.pref('新潟');assert.equal(p.ids.kind.value,'ローカルチェーン '+k);
+    assert.ok(p.ids.results.innerHTML.includes('レストラン三宝'));p.pref('');
+  }
+  p.kind('ローカルチェーン 和食');assert.equal(p.run('STATE.kind'),'ローカルチェーン 和食');
+  p.familyKind('ファミリーレストラン');assert.equal(p.run('chainCandidates().length'),p.run('LOCAL_CHAINS.length'));
+  p.mode('sweets');assert.equal(p.ids.familyFilters.classList.contains('hidden'),true);
+  p.kind('ケーキ店');assert.equal(p.run('categoryTerm()'),'ケーキ店');
 });
 
-test('prefecture and cuisine changes invalidate incompatible selected chains', () => {
-  const p=page(); p.pref('岐阜'); p.mode('localchain');
-  p.ids.chain.value='岐阜タンメン'; p.ids.chain.fire('change');
-  p.kind('ローカルチェーン 回転寿司');
-  assert.equal(p.ids.chain.value,'');
-  assert.ok(p.ids.chain.innerHTML.includes('魚魚丸'));
-  assert.ok(!p.ids.chain.innerHTML.includes('岐阜タンメン'));
-  p.pref('群馬'); assert.equal(p.ids.chain.disabled,true);
-  p.kind('ローカルチェーン ファミリーレストラン');
-  assert.ok(p.ids.chain.innerHTML.includes('フライングガーデン'));
-  p.ids.chain.value='フライングガーデン'; p.ids.chain.fire('change');
-  p.pref('静岡'); assert.equal(p.ids.chain.value,'');
-  assert.ok(p.ids.chain.innerHTML.includes('さわやか'));
-  p.mode('ramen'); assert.equal(p.ids.chainOptions.classList.contains('hidden'),true);
+test('changing cuisine invalidates an incompatible chain and does not navigate', () => {
+  const p=page();p.pref('北海道');p.mode('localchain');p.ids.chain.value='とんでん';p.ids.chain.fire('change');
+  p.familyKind('洋食');assert.equal(p.ids.chain.value,'');assert.ok(p.ids.chain.innerHTML.includes('ヴィクトリアステーション'));
+  assert.ok(!p.ids.chain.innerHTML.includes('とんでん'));assert.equal(p.context.window.location.href,'app');
+  p.pref('鳥取');assert.equal(p.ids.chain.disabled,true);assert.equal(p.ids.kind.value,'ローカルチェーン 洋食');
 });
 
-test('review search excludes national chains even when they have more reviews', async () => {
-  const p=page(); p.pref('岐阜'); p.city('岐阜市'); p.mode('localchain');
-  p.ids.chain.value='岐阜タンメン'; p.ids.chain.fire('change'); p.display('reviews'); p.ids.placesKey.value='test';
-  const candidates=[
-    store('local',10,{displayName:'岐阜タンメン 岐阜本店',formattedAddress:'岐阜県岐阜市'}),
-    store('national',99999,{displayName:'ガスト 岐阜店',formattedAddress:'岐阜県岐阜市'})
-  ];
-  const requests=connectMockPlaces(p,()=>({places:candidates}));
-  await p.run('searchStores()');
-  assert.equal(requests[0].textQuery,'岐阜県 岐阜市 岐阜タンメン');
-  assert.ok(p.ids.results.innerHTML.includes('岐阜タンメン 岐阜本店'));
-  assert.ok(!p.ids.results.innerHTML.includes('ガスト'));
+test('family search uses the selected region and brand and ignores unrelated free text', () => {
+  const p=page();p.pref('静岡');p.city('磐田市');p.query('ガスト サイゼリヤ');p.mode('localchain');
+  p.ids.chain.value='炭焼きレストランさわやか';p.ids.chain.fire('change');
+  assert.equal(p.run('searchText()'),'静岡県 磐田市 炭焼きレストランさわやか');
+  p.ids.searchBtn.fire('click');assert.equal(mapsText(p.context.window.location.href),p.run('searchText()'));
+});
+
+test('missing family candidates never fall back to national chain or generic API searches', async () => {
+  const p=page();p.pref('鳥取');p.quick('localchain');
+  assert.equal(p.context.window.location.href,'app');assert.ok(!p.ids.results.innerHTML.includes('href='));
+  p.display('reviews');p.ids.placesKey.value='test';const requests=connectMockPlaces(p,()=>({places:[]}));
+  await p.run('searchStores()');assert.equal(requests.length,0);
+});
+
+test('family candidate links keep the selected city and escape names', () => {
+  const p=page({savedQuery:'ガスト'});p.pref('埼玉');p.city('川口市');p.mode('localchain');
+  const maps=[...p.ids.results.innerHTML.matchAll(/href="([^"]+)"/g)].map(m=>m[1].replaceAll('&amp;','&')).filter(u=>u.startsWith('https://www.google.com/maps/'));
+  assert.equal(maps.length,p.run('chainCandidates().length'));assert.ok(maps.every(u=>mapsText(u).startsWith('埼玉県 川口市 ')&&!mapsText(u).includes('ガスト')));
+  assert.ok(p.run('chainCard({...LOCAL_CHAINS[0],name:"A&B"})').includes('A&amp;B'));
+  assert.ok(p.ids.chainNote.innerHTML.includes('支店・店舗数ではありません'));
+});
+
+test('family reviews keep matching names and aliases but reject national chains and other regions', async () => {
+  const p=page();p.pref('北海道');p.mode('localchain');p.ids.chain.value='ヴィクトリアステーション';p.ids.chain.fire('change');p.display('reviews');p.ids.placesKey.value='test';
+  connectMockPlaces(p,()=>({places:[
+    store('a',10,{displayName:'ヴィクトリアステーション 札幌店',formattedAddress:'北海道札幌市'}),
+    store('b',9,{displayName:'ビクトリアステーション 旭川店',formattedAddress:'北海道旭川市'}),
+    store('c',999,{displayName:'ガスト 札幌店',formattedAddress:'北海道札幌市'}),
+    store('d',100,{displayName:'ヴィクトリアステーション 東京店',formattedAddress:'東京都'})
+  ]}));await p.run('searchStores()');
+  assert.ok(p.ids.results.innerHTML.includes('札幌店'));assert.ok(p.ids.results.innerHTML.includes('旭川店'));
+  assert.ok(!p.ids.results.innerHTML.includes('ガスト'));assert.ok(!p.ids.results.innerHTML.includes('東京店'));
+});
+
+test('family review search displays all twenty matching branches', async () => {
+  const p=page();p.pref('埼玉');p.mode('localchain');p.ids.chain.value='とんでん';p.ids.chain.fire('change');p.display('reviews');p.ids.placesKey.value='test';
+  connectMockPlaces(p,()=>({places:Array.from({length:20},(_,i)=>store('branch'+i,i+1,{displayName:'とんでん 支店'+i,formattedAddress:'埼玉県川口市'}))}));
+  await p.run('searchStores()');assert.ok(p.ids.status.textContent.includes('20店表示'));assert.ok(p.ids.results.innerHTML.includes('とんでん 支店0'));
 });
 
 test('all selectable dish types keep the area and replace conflicting cuisine', async t => {

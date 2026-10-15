@@ -4,6 +4,8 @@ import datetime as dt
 import email.utils
 import json
 import re
+import sys
+import unicodedata
 import urllib.parse
 import urllib.request
 import xml.etree.ElementTree as ET
@@ -27,7 +29,42 @@ def fetch(query):
     url='https://news.google.com/rss/search?'+params
     req=urllib.request.Request(url,headers={'User-Agent':'GotochiGourmetRSS/1.0 (+https://github.com/fxsky2621129-tech/gotochi-gourmet)'})
     with urllib.request.urlopen(req,timeout=20) as response:
-        return ET.fromstring(response.read(1_500_000))
+        root = ET.fromstring(response.read(1_500_000))
+        if root.tag != 'rss' or root.find('channel') is None:
+            raise ValueError('Expected RSS channel')
+        return root
+
+def safe_url(link):
+    try:
+        p = urllib.parse.urlsplit(link)
+        return p.scheme == 'https' and p.hostname == 'news.google.com' and not p.username and not p.password and p.port in (None, 443)
+    except (ValueError, TypeError):
+        return False
+
+def valid_item(item, now):
+    if not isinstance(item, dict): return False
+    if not all(isinstance(item.get(k), str) for k in ['title','url','source','published','prefecture','city']): return False
+    if not item['title'].strip() or not safe_url(item['url']): return False
+    if item.get('classification') != 'sns-article' or item.get('genre') not in ('sweets','food'): return False
+    if item['prefecture'] not in ['', *PREFS] or item['city']: return False
+    try:
+        age = (now-dt.datetime.fromisoformat(item['published'].replace('Z','+00:00'))).total_seconds()
+        return 0 <= age <= 30*86400
+    except (ValueError, TypeError): return False
+
+def deduplicate(items, now):
+    unique = {}
+    sources = {unicodedata.normalize('NFKC', i['source']) for i in items if isinstance(i, dict) and isinstance(i.get('source'), str)}
+    for item in items:
+        if not valid_item(item, now): continue
+        title = unicodedata.normalize('NFKC', item['title'].split(' - ')[0]).strip()
+        # Syndicated headlines may append the original provider in parentheses.
+        suffix = re.search(r'\s*\(([^()]+)\)$', title)
+        if suffix and suffix.group(1) in sources: title = title[:suffix.start()]
+        key = re.sub(r'\s+', '', title).casefold()
+        old = unique.get(key)
+        if old is None or item['published'] > old['published']: unique[key] = item
+    return sorted(unique.values(), key=lambda i:i['published'], reverse=True)[:300]
 
 def parse(root,now):
     result=[]
@@ -35,14 +72,14 @@ def parse(root,now):
         title=(e.findtext('title') or '').strip()
         if not FOOD.search(title) or not SNS.search(title):continue
         link=(e.findtext('link') or '').strip()
-        if not link.startswith('https://news.google.com/'):continue
+        if not safe_url(link):continue
         try:
             published=email.utils.parsedate_to_datetime(e.findtext('pubDate') or '')
             if published.tzinfo is None:continue
             published=published.astimezone(dt.timezone.utc)
         except (ValueError,TypeError,IndexError):continue
         age=(now-published).total_seconds()
-        if age< -86400 or age>31*86400:continue
+        if age<0 or age>30*86400:continue
         source=e.find('source')
         provider=source.text.strip() if source is not None and source.text else 'Google ニュース'
         # Location is only marked when the exact prefecture name is in the headline.
@@ -60,6 +97,7 @@ def main():
     if DEST.exists():
         try:previous=json.loads(DEST.read_text(encoding='utf-8'))
         except (ValueError,OSError):pass
+    if not isinstance(previous, dict): previous={'updated_at':None,'items':[]}
     new=[];success=0
     for query in QUERIES:
         try:
@@ -69,23 +107,18 @@ def main():
             print('Feed unavailable:',type(e).__name__,str(e)[:180])
     if not success:
         print('All feeds unavailable: retain the existing data')
-        return
-    unique={}
-    for item in new:
-        key=(item['title'].split(' - ')[0].replace(' ','').lower())
-        old=unique.get(key)
-        if old is None or item['published']>old['published']:unique[key]=item
-    # Keep previously seen items within 30 days if they are absent from today's RSS.
-    for item in previous.get('items',[]):
-        try:age=(now-dt.datetime.fromisoformat(item['published'].replace('Z','+00:00'))).total_seconds()
-        except (KeyError,ValueError,TypeError):continue
-        if 0<=age<=30*86400 and item.get('classification')=='sns-article' and item.get('url','').startswith('https://news.google.com/'):
-            unique.setdefault(item.get('title','').split(' - ')[0].replace(' ','').lower(),item)
+        return 1
+    old_items=previous.get('items',[])
+    if not isinstance(old_items,list): old_items=[]
     output={'updated_at':now.astimezone(JST).isoformat(timespec='seconds'),
-            'items':sorted(unique.values(),key=lambda x:x['published'],reverse=True)[:300],
-            'note':'公開ニュースRSSの見出しをもとに抽出。SNS投稿数や店舗の所在地は検証していません。'}
-    DEST.parent.mkdir(exist_ok=True)
-    DEST.write_text(json.dumps(output,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+            'items':deduplicate(new+old_items,now),
+            'feeds_succeeded':success,'feeds_total':len(QUERIES),
+            'note':'公開ニュースRSSの見出しにSNSへの言及がある記事。SNS投稿数や店舗所在地は未検証。都道府県は見出しに明記された地域です。'}
+    DEST.parent.mkdir(parents=True,exist_ok=True)
+    temporary=DEST.with_suffix('.tmp')
+    temporary.write_text(json.dumps(output,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+    temporary.replace(DEST)
     print('Feeds:',success,'Items:',len(output['items']))
 
-if __name__=='__main__':main()
+if __name__=='__main__':sys.exit(main() or 0)
+

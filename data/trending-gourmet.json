@@ -1,5 +1,209 @@
 {
-  "updated_at": null,
-  "items": [],
-  "note": "記事の取得処理が初めて成功すると更新されます。SNS実測ランキングではありません。"
+  "updated_at": "2026-10-15T14:26:01+09:00",
+  "items": [
+    {
+      "title": "【ファミマ】SNSで話題の「無限クリーム」を知ってるか？「一度食べたら従来のホイップに戻れない…」生クリーム党が激推しする沼スイーツ3選 - Smart Mag Web",
+      "url": "https://news.google.com/rss/articles/CBMiTEFVX3lxTE8zajNJUDRla2prTC0wa3o0NjJDakRpamhFenRXQ1JJR244cXh1Q2JudEtRTTJveGNnTW91LTNwTGlTaDlFQ1dMdWRNcEM?oc=5",
+      "source": "Smart Mag Web",
+      "published": "2026-10-13T03:45:48Z",
+      "classification": "sns-article",
+      "genre": "sweets",
+      "prefecture": "",
+      "city": ""
+    },
+    {
+      "title": "【サイゼリヤ】「めっちゃ美味しい」SNSで話題の期間限定350円スイーツ食べてみた《編集部レポ》（東京バーゲンマニア） - Yahoo!ニュース",
+      "url": "https://news.google.com/rss/articles/CBMif0FVX3lxTFBGd1hUMnV2Q2RSUHFYdk5BZmFoM0lRZ2hySEN4ZUZhbGlUdFl6ak9pNEZqOUdsOXQycm5YNVlqOTNUSU5nVHEtMDhUVGF1N1FWYlpZQllDbU5ZUFhfZVQwb1pwcjNLdDlENWNrbkxlanpKS0RDdUkybjBtMk5zclk?oc=5",
+      "source": "Yahoo!ニュース",
+      "published": "2026-10-11T23:07:00Z",
+      "classification": "sns-article",
+      "genre": "sweets",
+      "prefecture": "",
+      "city": ""
+    },
+    {
+      "title": "＜画像2 / 10＞インスタで話題！愛知の人気店が手掛ける、渾身のイチゴスイーツをご覧あれ!! - ウォーカープラス",
+      "url": "https://news.google.com/rss/articles/CBMia0FVX3lxTE5TTVNKNXN6cU1TOWtZQjNydmsyYmpMWTNGZUdXdlk2Yk5Qc19qTmJRMlJjQXJxQ09tb0pBNUNNU3NDOTNrdE5iQmtUb3hDSnZqdlRKelBfY0xacjZlWjk4d2s5ZGNLYVAtUXQ4?oc=5",
+      "source": "ウォーカープラス",
+      "published": "2026-10-11T19:45:48Z",
+      "classification": "sns-article",
+      "genre": "sweets",
+      "prefecture": "",
+      "city": ""
+    },
+    {
+      "title": "SNSでも話題沸騰中！【セブン-イレブン】なくなる前に食べておきたい『注目スイーツ』 - ｄメニューニュース",
+      "url": "https://news.google.com/rss/articles/CBMiogFBVV95cUxPVGUwb3kxbDZyM1NtaGREQS1YRzNBdktNdzlseFdGeko1NFgtSDJEYXZEck91eUpTcHV4bmN5aUgyTVJCbl9DbkQtQ3VkeS1zdkVsQjIwTk9YNENnQVJKUjE2WkR0WkF1YVlILUpuZDZ4SlF0UTd4dDFyWjlEYk1IY2h0dnpBSFgxN0RWNDljd1JjUGY0Wnk1bUMzaVZpOUEwbGfSAacBQVVfeXFMTi1WTXVoR05iOVB2NVZnSG5ZQVgtQ0pqOVRjcGJfVEFQYTYydHdpVkg0NzNtOWlZSnlqbl9QTE9lSjcyWHNCQ2JIUFhwT2lzczhCOVVncVFpLS02TER6X0pCUzRRdE1mcFV0UU1nTm96cTVGb0FUWUMta3oxUlpXbDQ1NVZxU2dhQWZUZWVkOHl2TzJocFFEVW8zcWFwVEhtSTdna24xTHM?oc=5",
+      "source": "ｄメニューニュース",
+      "published": "2026-10-11T03:05:00Z",
+      "classification": "sns-article",
+      "genre": "sweets",
+      "prefecture": "",
+      "city": ""
+    },
+    {
+      "title": "インスタにどれあげる？三井アウトレットパーク 入間の春限定グルメ - ウォーカープラス",
+      "url": "https://news.google.com/rss/articles/CBMiVEFVX3lxTE1yRHdPZ09TUHI1TTFHeG0xQVo1TFk1ejRtMVg0UEJWOEN2VGl4V2R2OUFESml4Q2E1dTJ3SGtuYTFMZ0dkNEpmaXBZY1N3T2xBZ1lhNw?oc=5",
+      "source": "ウォーカープラス",
+      "published": "2026-10-09T07:00:00Z",
+      "classification": "sns-article",
+      "genre": "food",
+      "prefecture": "",
+      "city": ""
+    },
+    {
+      "title": "SNSで話題沸騰！韓国発の“オーラルケアスイーツ”「キシリトールストーン」にレモンフレーバーが仲間入り！ - cinemacafe.net",
+      "url": "https://news.google.com/rss/articles/CBMiaEFVX3lxTE9UYmU3MzF5QkpYVUJlaTRmOHNVTWwxZEl2NGl0bkRaVFpaczdqUmNISDRpS3BpanFod3pZTGR2bWREbE5XTGVfMjQ0ODVodUs1bnJueWt1Rk9BQWJTYzFuRktTOGphSGZv?oc=5",
+      "source": "cinemacafe.net",
+      "published": "2026-10-08T03:43:29Z",
+      "classification": "sns-article",
+      "genre": "sweets",
+      "prefecture": "",
+      "city": ""
+    },
+    {
+      "title": "【神戸市須磨区】SNSで話題の爆盛りポテト＆蒲鉾店の変わり種コロッケ！須磨区おすすめのローカルグルメ【ちゃちゃ入れマンデー】 - https://miyoca.jp/",
+      "url": "https://news.google.com/rss/articles/CBMiP0FVX3lxTFBrTlJpMnVMU0pqUWNhR24wRkQ5YlJHNXU1TmtwanJEcEFBdDU5ZS1zOXhReEhkRzJvVVoyc1ZXWQ?oc=5",
+      "source": "https://miyoca.jp/",
+      "published": "2026-10-06T07:00:00Z",
+      "classification": "sns-article",
+      "genre": "food",
+      "prefecture": "",
+      "city": ""
+    },
+    {
+      "title": "SNSで話題、銀座店に連日行列。「焼肉いのうえ」の黒毛和牛ひつまぶし御膳をお歳暮に｜10月1日予約開始 - PR TIMES",
+      "url": "https://news.google.com/rss/articles/CBMiakFVX3lxTE5vNnVGbkN1eUhCM2xwY1dqVDdfVkR0MkxSN0hrY3dVYXFEMEdwOWh1MElOc2VVdVhFWHFFdVppamd4RnhJVVpWSW94eXBjQ0MxUVBxT2FJWGd4U1NJOG44ZU9jc2lfOW1Ib0E?oc=5",
+      "source": "PR TIMES",
+      "published": "2026-10-01T07:00:00Z",
+      "classification": "sns-article",
+      "genre": "food",
+      "prefecture": "",
+      "city": ""
+    },
+    {
+      "title": "SNSで話題沸騰中！ハローキティのアフタヌーンティーは、ドレスアップしたようなスイーツがずらり♪（いでくん） - エキスパート - Yahoo!ニュース",
+      "url": "https://news.google.com/rss/articles/CBMiiAFBVV95cUxNUzVSVzRFMFFFODZta1hUVUFHdEFyYlhaNFRTZVNlZEdSemlNZ0VOUWxCaF83UVRqaFd1a3lHNzF5QTNZd3h4cU5EVlR2WUJvZ2hGTUJTeU1kUWprOTF3el85VFE3a0xmdzA3ZW9CQmxkbDBFWGZCaXdMZGV6MTA3Z1oxTnQ5ME1N?oc=5",
+      "source": "Yahoo!ニュース",
+      "published": "2026-09-29T07:00:00Z",
+      "classification": "sns-article",
+      "genre": "sweets",
+      "prefecture": "",
+      "city": ""
+    },
+    {
+      "title": "【コストコ】SNSで話題！「美味しすぎる」「リピ買い中」ファン続出の絶品スイーツ5選（舞） - エキスパート - Yahoo!ニュース",
+      "url": "https://news.google.com/rss/articles/CBMiiAFBVV95cUxNdmJWLTZhcUpaR2JsRXpWb1JFUFpDZkhjdE82cnlBSUdoTXBzdjhlMjRldXZ0bFJ4WmRtV1ljVVZiY3RSd0VpVXpXb3duZ0pxVjBuanhkZE1WVjZXS1IzaW81Vk1IelJBOEdESTNlY3JORHhCTmlDaDZwOUd1bGxMRmNNYkY1TDhu?oc=5",
+      "source": "Yahoo!ニュース",
+      "published": "2026-09-28T07:00:00Z",
+      "classification": "sns-article",
+      "genre": "sweets",
+      "prefecture": "",
+      "city": ""
+    },
+    {
+      "title": "ファミマの「SNSで話題の商品」3選！洋酒が香るカヌレや、ほろ苦いプリンタルトなど、どれも絶品です！ - BuzzFeed",
+      "url": "https://news.google.com/rss/articles/CBMigAFBVV95cUxPaTJTQUp6ZV8zX2lXenpmNDFZT1JYdEZqVDN6dEZkR1VaRWk1SEZSWGdDQ3FBbDNSb2VGc1g0cWJHb0ZWVllhWTZwVXJqZzRuWko5NFdiMV9KZWpEMThYcnRsZ3ZQb2E5T1pFUGFtem1qb1REOUZQTWhBcFN1cGpIRw?oc=5",
+      "source": "BuzzFeed",
+      "published": "2026-09-28T07:00:00Z",
+      "classification": "sns-article",
+      "genre": "sweets",
+      "prefecture": "",
+      "city": ""
+    },
+    {
+      "title": "ファミマの幻のグルメが復活！「お願いだからずっと売って～！」SNSで話題のレジ横スナック - スポーツ報知",
+      "url": "https://news.google.com/rss/articles/CBMiW0FVX3lxTE9VdnR5YjBwQWp1RWI2NUpHNkNpTldPYWVXeUFKTzRqM05iZ1ZNeDZuTkxNY0ltcWNlQ2dCaG5PX3dHeW1oZXhGSDVNanRyM1VRM1VoV0NFajh5VFU?oc=5",
+      "source": "スポーツ報知",
+      "published": "2026-09-22T07:00:00Z",
+      "classification": "sns-article",
+      "genre": "food",
+      "prefecture": "",
+      "city": ""
+    },
+    {
+      "title": "【大丸東京店】が約18年ぶりに大型リニューアルして新たに登場したスイーツ10選。SNSで話題の“ザブトンモンブラン”の限定味や新感覚のチーズケーキに注目 (CREA WEB) - Yahoo!ニュース",
+      "url": "https://news.google.com/rss/articles/CBMijgFBVV95cUxQeURuLTJaeDUxRmFWRjdsQTQ1T0tJSFM0eERHOVFwNmtpLVRpNGVnWGVpZ19ieWljWTZaVVVnaUMtMEV1Z0dINGVLOHlHbF8tNi1mWVJab3pPMUVJQVBDd2hrbU10NlZrQkVjUy1zWkVHT1J3YXhOcmhBQlhMcE1DRjFqS2FlLWFUdEZWSlpn?oc=5",
+      "source": "Yahoo!ニュース",
+      "published": "2026-09-21T07:00:00Z",
+      "classification": "sns-article",
+      "genre": "sweets",
+      "prefecture": "",
+      "city": ""
+    },
+    {
+      "title": "SNSで話題の「ジャスミンミルクティー」に続く!? カフェ・ド・クリエ秋の新作「洋なしキャラメルのロイヤルミルクティー」 - ｄメニューニュース",
+      "url": "https://news.google.com/rss/articles/CBMid0FVX3lxTFBtc0g2SWJyUEV3Q1B6bkhQNVpDMHRoUHBkNWwwckFOWTR2SmVyMW5UbXJJQWNLNnd2THRGR2ZNTlhEbFk2R1B2YkhrMk5tTWJpZUl4WV9HS1lfSTR2ZXBBSFRuZTh1OG82WXdENklnSHMzb1J2cW5B0gF8QVVfeXFMUGg0ejBZQjZNNkUwaHpJQ2ZQVEh6ZVR5ZzNjY3Ruc2c2YUE5NnhQaTViZVliRXRSZ2M2dnRPVnpVNF9JT0t3ZXhFQmQ5bkZFMXRfWGkwdzZOaUlaM0E4WS1yZ2x5VVB4T2VzWXdtSHdweFE5YmlCejlMbUI2Tg?oc=5",
+      "source": "ｄメニューニュース",
+      "published": "2026-09-21T07:00:00Z",
+      "classification": "sns-article",
+      "genre": "food",
+      "prefecture": "",
+      "city": ""
+    },
+    {
+      "title": "学芸大学カフェ最新トレンド2026｜SNS人気店から隠れ家穴場まで徹底解説 - elhuyar.eus",
+      "url": "https://news.google.com/rss/articles/CBMic0FVX3lxTE5VUndVczRnemp6b0VKR0RFbzhFMDU3Z2Frb29raXFLZHF0U0htWTFOM09IY0wtV1VNMl9ESGtOd3VROFpUX015RlhPOFFoVE5HZEZ6dzBNRmEzWC1oVERKcmZZY2NmcTdCTl82N1JjZl9iMEU?oc=5",
+      "source": "elhuyar.eus",
+      "published": "2026-09-19T07:00:00Z",
+      "classification": "sns-article",
+      "genre": "food",
+      "prefecture": "",
+      "city": ""
+    },
+    {
+      "title": "秋田名物「バター餅」と同じ名前！？韓国・SNSで話題のもちもちスイーツ“バタートック”が秋田へ - PR TIMES",
+      "url": "https://news.google.com/rss/articles/CBMiakFVX3lxTE9qcXJudHpzOXhQc190MllPQ1N0OUVKOEpLdnNzTjk4bmtULU5EYTJUaExlTWQxWUE0MFNORXpiN0JfMmdyOTJxM0tfTGJ5dHJ5YWltcnNTeEdjRk1PMl9PaThGV2YzNVo5Nnc?oc=5",
+      "source": "PR TIMES",
+      "published": "2026-09-18T07:00:00Z",
+      "classification": "sns-article",
+      "genre": "sweets",
+      "prefecture": "",
+      "city": ""
+    },
+    {
+      "title": "【福岡肉本2026】SNSで話題の絶品葱タンと厳選黒毛和牛『天神黒毛流 焼肉 参星』｜中央区天神 - ふくおかナビ",
+      "url": "https://news.google.com/rss/articles/CBMiSkFVX3lxTFBsa285QXI5dzRHRWVBUDRRN3d6NnZDN1FiVWRPYkZ3Tm91VnJjMlp5T203SnIyNkxvWUpYZHFfbVgwbVhqVDRFYkpR?oc=5",
+      "source": "ふくおかナビ",
+      "published": "2026-09-18T07:00:00Z",
+      "classification": "sns-article",
+      "genre": "food",
+      "prefecture": "",
+      "city": ""
+    },
+    {
+      "title": "サッポロ一番塩ラーメン神アレンジ！SNS話題の激うまレシピ徹底検証 - elhuyar.eus",
+      "url": "https://news.google.com/rss/articles/CBMicEFVX3lxTE5aelVQbXJUcExtVDBUOFFxSFJ4NldfejhCeURNQ3c5Ym52aGZrUUdBV1ZKWVlObXFEX1QtbE1Pc0NKdUNiMWRHVUpfSzlXVXVscHJLNGRnR1VQSW5kNGktckdCMjNGNlh2ZnNuek84cGw?oc=5",
+      "source": "elhuyar.eus",
+      "published": "2026-09-18T07:00:00Z",
+      "classification": "sns-article",
+      "genre": "food",
+      "prefecture": "",
+      "city": ""
+    },
+    {
+      "title": "晴海臨海公園がSNSで話題！絶景カフェ＆BBQの2026最新案内 - elhuyar.eus",
+      "url": "https://news.google.com/rss/articles/CBMic0FVX3lxTE9kcEdUUWpyS1dRaFQxeGJYSnc5dHFJWFRhYTJpSHBDNmN4RXV4WjJ3UGpOMVphMnJoN0NxRzJNT3hIY3pYZ3ROWVhZLXo2SlhwQmExczlGSWh0bGtZS2UzNEVTNl9Kd2dKU1k3SWllOFJ2TEk?oc=5",
+      "source": "elhuyar.eus",
+      "published": "2026-09-17T07:00:00Z",
+      "classification": "sns-article",
+      "genre": "food",
+      "prefecture": "",
+      "city": ""
+    },
+    {
+      "title": "SNSで話題の「チョコがけマシュマロ」に待望の新作登場！3つの味わいが溶け合う贅沢スイーツ「キャラメルinマシュマロ ボトムチョコ」発売 | 株式会社ドウシシャのプレスリリース - PR TIMES",
+      "url": "https://news.google.com/rss/articles/CBMiakFVX3lxTE5Nb245N1cwcnREd1p2SV9ZYW5pTFUwbVFKMWRRN19yeDU0SElUbWl5REQtal9EdkhQV242WXRYdWFqTGN4ZXZpMHNLWG9MVVdLQzFMVnJJLV84M1VNYTRkNWllUk9vb0VyWGc?oc=5",
+      "source": "PR TIMES",
+      "published": "2026-09-16T07:00:00Z",
+      "classification": "sns-article",
+      "genre": "sweets",
+      "prefecture": "",
+      "city": ""
+    }
+  ],
+  "feeds_succeeded": 4,
+  "feeds_total": 4,
+  "note": "公開ニュースRSSの見出しにSNSへの言及がある記事。SNS投稿数や店舗所在地は未検証。都道府県は見出しに明記された地域です。"
 }
+
