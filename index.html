@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <meta name="theme-color" content="#26324A">
-<title>ご当地グルメ検索 v7.15（うどん・とんこつラーメン検索）</title>
+<title>ご当地グルメ検索 v7.16（うどん・とんこつラーメン検索）</title>
 <style>
 :root {
   --bg:#F5EFE0; --card:#FFFCF4; --ink:#263652; --soft:#66728A;
@@ -138,7 +138,7 @@ button,input,select{font:inherit}
   <button class="chip active" data-mode="all" aria-pressed="true">すべて</button>
   <button class="chip" data-mode="ramen" aria-pressed="false">🍜 ラーメン</button>
   <button class="chip" data-mode="tonkotsu" aria-pressed="false">とんこつラーメン</button>
-  <button class="chip" data-mode="localchain" aria-pressed="false">🏠 ローカルファミレス</button>
+  <button class="chip" data-mode="localchain" aria-pressed="false">🏠 ローカルチェーン</button>
   <button class="chip" data-mode="famous" aria-pressed="false">有名店</button>
   <button class="chip" data-mode="tourist" aria-pressed="false">観光地グルメ</button>
   <button class="chip" data-mode="roadstation" aria-pressed="false">道の駅</button>
@@ -152,11 +152,19 @@ button,input,select{font:inherit}
   <label for="kind">料理・店舗の種類</label>
   <select id="kind"></select>
 </div>
-<div class="family-filters hidden" id="familyFilters" role="group" aria-label="ファミレスの種類を直接選択">
-  <button type="button" data-family-kind="ファミリーレストラン" aria-pressed="true">すべてのファミレス</button>
+<div class="family-filters hidden" id="familyFilters" role="group" aria-label="ローカルチェーンの種類を直接選択">
+  <button type="button" data-family-kind="飲食店" aria-pressed="true">すべてのチェーン</button>
+  <button type="button" data-family-kind="ファミリーレストラン" aria-pressed="false">ファミレス</button>
   <button type="button" data-family-kind="和食" aria-pressed="false">和食</button>
   <button type="button" data-family-kind="洋食" aria-pressed="false">洋食</button>
   <button type="button" data-family-kind="中華" aria-pressed="false">中華</button>
+  <button type="button" data-family-kind="うどん" aria-pressed="false">うどん</button>
+  <button type="button" data-family-kind="ラーメン" aria-pressed="false">ラーメン</button>
+  <button type="button" data-family-kind="定食・食堂" aria-pressed="false">定食・食堂</button>
+  <button type="button" data-family-kind="ステーキ・ハンバーグ" aria-pressed="false">ステーキ・ハンバーグ</button>
+  <button type="button" data-family-kind="中華料理" aria-pressed="false">中華料理</button>
+  <button type="button" data-family-kind="お好み焼き" aria-pressed="false">お好み焼き</button>
+  <button type="button" data-family-kind="鶏料理" aria-pressed="false">鶏料理</button>
 </div>
 <div class="category-options hidden" id="chainOptions">
   <label for="chain">チェーン名</label><select id="chain" aria-describedby="chainNote"></select>
@@ -185,7 +193,7 @@ button,input,select{font:inherit}
   <a href="./gifu-chahan/"><b>🍚 全国チャーハン帖</b><span>47都道府県・食べ歩き記録</span></a>
   <button data-quick="tourist"><b>🚶 食べ歩き</b><span>観光地周辺を探す</span></button>
   <button data-quick="roadstation"><b>🛣️ 道の駅検索</b><span>地域から道の駅を探す</span></button>
-  <button data-quick="localchain"><b>🏠 ローカルファミレス検索</b><span>地域のファミレスだけを全件表示</span></button>
+  <button data-quick="localchain"><b>🏠 ローカルチェーン検索</b><span>地域のファミレス・専門店を探す</span></button>
   <a class="sns-quick" data-sns-link href="./trending.html"><b>🔥 SNSグルメ</b><span>SNSに言及したグルメ記事</span></a>
 </section>
 
@@ -198,7 +206,7 @@ button,input,select{font:inherit}
 </div>
 
 <script src="./municipalities.js"></script>
-<script src="./reviews.js?v=7.9"></script>
+<script src="./reviews.js?v=7.16"></script>
 <script>
 function readLastQuery() {
   try { return localStorage.getItem('gourmet-last-query-v2') || ''; }
@@ -225,6 +233,26 @@ const CITY_DATA = typeof MUNICIPALITIES === 'undefined' ? {} : MUNICIPALITIES;
 // Western Japan additions checked against official store information on 2026-10-17.
 // Tomato & Onion Osaka is temporarily closed in the official directory and omitted.
 const LOCAL_CHAINS = [
+  {"name":"牧のうどん","query":"牧のうどん","kind":"うどん","cuisines":["和食"],"prefs":["福岡","佐賀","長崎"],"source":"https://www.makinoudon.jp/cont6/main.html","checkedAt":"2026-10-17"},
+  {"name":"大地のうどん","query":"大地のうどん","kind":"うどん","cuisines":["和食"],"prefs":["福岡","東京"],"source":"https://daichinoudon.com/shop/","checkedAt":"2026-10-17"},
+  {"name":"どんどん","query":"うどん どんどん","kind":"うどん","cuisines":["和食"],"prefs":["山口","岡山","広島","島根","福岡","東京"],"source":"https://www.s-dondon.co.jp/shoplist/","checkedAt":"2026-10-17","excludedNames":["どんどん亭","焼肉どんどん","お弁当どんどん"]},
+  {"name":"讃岐製麺","query":"讃岐製麺","kind":"うどん","cuisines":["和食"],"prefs":["愛知","大阪"],"source":"https://www.meshiya.co.jp/brand/sanuki/","checkedAt":"2026-10-17"},
+  {"name":"彩華ラーメン","query":"彩華ラーメン","kind":"ラーメン","cuisines":["中華"],"prefs":["奈良","大阪","京都","愛知"],"source":"https://www.saikaramen.com/shop/","checkedAt":"2026-10-17","aliases":["サイカラーメン"]},
+  {"name":"天理スタミナラーメン","query":"天理スタミナラーメン","kind":"ラーメン","cuisines":["中華"],"prefs":["奈良","大阪","兵庫","滋賀","三重","沖縄"],"source":"https://www.tensuta.jp/店舗一覧","checkedAt":"2026-10-17"},
+  {"name":"大砲ラーメン","query":"大砲ラーメン","kind":"ラーメン","cuisines":["中華"],"prefs":["福岡","大分","佐賀"],"source":"https://www.taiho.net/shop/","checkedAt":"2026-10-17"},
+  {"name":"ラーメン東大","query":"ラーメン東大","kind":"ラーメン","cuisines":["中華"],"prefs":["徳島","京都","滋賀","兵庫","香川","岡山"],"source":"https://ramen-todai.com/topics/category/shop/","checkedAt":"2026-10-17","aliases":["徳島ラーメン東大"]},
+  {"name":"ラーメン横綱","query":"ラーメン横綱","kind":"ラーメン","cuisines":["中華"],"prefs":["京都","大阪","兵庫","和歌山","愛知","岐阜","三重","静岡","千葉"],"source":"https://www.4527.com/shop/","checkedAt":"2026-10-17"},
+  {"name":"テンホウ","query":"テンホウ","kind":"ラーメン","cuisines":["中華"],"prefs":["長野"],"source":"https://tenhoo.jp/stores/","checkedAt":"2026-10-17","aliases":["てんほう"]},
+  {"name":"街かど屋","query":"街かど屋","kind":"定食・食堂","cuisines":["和食"],"prefs":["愛知","三重","岐阜","大阪","兵庫","京都","奈良"],"source":"https://www.meshiya.co.jp/brand/machikadoya/","checkedAt":"2026-10-17"},
+  {"name":"ザめしや","query":"ザめしや","kind":"定食・食堂","cuisines":["和食"],"prefs":["愛知","岐阜","大阪","兵庫","京都","奈良","岡山"],"source":"https://www.meshiya.co.jp/brand/meshiya/","checkedAt":"2026-10-17","aliases":["ザ・めしや"]},
+  {"name":"一汁三菜食堂","query":"一汁三菜食堂","kind":"定食・食堂","cuisines":["和食"],"prefs":["高知"],"source":"https://sunnyfoods.ne.jp/ichijyu_top/tenpo","checkedAt":"2026-10-17"},
+  {"name":"骨付鳥 一鶴","query":"骨付鳥 一鶴","kind":"鶏料理","cuisines":["和食"],"prefs":["香川","神奈川","大阪","福岡"],"source":"https://www.ikkaku.co.jp/mailform/contact.html","checkedAt":"2026-10-17","aliases":["一鶴"]},
+  {"name":"どんどん亭","query":"どんどん亭","kind":"お好み焼き","cuisines":["和食"],"prefs":["福岡","佐賀","長崎","熊本","大分","山口"],"source":"https://www.dondontei.com/shop/","checkedAt":"2026-10-17"},
+  {"name":"ぎょうざの満洲","query":"ぎょうざの満洲","kind":"中華料理","cuisines":["中華"],"prefs":["東京","埼玉","神奈川","群馬","大阪","兵庫"],"source":"https://www.mansyu.co.jp/shop/","checkedAt":"2026-10-17","aliases":["餃子の満洲","ぎょうざの満州"]},
+  {"name":"五味八珍","query":"五味八珍","kind":"ファミリーレストラン","cuisines":["中華"],"prefs":["静岡","愛知","山梨","神奈川"],"source":"https://gomihattin.co.jp/info/","checkedAt":"2026-10-17"},
+  {"name":"ステーキのあさくま","query":"ステーキのあさくま","kind":"ファミリーレストラン","cuisines":["洋食"],"prefs":["愛知","三重","岐阜","京都","大阪","岡山","静岡","東京","神奈川","千葉","埼玉","茨城"],"source":"https://www.asakuma.co.jp/shoplist.html","checkedAt":"2026-10-17","aliases":["あさくま"],"excludedNames":["カレーのあさくま"]},
+  {"name":"ステーキのさる～ん","query":"ステーキのさる～ん","kind":"ステーキ・ハンバーグ","cuisines":["洋食"],"prefs":["新潟"],"source":"https://saloon-group.co.jp/saloon/store/","checkedAt":"2026-10-17","aliases":["さる～ん","さるーん","さる〜ん"]},
+  {"name":"石焼ステーキ贅","query":"石焼ステーキ贅","kind":"ステーキ・ハンバーグ","cuisines":["洋食"],"prefs":["宮城","山形","福島","新潟","長野","富山","石川","福井"],"source":"https://ishiyaki-zei.com/store/","checkedAt":"2026-10-17","aliases":["ステーキ贅"]},
   {"name":"ビッグジョー","query":"ビッグジョー","kind":"ファミリーレストラン","cuisines":["洋食"],"prefs":["大阪"],"source":"https://www.fujibigjoe.co.jp/","aliases":["BigJoe","Big Joe","BIG JOE"]},
   {"name":"レストランシャロン","query":"レストラン シャロン","kind":"ファミリーレストラン","cuisines":["洋食"],"prefs":["大阪","岡山"],"source":"https://www.chalon.co.jp/","aliases":["シャロン"]},
   {"name":"信濃路","query":"信濃路","kind":"ファミリーレストラン","cuisines":["和食"],"prefs":["和歌山"],"source":"https://www.shinanoji.jp/brand/shinanoji/"},
@@ -274,11 +302,19 @@ const MODES = {
   all:{label:'すべて', term:''},
   ramen:{label:'ラーメン', term:'ラーメン店'},
   tonkotsu:{label:'とんこつラーメン', term:'とんこつラーメン店'},
-  localchain:{label:'ローカルファミレス', term:'ローカルチェーン ファミリーレストラン', kinds:[
-    ['すべてのファミレス','ローカルチェーン ファミリーレストラン'],
+  localchain:{label:'ローカルチェーン', term:'ローカルチェーン 飲食店', kinds:[
+    ['すべてのチェーン','ローカルチェーン 飲食店'],
+    ['ファミレス','ローカルチェーン ファミリーレストラン'],
     ['和食','ローカルチェーン 和食'],
     ['洋食','ローカルチェーン 洋食'],
-    ['中華','ローカルチェーン 中華']
+    ['中華','ローカルチェーン 中華'],
+    ['うどん','ローカルチェーン うどん'],
+    ['ラーメン','ローカルチェーン ラーメン'],
+    ['定食・食堂','ローカルチェーン 定食・食堂'],
+    ['ステーキ・ハンバーグ','ローカルチェーン ステーキ・ハンバーグ'],
+    ['中華料理','ローカルチェーン 中華料理'],
+    ['お好み焼き','ローカルチェーン お好み焼き'],
+    ['鶏料理','ローカルチェーン 鶏料理']
   ]},
   famous:{label:'有名店', term:'人気の飲食店'},
   tourist:{label:'観光地グルメ', term:'観光地 飲食店'},
@@ -332,7 +368,7 @@ function chainCandidates() {
   const pref = document.getElementById('pref').value;
   const kind = (STATE.kind || '').replace('ローカルチェーン ', '');
   return LOCAL_CHAINS.filter(c => (!pref || c.prefs.includes(pref)) &&
-    (!kind || kind === '飲食店' || kind === 'ファミリーレストラン' || c.cuisines.includes(kind)));
+    (!kind || kind === '飲食店' || c.kind === kind || c.cuisines.includes(kind)));
 }
 function selectedChain() {
   return chainCandidates().find(c => c.name === document.getElementById('chain').value);
@@ -354,7 +390,7 @@ function refreshChains() {
   select.disabled = !candidates.length;
   const chain = selectedChain();
   document.getElementById('chainNote').innerHTML =
-    '地域のファミレス' + LOCAL_CHAINS.length + 'チェーンを登録。和食・洋食・中華の家族向けレストランを対象にしています。件数はチェーン数で、支店・店舗数ではありません。市区町村内の出店は店舗検索で確認できます。' +
+    '地域の飲食店' + LOCAL_CHAINS.length + 'チェーンを登録。ファミレスに加え、うどん・ラーメン・定食などの専門店も種類別に探せます。件数はチェーン数で、支店・店舗数ではありません。市区町村内の出店は店舗検索で確認できます。' +
     (chain ? ' <a target="_blank" rel="noopener" href="' + esc(chain.source) + '">' + esc(chain.sourceLabel || '公式店舗情報') + '</a>' : '') +
     ' 地域とチェーン名で検索し、自由入力欄は使いません。登録候補は件数制限なしで全件表示します。未登録のチェーンもあります。';
 }
@@ -489,7 +525,7 @@ function render() {
     document.getElementById('status').textContent = 'ローカルチェーン ／ ' + candidates.length + 'チェーン';
     box.innerHTML = '<div class="notice">' + (candidates.length ?
       '各チェーンの「店舗を探す」から、選んだ地域の支店を検索できます。口コミ件数順で探す場合は、上の「チェーン名」を1つ選んで「店舗を検索」を押してください。市区町村に店舗がない場合は「市区町村すべて」で県全体を探せます。Googleマップでは関連候補が混ざる場合があります。' :
-      'この地域・種類のローカルファミレスはまだ登録されていません。「すべてのファミレス」または都道府県の「全国」で登録候補を確認できます。') + '</div>' + candidates.map(chainCard).join('');
+      'この地域・種類のローカルチェーンはまだ登録されていません。「すべてのチェーン」または都道府県の「全国」で登録候補を確認できます。') + '</div>' + candidates.map(chainCard).join('');
     return;
   }
   const condition = (STATE.coords ? '現在地周辺・' : '') + searchText();
@@ -575,6 +611,7 @@ async function searchByReviews() {
     mode:STATE.mode, term:categoryTerm(), coords:STATE.coords ? {...STATE.coords} : null,
     chainName: STATE.mode === 'localchain' ? (selectedChain().match || selectedChain().name) : '',
     chainAliases: STATE.mode === 'localchain' ? (selectedChain().aliases || []) : [],
+    chainExcludedNames: STATE.mode === 'localchain' ? (selectedChain().excludedNames || []) : [],
     chainKind: STATE.mode === 'localchain' ? selectedChain().kind : ''
   };
   box.innerHTML = '<div class="notice">店舗と口コミ・評価件数を取得しています…</div>';
