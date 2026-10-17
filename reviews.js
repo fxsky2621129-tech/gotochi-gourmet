@@ -79,6 +79,7 @@
       if (options.mode === 'localchain') {
         const names = [options.chainName, ...(options.chainAliases || [])].filter(Boolean);
         if (!names.some(name => compact(place.displayName).includes(compact(name)))) return false;
+        if ((options.chainExcludedNames || []).some(name => compact(place.displayName).includes(compact(name)))) return false;
       }
       if (!place.id || seen.has(place.id)) return false;
       seen.add(place.id);

@@ -115,17 +115,17 @@ test('udon and meat searches do not combine alternative dishes', () => {
 });
 
 
-test('family catalog excludes other business types and lists every registered candidate in all 47 prefectures', () => {
+test('regional catalog lists every registered candidate in all 47 prefectures', () => {
   const p=page();p.mode('localchain');
-  const chains=p.run('LOCAL_CHAINS');assert.ok(chains.length>=26);
+  const chains=p.run('LOCAL_CHAINS');assert.equal(chains.length,61);
   const prefs=[...html.match(/<select id="pref"[\s\S]*?<\/select>/)[0].matchAll(/<option>([^<]+)<\/option>/g)].map(m=>m[1]);
   assert.equal(prefs.length,47);assert.equal(new Set(chains.map(c=>c.name)).size,chains.length);
   for(const c of chains){
-    assert.equal(c.kind,'ファミリーレストラン');
+    assert.ok(p.run('MODES.localchain.kinds').some(([,value])=>value==='ローカルチェーン '+c.kind));
     assert.ok(c.cuisines.length && c.cuisines.every(k=>['和食','洋食','中華'].includes(k)));
     assert.ok(c.prefs.every(pref=>prefs.includes(pref)));assert.equal(new URL(c.source).protocol,'https:');
   }
-  for(const name of ['ガスト','ジョイフル','サイゼリヤ','マクドナルド','岐阜タンメン','すなば珈琲','回転すし北海道']) assert.ok(!chains.some(c=>c.name===name));
+  for(const name of ['ガスト','ジョイフル','サイゼリヤ','マクドナルド']) assert.ok(!chains.some(c=>c.name===name));
   for(const pref of ['',...prefs]) {
     p.pref(pref);const count=chains.filter(c=>!pref||c.prefs.includes(pref)).length;
     assert.equal(p.run('chainCandidates().length'),count);
@@ -187,7 +187,9 @@ test('dropdown and direct buttons stay synchronized and survive region and categ
     assert.ok(p.ids.results.innerHTML.includes('レストラン三宝'));p.pref('');
   }
   p.kind('ローカルチェーン 和食');assert.equal(p.run('STATE.kind'),'ローカルチェーン 和食');
-  p.familyKind('ファミリーレストラン');assert.equal(p.run('chainCandidates().length'),p.run('LOCAL_CHAINS.length'));
+  p.familyKind('ファミリーレストラン');assert.equal(p.run('chainCandidates().length'),43);
+  assert.ok(p.run('chainCandidates()').every(c=>c.kind==='ファミリーレストラン'));
+  p.familyKind('飲食店');assert.equal(p.run('chainCandidates().length'),p.run('LOCAL_CHAINS.length'));
   p.mode('meat');assert.equal(p.ids.familyFilters.classList.contains('hidden'),true);
   p.kind('焼肉店');assert.equal(p.run('categoryTerm()'),'焼肉店');
 });
@@ -207,7 +209,7 @@ test('family search uses the selected region and brand and ignores unrelated fre
 });
 
 test('missing family candidates never fall back to national chain or generic API searches', async () => {
-  const p=page();p.pref('山梨');p.quick('localchain');
+  const p=page();p.pref('山梨');p.quick('localchain');p.familyKind('うどん');
   assert.equal(p.context.window.location.href,'app');assert.ok(!p.ids.results.innerHTML.includes('href='));
   p.display('reviews');p.ids.placesKey.value='test';const requests=connectMockPlaces(p,()=>({places:[]}));
   await p.run('searchStores()');assert.equal(requests.length,0);
@@ -250,6 +252,74 @@ test('regional brand aliases survive review filtering without mixing other brand
     await p.run('searchStores()');
     assert.ok(p.ids.results.innerHTML.includes(displayName), brand);
     assert.ok(!p.ids.results.innerHTML.includes('ガスト'), brand);
+  }
+});
+
+test('specialty filters preserve region and invalidate incompatible brand selections', () => {
+  const p=page();p.mode('localchain');
+  for(const kind of ['うどん','ラーメン','定食・食堂','ステーキ・ハンバーグ','中華料理','お好み焼き','鶏料理']) {
+    p.pref('');p.familyKind(kind);
+    const candidates=p.run('chainCandidates()');
+    assert.ok(candidates.length>0);
+    assert.ok(candidates.every(c=>c.kind===kind));
+    assert.equal(p.ids.kind.value,'ローカルチェーン '+kind);
+  }
+  p.pref('福岡');p.familyKind('うどん');p.ids.chain.value='牧のうどん';p.ids.chain.fire('change');
+  p.familyKind('ラーメン');assert.equal(p.ids.chain.value,'');
+  assert.ok(p.ids.chain.innerHTML.includes('大砲ラーメン'));
+  assert.ok(!p.ids.chain.innerHTML.includes('牧のうどん'));
+  p.pref('奈良');assert.ok(!p.ids.chain.innerHTML.includes('大砲ラーメン'));
+  assert.ok(p.ids.chain.innerHTML.includes('彩華ラーメン'));
+  p.familyKind('ファミリーレストラン');assert.ok(!p.ids.chain.innerHTML.includes('彩華ラーメン'));
+  p.pref('山梨');assert.ok(p.ids.chain.innerHTML.includes('五味八珍'));
+});
+
+test('new specialists generate region and brand queries without conflicting cuisine text', () => {
+  const examples=[
+    ['福岡','うどん','牧のうどん','牧のうどん'],
+    ['東京','うどん','大地のうどん','大地のうどん'],
+    ['島根','うどん','どんどん','うどん どんどん'],
+    ['大阪','うどん','讃岐製麺','讃岐製麺'],
+    ['沖縄','ラーメン','天理スタミナラーメン','天理スタミナラーメン'],
+    ['佐賀','ラーメン','大砲ラーメン','大砲ラーメン'],
+    ['徳島','ラーメン','ラーメン東大','ラーメン東大'],
+    ['和歌山','ラーメン','ラーメン横綱','ラーメン横綱'],
+    ['長野','ラーメン','テンホウ','テンホウ'],
+    ['兵庫','定食・食堂','街かど屋','街かど屋'],
+    ['岡山','定食・食堂','ザめしや','ザめしや'],
+    ['高知','定食・食堂','一汁三菜食堂','一汁三菜食堂'],
+    ['香川','鶏料理','骨付鳥 一鶴','骨付鳥 一鶴'],
+    ['長崎','お好み焼き','どんどん亭','どんどん亭'],
+    ['大阪','中華料理','ぎょうざの満洲','ぎょうざの満洲'],
+    ['新潟','ステーキ・ハンバーグ','ステーキのさる～ん','ステーキのさる～ん'],
+    ['石川','ステーキ・ハンバーグ','石焼ステーキ贅','石焼ステーキ贅'],
+    ['岡山','ファミリーレストラン','ステーキのあさくま','ステーキのあさくま']
+  ];
+  for(const [pref,kind,brand,query] of examples) {
+    const p=page({savedQuery:'ガスト ラーメン'});p.pref(pref);p.mode('localchain');p.familyKind(kind);
+    assert.ok(p.ids.chain.innerHTML.includes(brand),brand);
+    p.ids.chain.value=brand;p.ids.chain.fire('change');p.ids.searchBtn.fire('click');
+    assert.equal(mapsText(p.context.window.location.href),p.run('fullPrefName(STATE.pref)')+' '+query);
+  }
+});
+
+test('specialist review aliases exclude similar brand names and other prefectures', async () => {
+  for(const [pref,brand,accepted,rejected] of [
+    ['山口','どんどん','どんどん 湯田店','どんどん亭 宇部店'],
+    ['愛知','ステーキのあさくま','あさくま 桜山店','カレーのあさくま'],
+    ['奈良','彩華ラーメン','サイカラーメン 本店','ガスト'],
+    ['新潟','ステーキのさる～ん','さるーん 新発田店','ガスト']
+  ]) {
+    const p=page();p.pref(pref);p.mode('localchain');p.ids.chain.value=brand;p.ids.chain.fire('change');p.display('reviews');
+    connectMockPlaces(p,()=>({places:[
+      store('yes',10,{displayName:accepted,formattedAddress:p.run('fullPrefName(STATE.pref)')}),
+      store('no',1000,{displayName:rejected,formattedAddress:p.run('fullPrefName(STATE.pref)')}),
+      store('other-region',100,{displayName:accepted+' 他県店',formattedAddress:'北海道'})
+    ]}));
+    await p.run('searchStores()');
+    assert.ok(p.ids.results.innerHTML.includes(accepted),brand);
+    assert.ok(!p.ids.results.innerHTML.includes(rejected),brand);
+    assert.ok(!p.ids.results.innerHTML.includes('他県店'),brand);
   }
 });
 
