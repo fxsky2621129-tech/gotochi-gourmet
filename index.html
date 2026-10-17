@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <meta name="theme-color" content="#26324A">
-<title>ご当地グルメ検索 v7.12（地域のファミレス検索）</title>
+<title>ご当地グルメ検索 v7.13（西日本のファミレス情報を拡充）</title>
 <style>
 :root {
   --bg:#F5EFE0; --card:#FFFCF4; --ink:#263652; --soft:#66728A;
@@ -219,7 +219,15 @@ const CITY_DATA = typeof MUNICIPALITIES === 'undefined' ? {} : MUNICIPALITIES;
 // Curated, partial coverage. Prefectures are confirmed examples, not a complete store inventory.
 // Reviewed 2026-10-14. Sources are brand directories or official tourism listings.
 // Coverage is by prefecture; it does not assert a branch exists in every municipality.
+// Western Japan additions checked against official store information on 2026-10-17.
+// Tomato & Onion Osaka is temporarily closed in the official directory and omitted.
 const LOCAL_CHAINS = [
+  {"name":"和食さと","query":"和食さと","cuisines":["和食"],"prefs":["大阪","兵庫","京都","奈良","和歌山","滋賀","三重","愛知","岐阜","静岡","東京","埼玉","神奈川","千葉","茨城","岡山","広島"],"source":"https://store.srsholdings.com/sato/","kind":"ファミリーレストラン"},
+  {"name":"トマト＆オニオン","query":"トマト＆オニオン","aliases":["トマトアンドオニオン","トマト&オニオン"],"cuisines":["洋食"],"prefs":["岩手","宮城","福島","千葉","東京","埼玉","新潟","長野","福井","滋賀","京都","奈良","和歌山","兵庫","徳島","愛媛","岡山","広島","鳥取","島根","鹿児島","沖縄"],"source":"https://www.tomato-a.co.jp/tomatoonion/store/","kind":"ファミリーレストラン"},
+  {"name":"ミスター・バーク","query":"ミスター・バーク","aliases":["ミスターバーク"],"cuisines":["洋食"],"prefs":["岡山","広島","兵庫","鳥取","山口","香川","愛媛","熊本","長野","埼玉"],"source":"https://www.mr-b.jp/shop.html","kind":"ファミリーレストラン"},
+  {"name":"レストラン北斗","query":"北斗 レストラン","aliases":["北斗七星","うどん茶屋北斗"],"cuisines":["和食"],"prefs":["愛媛"],"source":"https://www.16hokuto.com/","kind":"ファミリーレストラン"},
+  {"name":"ぎゅう丸","query":"ぎゅう丸","cuisines":["洋食"],"prefs":["佐賀","長崎","福岡"],"source":"https://gyumaru.net/store/","kind":"ファミリーレストラン"},
+  {"name":"和風亭","query":"和風亭","cuisines":["和食"],"prefs":["沖縄"],"source":"https://blog-nahamainplace.san-a.co.jp/shoplist/detail/?cd=000134","kind":"ファミリーレストラン"},
   {"name":"とんでん","query":"和食処 とんでん","kind":"ファミリーレストラン","prefs":["北海道","群馬","埼玉","千葉","東京","神奈川"],"source":"https://www.tonden.co.jp/shop","cuisines":["和食"]},
   {"name":"まるまつ","query":"和風レストラン まるまつ","kind":"ファミリーレストラン","prefs":["青森","岩手","宮城","秋田","山形","福島","栃木"],"source":"https://www.re-marumatu.co.jp/information/restaurant_list.html","cuisines":["和食"]},
   {"name":"ばんどう太郎","query":"ばんどう太郎","kind":"ファミリーレストラン","prefs":["茨城","栃木","千葉","埼玉"],"source":"https://shop.bandotaro.co.jp/all/","cuisines":["和食"]},
@@ -693,4 +701,5 @@ render();
 </script>
 </body>
 </html>
+
 
