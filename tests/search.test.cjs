@@ -136,6 +136,32 @@ test('family catalog excludes other business types and lists every registered ca
   }
 });
 
+test('western family restaurants are discoverable by prefecture and cuisine with working search links', () => {
+  const p = page();
+  p.mode('localchain');
+  const examples = [
+    ['大阪', '大阪市 北区', '和食', '和食さと', '和食さと'],
+    ['京都', '舞鶴市', '洋食', 'トマト＆オニオン', 'トマト＆オニオン'],
+    ['鳥取', '倉吉市', '洋食', 'ミスター・バーク', 'ミスター・バーク'],
+    ['島根', '松江市', '洋食', 'トマト＆オニオン', 'トマト＆オニオン'],
+    ['愛媛', '松山市', '和食', 'レストラン北斗', '北斗 レストラン'],
+    ['佐賀', '嬉野市', '洋食', 'ぎゅう丸', 'ぎゅう丸'],
+    ['沖縄', '那覇市', '和食', '和風亭', '和風亭']
+  ];
+  for (const [pref, city, cuisine, brand, query] of examples) {
+    p.pref(pref); p.city(city); p.familyKind(cuisine);
+    p.ids.chain.value = ''; p.ids.chain.fire('change');
+    assert.ok(p.ids.results.innerHTML.includes(brand.replaceAll('&', '&amp;')), brand);
+    p.ids.chain.value = brand; p.ids.chain.fire('change');
+    p.ids.searchBtn.fire('click');
+    assert.equal(mapsText(p.context.window.location.href), p.run('fullPrefName(STATE.pref)') + ' ' + city + ' ' + query);
+  }
+  p.pref('沖縄'); p.familyKind('洋食');
+  assert.ok(!p.ids.chain.innerHTML.includes('和風亭'));
+  p.pref('大阪');
+  assert.ok(!p.ids.chain.innerHTML.includes('トマト＆オニオン'), 'official Osaka location is temporarily closed');
+});
+
 test('dropdown and direct buttons stay synchronized and survive region and category reselection', () => {
   const p=page();p.mode('localchain');
   for(const k of ['和食','洋食','中華']) {
@@ -156,7 +182,7 @@ test('changing cuisine invalidates an incompatible chain and does not navigate',
   const p=page();p.pref('北海道');p.mode('localchain');p.ids.chain.value='とんでん';p.ids.chain.fire('change');
   p.familyKind('洋食');assert.equal(p.ids.chain.value,'');assert.ok(p.ids.chain.innerHTML.includes('ヴィクトリアステーション'));
   assert.ok(!p.ids.chain.innerHTML.includes('とんでん'));assert.equal(p.context.window.location.href,'app');
-  p.pref('鳥取');assert.equal(p.ids.chain.disabled,true);assert.equal(p.ids.kind.value,'ローカルチェーン 洋食');
+  p.pref('山梨');assert.equal(p.ids.chain.disabled,true);assert.equal(p.ids.kind.value,'ローカルチェーン 洋食');
 });
 
 test('family search uses the selected region and brand and ignores unrelated free text', () => {
@@ -167,7 +193,7 @@ test('family search uses the selected region and brand and ignores unrelated fre
 });
 
 test('missing family candidates never fall back to national chain or generic API searches', async () => {
-  const p=page();p.pref('鳥取');p.quick('localchain');
+  const p=page();p.pref('山梨');p.quick('localchain');
   assert.equal(p.context.window.location.href,'app');assert.ok(!p.ids.results.innerHTML.includes('href='));
   p.display('reviews');p.ids.placesKey.value='test';const requests=connectMockPlaces(p,()=>({places:[]}));
   await p.run('searchStores()');assert.equal(requests.length,0);
@@ -653,4 +679,5 @@ test('SDK load failures clear the pending load and display an actionable error',
   assert.equal(p.context.window.initGourmetPlaces, undefined);
   assert.ok(p.ids.results.innerHTML.includes('取得できませんでした'));
 });
+
 
