@@ -146,7 +146,18 @@ test('western family restaurants are discoverable by prefecture and cuisine with
     ['島根', '松江市', '洋食', 'トマト＆オニオン', 'トマト＆オニオン'],
     ['愛媛', '松山市', '和食', 'レストラン北斗', '北斗 レストラン'],
     ['佐賀', '嬉野市', '洋食', 'ぎゅう丸', 'ぎゅう丸'],
-    ['沖縄', '那覇市', '和食', '和風亭', '和風亭']
+    ['沖縄', '那覇市', '和食', '和風亭', '和風亭'],
+    ['大阪', '藤井寺市', '洋食', 'ビッグジョー', 'ビッグジョー'],
+    ['大阪', '柏原市', '洋食', 'レストランシャロン', 'レストラン シャロン'],
+    ['和歌山', '和歌山市', '和食', '信濃路', '信濃路'],
+    ['高知', '高知市', '和食', 'ゆうゆう', '和食レストラン ゆうゆう'],
+    ['岡山', '倉敷市', '中華', '中華園', '中華園'],
+    ['熊本', '熊本市 中央区', '中華', '紅蘭亭', '紅蘭亭'],
+    ['京都', '京都市 左京区', '和食', 'かごの屋', 'かごの屋'],
+    ['愛媛', '松山市', '中華', 'チャイナハウスすけろく', 'チャイナハウスすけろく'],
+    ['山口', '周南市', '中華', '中国料理 敦煌', '中国料理 敦煌'],
+    ['山口', '下関市', '和食', '庄屋', '和食レストラン 庄屋'],
+    ['鹿児島', '鹿屋市', '和食', '庄屋', '和食レストラン 庄屋']
   ];
   for (const [pref, city, cuisine, brand, query] of examples) {
     p.pref(pref); p.city(city); p.familyKind(cuisine);
@@ -160,6 +171,10 @@ test('western family restaurants are discoverable by prefecture and cuisine with
   assert.ok(!p.ids.chain.innerHTML.includes('和風亭'));
   p.pref('大阪');
   assert.ok(!p.ids.chain.innerHTML.includes('トマト＆オニオン'), 'official Osaka location is temporarily closed');
+  p.pref('香川'); p.familyKind('中華');
+  assert.ok(!p.ids.chain.innerHTML.includes('チャイナハウスすけろく'), 'closed Kamifukuoka location is excluded');
+  p.pref('広島'); p.familyKind('和食');
+  assert.ok(!p.ids.chain.innerHTML.includes('庄屋'), 'no Shoya branch in the official Hiroshima listing');
 });
 
 test('dropdown and direct buttons stay synchronized and survive region and category reselection', () => {
@@ -217,6 +232,26 @@ test('family reviews keep matching names and aliases but reject national chains 
   ]}));await p.run('searchStores()');
   assert.ok(p.ids.results.innerHTML.includes('札幌店'));assert.ok(p.ids.results.innerHTML.includes('旭川店'));
   assert.ok(!p.ids.results.innerHTML.includes('ガスト'));assert.ok(!p.ids.results.innerHTML.includes('東京店'));
+});
+
+test('regional brand aliases survive review filtering without mixing other brands', async () => {
+  for (const [pref, brand, displayName] of [
+    ['大阪', 'ビッグジョー', 'BIG JOE 藤井寺店'],
+    ['大阪', 'レストランシャロン', 'シャロン 柏原店'],
+    ['京都', 'かごの屋', 'かごのや 京都リサーチパーク店'],
+    ['愛媛', 'チャイナハウスすけろく', 'すけろく 束本店'],
+    ['山口', '中国料理 敦煌', '海鮮酒家 敦煌 下関店']
+  ]) {
+    const p=page(); p.pref(pref); p.mode('localchain');
+    p.ids.chain.value=brand; p.ids.chain.fire('change'); p.display('reviews');
+    connectMockPlaces(p,()=>({places:[
+      store('matching', 10, {displayName, formattedAddress:p.run('fullPrefName(STATE.pref)')}),
+      store('other', 999, {displayName:'ガスト', formattedAddress:p.run('fullPrefName(STATE.pref)')})
+    ]}));
+    await p.run('searchStores()');
+    assert.ok(p.ids.results.innerHTML.includes(displayName), brand);
+    assert.ok(!p.ids.results.innerHTML.includes('ガスト'), brand);
+  }
 });
 
 test('family review search displays all twenty matching branches', async () => {

@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <meta name="theme-color" content="#26324A">
-<title>ご当地グルメ検索 v7.13（西日本のファミレス情報を拡充）</title>
+<title>ご当地グルメ検索 v7.14（西日本のローカルチェーンを追加）</title>
 <style>
 :root {
   --bg:#F5EFE0; --card:#FFFCF4; --ink:#263652; --soft:#66728A;
@@ -222,6 +222,15 @@ const CITY_DATA = typeof MUNICIPALITIES === 'undefined' ? {} : MUNICIPALITIES;
 // Western Japan additions checked against official store information on 2026-10-17.
 // Tomato & Onion Osaka is temporarily closed in the official directory and omitted.
 const LOCAL_CHAINS = [
+  {"name":"ビッグジョー","query":"ビッグジョー","kind":"ファミリーレストラン","cuisines":["洋食"],"prefs":["大阪"],"source":"https://www.fujibigjoe.co.jp/","aliases":["BigJoe","Big Joe","BIG JOE"]},
+  {"name":"レストランシャロン","query":"レストラン シャロン","kind":"ファミリーレストラン","cuisines":["洋食"],"prefs":["大阪","岡山"],"source":"https://www.chalon.co.jp/","aliases":["シャロン"]},
+  {"name":"信濃路","query":"信濃路","kind":"ファミリーレストラン","cuisines":["和食"],"prefs":["和歌山"],"source":"https://www.shinanoji.jp/brand/shinanoji/"},
+  {"name":"ゆうゆう","query":"和食レストラン ゆうゆう","kind":"ファミリーレストラン","cuisines":["和食"],"prefs":["高知"],"source":"https://sunnyfoods.ne.jp/youyou_top/tenpo"},
+  {"name":"中華園","query":"中華園","kind":"ファミリーレストラン","cuisines":["中華"],"prefs":["岡山"],"source":"https://www.chuka-en.jp/okayama.html"},
+  {"name":"紅蘭亭","query":"紅蘭亭","kind":"ファミリーレストラン","cuisines":["中華"],"prefs":["熊本"],"source":"https://www.kourantei.com/"},
+  {"name":"かごの屋","query":"かごの屋","kind":"ファミリーレストラン","cuisines":["和食"],"prefs":["埼玉","東京","神奈川","愛知","滋賀","京都","奈良","大阪","和歌山","兵庫"],"source":"https://kagonoya.food-kr.com/","aliases":["かごのや"]},
+  {"name":"チャイナハウスすけろく","query":"チャイナハウスすけろく","kind":"ファミリーレストラン","cuisines":["中華"],"prefs":["愛媛"],"source":"https://ameblo.jp/chinahouse-sukeroku/","aliases":["すけろく"]},
+  {"name":"中国料理 敦煌","query":"中国料理 敦煌","kind":"ファミリーレストラン","cuisines":["中華"],"prefs":["山口","広島"],"source":"https://ys-holdings.co.jp/tonkou/?page_id=1442","aliases":["敦煌"]},
   {"name":"和食さと","query":"和食さと","cuisines":["和食"],"prefs":["大阪","兵庫","京都","奈良","和歌山","滋賀","三重","愛知","岐阜","静岡","東京","埼玉","神奈川","千葉","茨城","岡山","広島"],"source":"https://store.srsholdings.com/sato/","kind":"ファミリーレストラン"},
   {"name":"トマト＆オニオン","query":"トマト＆オニオン","aliases":["トマトアンドオニオン","トマト&オニオン"],"cuisines":["洋食"],"prefs":["岩手","宮城","福島","千葉","東京","埼玉","新潟","長野","福井","滋賀","京都","奈良","和歌山","兵庫","徳島","愛媛","岡山","広島","鳥取","島根","鹿児島","沖縄"],"source":"https://www.tomato-a.co.jp/tomatoonion/store/","kind":"ファミリーレストラン"},
   {"name":"ミスター・バーク","query":"ミスター・バーク","aliases":["ミスターバーク"],"cuisines":["洋食"],"prefs":["岡山","広島","兵庫","鳥取","山口","香川","愛媛","熊本","長野","埼玉"],"source":"https://www.mr-b.jp/shop.html","kind":"ファミリーレストラン"},
@@ -233,7 +242,7 @@ const LOCAL_CHAINS = [
   {"name":"ばんどう太郎","query":"ばんどう太郎","kind":"ファミリーレストラン","prefs":["茨城","栃木","千葉","埼玉"],"source":"https://shop.bandotaro.co.jp/all/","cuisines":["和食"]},
   {"name":"炭焼きレストランさわやか","query":"炭焼きレストランさわやか","match":"さわやか","kind":"ファミリーレストラン","prefs":["静岡"],"source":"https://www.genkotsu-hb.com/shop","cuisines":["洋食"]},
   {"name":"フライングガーデン","query":"フライングガーデン","kind":"ファミリーレストラン","prefs":["群馬","栃木","茨城","埼玉","千葉"],"source":"https://www.fgarden.co.jp/restaurant/","cuisines":["洋食"]},
-  {"name":"庄屋","query":"和食レストラン 庄屋","kind":"ファミリーレストラン","prefs":["福岡","佐賀","長崎","熊本","大分"],"source":"https://www.sho-ya.co.jp/shop/archives/category/shoya","cuisines":["和食"]},
+  {"name":"庄屋","query":"和食レストラン 庄屋","kind":"ファミリーレストラン","prefs":["福岡","佐賀","長崎","熊本","大分","鹿児島","山口"],"source":"https://www.sho-ya.co.jp/shop/archives/category/shoya","cuisines":["和食"]},
   {"name":"味のおぐら","query":"味のおぐら","match":"おぐら","kind":"ファミリーレストラン","prefs":["宮崎"],"source":"https://www.ogurachain.com/","cuisines":["洋食"]},
   {"name":"おぐらきんなべ","query":"おぐらきんなべ","kind":"ファミリーレストラン","prefs":["宮崎"],"source":"https://www.ogurakinnabe.jp/store/","cuisines":["洋食"]},
   {"name":"ふく福","query":"ふく福","kind":"ファミリーレストラン","prefs":["鹿児島"],"source":"https://www.jf-group.co.jp/brand/fukufuku","cuisines":["和食"]},
