@@ -89,9 +89,9 @@ function mapsText(url) {
 
 test('every category searches the selected business type with the chosen region', async t => {
   const cases = {
-    all: '飲食店', ramen: 'ラーメン店', famous: '人気の飲食店',
+    all: '飲食店', ramen: 'ラーメン店', tonkotsu: 'とんこつラーメン店', famous: '人気の飲食店',
     tourist: '観光地 飲食店', roadstation: '道の駅',
-    seafood: '海鮮料理店', noodle: '麺料理店', meat: '肉料理店'
+    seafood: '海鮮料理店', udon: 'うどん店', meat: '肉料理店'
   };
   for (const [mode, term] of Object.entries(cases)) await t.test(mode, () => {
     const p = page();
@@ -103,12 +103,11 @@ test('every category searches the selected business type with the chosen region'
   });
 });
 
-test('noodle and meat searches do not combine alternative dishes', () => {
+test('udon and meat searches do not combine alternative dishes', () => {
   const p = page();
   p.query('長野 麺 ラーメン うどん そば');
-  p.mode('noodle');
-  p.kind('そば店');
-  assert.equal(mapsText(p.run('mapsSearchUrl()')), '長野 そば店');
+  p.mode('udon');
+  assert.equal(mapsText(p.run('mapsSearchUrl()')), '長野 うどん店');
   p.mode('meat');
   p.kind('ステーキ店');
   assert.equal(mapsText(p.run('mapsSearchUrl()')), '長野 ステーキ店');
@@ -263,7 +262,6 @@ test('family review search displays all twenty matching branches', async () => {
 test('all selectable dish types keep the area and replace conflicting cuisine', async t => {
   const cases = {
     seafood: ['海鮮料理店', '海鮮丼専門店', '寿司店'],
-    noodle: ['麺料理店', 'ラーメン店', 'うどん店', 'そば店', 'つけ麺店', 'パスタ専門店'],
     meat: ['肉料理店', '焼肉店', 'ステーキ店', '焼鳥店', 'とんかつ店', 'ハンバーグ専門店']
   };
   for (const [mode, kinds] of Object.entries(cases)) for (const kind of kinds) await t.test(kind, () => {
@@ -274,6 +272,29 @@ test('all selectable dish types keep the area and replace conflicting cuisine', 
     assert.equal(mapsText(p.run('mapsSearchUrl()')), '高山 ' + kind);
     assert.equal(new URL(p.run('webSearchUrl()')).searchParams.get('q'), '高山 ' + kind);
   });
+});
+
+test('udon and tonkotsu stay independent from ramen across maps, web, reviews and nearby search', async () => {
+  const p = page();
+  p.pref('福岡'); p.city('福岡市 博多区');
+  p.query('ラーメン うどん 豚骨ラーメン とんこつラーメン');
+  p.mode('tonkotsu');
+  assert.equal(p.run('searchText()'), '福岡県 福岡市 博多区 とんこつラーメン店');
+  assert.equal(new URL(p.run('webSearchUrl()')).searchParams.get('q'), p.run('searchText()'));
+  const requests = connectMockPlaces(p, () => ({places:[]}));
+  p.display('reviews'); await p.run('searchStores()');
+  assert.equal(requests[0].includedType, 'ramen_restaurant');
+  assert.equal(requests[0].textQuery, '福岡県 福岡市 博多区 とんこつラーメン店');
+  p.mode('ramen');
+  assert.equal(p.run('searchText()'), '福岡県 福岡市 博多区 ラーメン店');
+  p.mode('udon');
+  assert.equal(p.run('searchText()'), '福岡県 福岡市 博多区 うどん店');
+  assert.equal(p.ids.kind.value, '');
+  p.display('maps'); p.ids.locBtn.fire('click'); p.geolocate();
+  p.nearby('tonkotsu');
+  assert.equal(mapsText(p.opened.at(-1).location.href), 'とんこつラーメン店');
+  p.nearby('udon');
+  assert.equal(mapsText(p.opened.at(-1).location.href), 'うどん店');
 });
 
 test('ramen replaces unrelated whole keywords but keeps shop names and extra requirements', () => {
@@ -288,10 +309,6 @@ test('ramen replaces unrelated whole keywords but keeps shop names and extra req
 
 test('a single compatible input dish selects its specific subtype', () => {
   const p = page();
-  p.query('長野 蕎麦');
-  p.mode('noodle');
-  assert.equal(p.ids.kind.value, 'そば店');
-  assert.equal(p.run('searchText()'), '長野 そば店');
   p.query('名古屋 焼き鳥');
   p.mode('meat');
   assert.equal(p.ids.kind.value, '焼鳥店');
