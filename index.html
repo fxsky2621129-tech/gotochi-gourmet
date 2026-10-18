@@ -191,7 +191,7 @@ button,input,select{font:inherit}
 
 <section class="quick">
   <a href="./gifu-chahan/"><b>🍚 全国チャーハン帖</b><span>47都道府県・食べ歩き記録</span></a>
-  <button data-quick="tourist"><b>🚶 食べ歩き</b><span>観光地周辺を探す</span></button>
+  <button data-quick="tourist"><b>🚶 ご当地の味</b><span>名物・郷土料理を探す</span></button>
   <button data-quick="roadstation"><b>🛣️ 道の駅検索</b><span>地域から道の駅を探す</span></button>
   <button data-quick="localchain"><b>🏠 ローカルチェーン検索</b><span>地域のファミレス・専門店を探す</span></button>
   <a class="sns-quick" data-sns-link href="./trending.html"><b>🔥 SNSグルメ</b><span>SNSに言及したグルメ記事</span></a>
@@ -317,7 +317,7 @@ const MODES = {
     ['鶏料理','ローカルチェーン 鶏料理']
   ]},
   famous:{label:'有名店', term:'人気の飲食店'},
-  tourist:{label:'観光地グルメ', term:'観光地 飲食店'},
+  tourist:{label:'観光地グルメ', term:'郷土料理店 名物料理'},
   roadstation:{label:'道の駅', term:'道の駅'},
   sweets:{label:'スイーツ', term:'スイーツ店', kinds:[
     ['スイーツ全般','スイーツ店'], ['和菓子','和菓子店'], ['洋菓子','洋菓子店'],
@@ -660,6 +660,7 @@ async function searchByReviews() {
       '取得した' + result.candidates + '候補のうち、条件に合う' + result.places.length +
       '店を口コミ・評価件数の多い順に並べ、' + list.length + '店を表示しています。' +
       '地域全店を網羅するランキングではありません。' +
+      (options.mode === 'tourist' ? '<br>観光地グルメは、店名に郷土・ご当地・名物の表記を確認できる飲食店に絞っています。観光名所への近さや実際の提供料理を保証するものではありません。店名に表記がないお店はGoogleマップや公式観光情報でもご確認ください。' : '') +
       (['うどん店','とんこつラーメン店','つけ麺店','海鮮丼専門店','ハンバーグ専門店','パフェ専門店','肉料理店'].includes(options.term) ?
         '<br>料理名・業態・確認済みブランドで絞り込んでいます。店名などから確認できない店舗は表示されない場合があります。提供メニューは店舗情報でご確認ください。' : '') +
       (options.coords ? '<br>現在地から10km以内の候補です。' : '') +

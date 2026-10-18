@@ -90,7 +90,7 @@ function mapsText(url) {
 test('every category searches the selected business type with the chosen region', async t => {
   const cases = {
     all: '飲食店', ramen: 'ラーメン店', tonkotsu: 'とんこつラーメン店', famous: '人気の飲食店',
-    tourist: '観光地 飲食店', roadstation: '道の駅',
+    tourist: '郷土料理店 名物料理', roadstation: '道の駅',
     seafood: '海鮮料理店', udon: 'うどん店', meat: '肉料理店'
   };
   for (const [mode, term] of Object.entries(cases)) await t.test(mode, () => {
@@ -640,6 +640,23 @@ test('selected region takes priority over leftover explicit prefecture and munic
   assert.equal(p.run('searchText()'),'大阪府 大阪市 北区 大阪王将 ラーメン店');
   p.city('');p.query('堺市');assert.equal(p.run('searchText()'),'大阪府 堺市 ラーメン店');
   p.pref('');p.query('東京都 新宿区');assert.equal(p.run('searchText()'),'東京都 新宿区 ラーメン店');
+});
+
+test('tourist searches target regional specialties and reject ordinary diners even with more reviews', async () => {
+  const p=page();p.pref('岐阜');p.city('高山市');p.mode('tourist');
+  assert.equal(p.run('searchText()'),'岐阜県 高山市 郷土料理店 名物料理');
+  assert.equal(new URL(p.run('webSearchUrl()')).searchParams.get('q'),p.run('searchText()'));
+  p.display('reviews');
+  connectMockPlaces(p,()=>({places:[
+    store('ordinary',9999,{displayName:'駅前食堂',formattedAddress:'岐阜県高山市',types:['restaurant']}),
+    store('local',50,{displayName:'郷土料理 まるこ',formattedAddress:'岐阜県高山市',types:['restaurant']}),
+    store('souvenir',500,{displayName:'名物 お土産売場',formattedAddress:'岐阜県高山市',types:['store']}),
+    store('wrong-region',200,{displayName:'名物料理 まるこ',formattedAddress:'東京都',types:['restaurant']})
+  ]}));
+  await p.run('searchStores()');
+  assert.ok(p.ids.results.innerHTML.includes('郷土料理 まるこ'));
+  for(const name of ['駅前食堂','お土産売場','名物料理 まるこ']) assert.ok(!p.ids.results.innerHTML.includes(name));
+  assert.ok(p.ids.results.innerHTML.includes('店名に郷土'));
 });
 
 test('free text and famous cuisine searches also request the exact supported restaurant type', async () => {

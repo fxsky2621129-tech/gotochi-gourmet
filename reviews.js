@@ -23,6 +23,7 @@
     'tonkatsu_restaurant','barbecue_restaurant','korean_barbecue_restaurant','chicken_restaurant'];
   function matchesDish(place, options, types) {
     const name = compact(place.displayName);
+    if (options.mode === 'tourist' && !/郷土|ご当地|名物/.test(name)) return false;
     const pattern = DISH_NAMES[options.term];
     if (pattern && !pattern.test(name) &&
         !(options.dishBrands || []).some(brand => [brand.name, ...(brand.aliases || [])]
