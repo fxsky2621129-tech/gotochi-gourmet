@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <meta name="theme-color" content="#26324A">
-<title>ご当地グルメ検索 v7.17（カテゴリー・地域の検索精度改善）</title>
+<title>ご当地グルメ検索 v7.18</title>
 <style>
 :root {
   --bg:#F5EFE0; --card:#FFFCF4; --ink:#263652; --soft:#66728A;
@@ -85,7 +85,6 @@ button,input,select{font:inherit}
 .app{width:100%}
 .chip{text-decoration:none}
 .quick{grid-template-columns:repeat(2,minmax(0,1fr))}
-.quick .sns-quick{grid-column:auto}
 .nearby-grid a{border:1px solid var(--border);background:white;border-radius:10px;padding:9px 8px;font-size:11.5px;font-weight:700;color:var(--ink);text-decoration:none}
 .cover,.card,.notice,.quick,.bottom,.nearby-grid{overflow-wrap:anywhere}
 @media(max-width:360px){.category-options{align-items:stretch;flex-direction:column}.category-options select{width:100%}.primary{padding:0 10px}.row .ghost{font-size:12px}}
@@ -142,7 +141,6 @@ button,input,select{font:inherit}
   <button class="chip" data-mode="famous" aria-pressed="false">有名店</button>
   <button class="chip" data-mode="tourist" aria-pressed="false">観光地グルメ</button>
   <button class="chip" data-mode="roadstation" aria-pressed="false">道の駅</button>
-  <a class="chip" data-sns-link href="./trending.html">🔥 SNSグルメ</a>
   <button class="chip" data-mode="seafood" aria-pressed="false">海鮮</button>
   <button class="chip" data-mode="udon" aria-pressed="false">うどん</button>
   <button class="chip" data-mode="meat" aria-pressed="false">肉</button>
@@ -184,7 +182,6 @@ button,input,select{font:inherit}
     <button data-nearby="udon">うどん</button>
     <button data-nearby="seafood">🐟 海鮮</button>
     <button data-nearby="meat" data-kind="焼肉店">🥩 焼肉</button>
-    <a data-sns-link href="./trending.html">🔥 SNSグルメ（全国の記事）</a>
     <button data-nearby="roadstation">🛣️ 道の駅</button>
   </div>
 </section>
@@ -194,7 +191,6 @@ button,input,select{font:inherit}
   <button data-quick="tourist"><b>🚶 ご当地の味</b><span>名物・郷土料理を探す</span></button>
   <button data-quick="roadstation"><b>🛣️ 道の駅検索</b><span>地域から道の駅を探す</span></button>
   <button data-quick="localchain"><b>🏠 ローカルチェーン検索</b><span>地域のファミレス・専門店を探す</span></button>
-  <a class="sns-quick" data-sns-link href="./trending.html"><b>🔥 SNSグルメ</b><span>SNSに言及したグルメ記事</span></a>
 </section>
 
 <div class="section-title" id="resultTitle">検索リンク</div>
@@ -474,7 +470,6 @@ function cityName() {
 }
 function refreshCitySuggestions() {
   const pref = fullPrefName(document.getElementById('pref').value);
-  document.querySelectorAll('[data-sns-link]').forEach(link => { link.href = './trending.html' + (pref ? '?pref=' + encodeURIComponent(pref) : ''); });
   const cities = CITY_DATA[pref] || [];
   const select = document.getElementById('city');
   const previous = select.value;
