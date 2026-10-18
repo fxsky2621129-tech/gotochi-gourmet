@@ -11,7 +11,27 @@
   };
   const DESSERT_TYPES = ['dessert_shop','dessert_restaurant','cake_shop','confectionery',
     'candy_store','pastry_shop','bakery','ice_cream_shop'];
-  const compact = text => String(text || '').normalize('NFKC').replace(/\s+/g, '');
+  const compact = text => String(text || '').normalize('NFKC').toLowerCase().replace(/\s+/g, '');
+  // Google has no exact type for these dishes. Do not equate every restaurant
+  // (or every ramen restaurant) with the requested specialty.
+  const DISH_NAMES = {
+    うどん店: /うどん|饂飩/, とんこつラーメン店: /とんこつ|豚骨|トンコツ/,
+    つけ麺店: /つけ麺|つけめん|つけそば/, 海鮮丼専門店: /海鮮丼|海鮮どん|魚丼/,
+    ハンバーグ専門店: /ハンバーグ|hamburg(?!er)/, パフェ専門店: /パフェ|parfait/
+  };
+  const MEAT_TYPES = ['steak_house','yakiniku_restaurant','yakitori_restaurant',
+    'tonkatsu_restaurant','barbecue_restaurant','korean_barbecue_restaurant','chicken_restaurant'];
+  function matchesDish(place, options, types) {
+    const name = compact(place.displayName);
+    if (options.mode === 'tourist' && !/郷土|ご当地|名物/.test(name)) return false;
+    const pattern = DISH_NAMES[options.term];
+    if (pattern && !pattern.test(name) &&
+        !(options.dishBrands || []).some(brand => [brand.name, ...(brand.aliases || [])]
+          .some(alias => name.includes(compact(alias))))) return false;
+    if (options.term === '肉料理店' && !types.some(t => MEAT_TYPES.includes(t)) &&
+        !/焼肉|焼鳥|焼き鳥|ステーキ|ハンバーグ|とんかつ|トンカツ|肉料理|すき焼|しゃぶしゃぶ/.test(name)) return false;
+    return true;
+  }
   const count = place => Number.isInteger(place.userRatingCount) && place.userRatingCount >= 0 ?
     place.userRatingCount : -1;
   const rating = place => typeof place.rating === 'number' && place.rating >= 0 && place.rating <= 5 ?
@@ -89,6 +109,7 @@
       if (options.city && !address.includes(compact(options.city))) return false;
       const types = [...(place.types || []), place.primaryType].filter(Boolean);
       if (type && !types.includes(type)) return false;
+      if (!matchesDish(place, options, types)) return false;
       if (!type && options.mode === 'localchain' &&
         !types.some(t => t === 'food' || t === 'meal_takeaway' || t === 'convenience_store' || t.endsWith('restaurant') ||
           (options.chainKind === 'カフェ・喫茶' && ['cafe','coffee_shop','tea_house'].includes(t)))) return false;

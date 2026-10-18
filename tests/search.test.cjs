@@ -90,7 +90,7 @@ function mapsText(url) {
 test('every category searches the selected business type with the chosen region', async t => {
   const cases = {
     all: '飲食店', ramen: 'ラーメン店', tonkotsu: 'とんこつラーメン店', famous: '人気の飲食店',
-    tourist: '観光地 飲食店', roadstation: '道の駅',
+    tourist: '郷土料理店 名物料理', roadstation: '道の駅',
     seafood: '海鮮料理店', udon: 'うどん店', meat: '肉料理店'
   };
   for (const [mode, term] of Object.entries(cases)) await t.test(mode, () => {
@@ -621,6 +621,80 @@ test('hamburg steak searches do not require the hamburger restaurant type', () =
   assert.equal(api.request(options).includedType, 'restaurant');
   const candidates = [{id:'steak', displayName:'ハンバーグ店', types:['restaurant'], userRatingCount:20}];
   assert.equal(api.rank(candidates, options).length, 1);
+});
+
+test('generic cuisine variants and slash lists do not leak across category changes', () => {
+  const p=page();p.pref('福岡');
+  for(const mode of ['ramen','tonkotsu','udon','seafood','meat']) {
+    p.query('博多駅 カレー店 うどん/ラーメン 道の駅');p.mode(mode);
+    assert.equal(p.run('searchText()'),'福岡県 博多駅 '+p.run('categoryTerm()'));
+  }
+  p.query('カレー屋まるこ');p.mode('udon');
+  assert.equal(p.run('searchText()'),'福岡県 カレー屋まるこ うどん店');
+});
+
+test('selected region takes priority over leftover explicit prefecture and municipality names', () => {
+  const p=page();p.query('東京都 新宿区 濃厚');p.pref('大阪');p.city('大阪市 北区');p.mode('ramen');
+  assert.equal(p.run('searchText()'),'大阪府 大阪市 北区 濃厚 ラーメン店');
+  p.query('堺市 大阪市 北区 大阪王将');
+  assert.equal(p.run('searchText()'),'大阪府 大阪市 北区 大阪王将 ラーメン店');
+  p.city('');p.query('堺市');assert.equal(p.run('searchText()'),'大阪府 堺市 ラーメン店');
+  p.pref('');p.query('東京都 新宿区');assert.equal(p.run('searchText()'),'東京都 新宿区 ラーメン店');
+});
+
+test('tourist searches target regional specialties and reject ordinary diners even with more reviews', async () => {
+  const p=page();p.pref('岐阜');p.city('高山市');p.mode('tourist');
+  assert.equal(p.run('searchText()'),'岐阜県 高山市 郷土料理店 名物料理');
+  assert.equal(new URL(p.run('webSearchUrl()')).searchParams.get('q'),p.run('searchText()'));
+  p.display('reviews');
+  connectMockPlaces(p,()=>({places:[
+    store('ordinary',9999,{displayName:'駅前食堂',formattedAddress:'岐阜県高山市',types:['restaurant']}),
+    store('local',50,{displayName:'郷土料理 まるこ',formattedAddress:'岐阜県高山市',types:['restaurant']}),
+    store('souvenir',500,{displayName:'名物 お土産売場',formattedAddress:'岐阜県高山市',types:['store']}),
+    store('wrong-region',200,{displayName:'名物料理 まるこ',formattedAddress:'東京都',types:['restaurant']})
+  ]}));
+  await p.run('searchStores()');
+  assert.ok(p.ids.results.innerHTML.includes('郷土料理 まるこ'));
+  for(const name of ['駅前食堂','お土産売場','名物料理 まるこ']) assert.ok(!p.ids.results.innerHTML.includes(name));
+  assert.ok(p.ids.results.innerHTML.includes('店名に郷土'));
+});
+
+test('free text and famous cuisine searches also request the exact supported restaurant type', async () => {
+  for(const mode of ['all','famous','tourist']) {
+    const p=page();p.query('博多駅 焼肉');p.mode(mode);p.display('reviews');
+    const requests=connectMockPlaces(p,()=>({places:[]}));
+    await p.run('searchStores()');assert.equal(requests[0].includedType,'yakiniku_restaurant');
+  }
+});
+
+test('specialties reject high-review unrelated restaurants instead of accepting their broad type', () => {
+  const api=page().context.window.GourmetReviews;
+  for(const [term,name] of [
+    ['うどん店','手打ちうどん まるこ'],['とんこつラーメン店','博多豚骨ラーメン'],
+    ['つけ麺店','つけめん まるこ'],['海鮮丼専門店','海鮮丼 まるこ'],
+    ['ハンバーグ専門店','ハンバーグ まるこ'],['パフェ専門店','パフェ まるこ'],
+    ['肉料理店','炭火焼肉 まるこ']
+  ]) {
+    const types=['restaurant','ramen_restaurant','seafood_restaurant'];
+    const result=api.rank([
+      store('other',9000,{displayName:'一般食堂',types}),
+      store('right',10,{displayName:name,types})
+    ],{mode:'all',term});
+    assert.deepEqual(Array.from(result,p=>p.id),['right'],term);
+  }
+  assert.equal(api.rank([store('burger',100,{displayName:'Hamburger',types:['restaurant']})],
+    {term:'ハンバーグ専門店'}).length,0);
+});
+
+test('udon brand evidence uses the reviewed regional catalog without accepting ambiguous names', async () => {
+  const p=page();p.pref('大阪');p.mode('udon');p.display('reviews');
+  connectMockPlaces(p,()=>({places:[
+    store('udon',10,{displayName:'讃岐製麺 大阪店',formattedAddress:'大阪府大阪市',types:['restaurant']}),
+    store('wrong',999,{displayName:'どんどん亭',formattedAddress:'大阪府大阪市',types:['restaurant']})
+  ]}));
+  await p.run('searchStores()');
+  assert.ok(p.ids.results.innerHTML.includes('讃岐製麺 大阪店'));
+  assert.ok(!p.ids.results.innerHTML.includes('どんどん亭'));
 });
 
 function store(id, reviews, extra = {}) {
