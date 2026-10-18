@@ -623,6 +623,63 @@ test('hamburg steak searches do not require the hamburger restaurant type', () =
   assert.equal(api.rank(candidates, options).length, 1);
 });
 
+test('generic cuisine variants and slash lists do not leak across category changes', () => {
+  const p=page();p.pref('福岡');
+  for(const mode of ['ramen','tonkotsu','udon','seafood','meat']) {
+    p.query('博多駅 カレー店 うどん/ラーメン 道の駅');p.mode(mode);
+    assert.equal(p.run('searchText()'),'福岡県 博多駅 '+p.run('categoryTerm()'));
+  }
+  p.query('カレー屋まるこ');p.mode('udon');
+  assert.equal(p.run('searchText()'),'福岡県 カレー屋まるこ うどん店');
+});
+
+test('selected region takes priority over leftover explicit prefecture and municipality names', () => {
+  const p=page();p.query('東京都 新宿区 濃厚');p.pref('大阪');p.city('大阪市 北区');p.mode('ramen');
+  assert.equal(p.run('searchText()'),'大阪府 大阪市 北区 濃厚 ラーメン店');
+  p.query('堺市 大阪市 北区 大阪王将');
+  assert.equal(p.run('searchText()'),'大阪府 大阪市 北区 大阪王将 ラーメン店');
+  p.city('');p.query('堺市');assert.equal(p.run('searchText()'),'大阪府 堺市 ラーメン店');
+  p.pref('');p.query('東京都 新宿区');assert.equal(p.run('searchText()'),'東京都 新宿区 ラーメン店');
+});
+
+test('free text and famous cuisine searches also request the exact supported restaurant type', async () => {
+  for(const mode of ['all','famous','tourist']) {
+    const p=page();p.query('博多駅 焼肉');p.mode(mode);p.display('reviews');
+    const requests=connectMockPlaces(p,()=>({places:[]}));
+    await p.run('searchStores()');assert.equal(requests[0].includedType,'yakiniku_restaurant');
+  }
+});
+
+test('specialties reject high-review unrelated restaurants instead of accepting their broad type', () => {
+  const api=page().context.window.GourmetReviews;
+  for(const [term,name] of [
+    ['うどん店','手打ちうどん まるこ'],['とんこつラーメン店','博多豚骨ラーメン'],
+    ['つけ麺店','つけめん まるこ'],['海鮮丼専門店','海鮮丼 まるこ'],
+    ['ハンバーグ専門店','ハンバーグ まるこ'],['パフェ専門店','パフェ まるこ'],
+    ['肉料理店','炭火焼肉 まるこ']
+  ]) {
+    const types=['restaurant','ramen_restaurant','seafood_restaurant'];
+    const result=api.rank([
+      store('other',9000,{displayName:'一般食堂',types}),
+      store('right',10,{displayName:name,types})
+    ],{mode:'all',term});
+    assert.deepEqual(Array.from(result,p=>p.id),['right'],term);
+  }
+  assert.equal(api.rank([store('burger',100,{displayName:'Hamburger',types:['restaurant']})],
+    {term:'ハンバーグ専門店'}).length,0);
+});
+
+test('udon brand evidence uses the reviewed regional catalog without accepting ambiguous names', async () => {
+  const p=page();p.pref('大阪');p.mode('udon');p.display('reviews');
+  connectMockPlaces(p,()=>({places:[
+    store('udon',10,{displayName:'讃岐製麺 大阪店',formattedAddress:'大阪府大阪市',types:['restaurant']}),
+    store('wrong',999,{displayName:'どんどん亭',formattedAddress:'大阪府大阪市',types:['restaurant']})
+  ]}));
+  await p.run('searchStores()');
+  assert.ok(p.ids.results.innerHTML.includes('讃岐製麺 大阪店'));
+  assert.ok(!p.ids.results.innerHTML.includes('どんどん亭'));
+});
+
 function store(id, reviews, extra = {}) {
   return {
     id, displayName: 'ラーメン' + id, formattedAddress: '日本、山形県山形市',

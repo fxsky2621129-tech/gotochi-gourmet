@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <meta name="theme-color" content="#26324A">
-<title>ご当地グルメ検索 v7.16（うどん・とんこつラーメン検索）</title>
+<title>ご当地グルメ検索 v7.17（カテゴリー・地域の検索精度改善）</title>
 <style>
 :root {
   --bg:#F5EFE0; --card:#FFFCF4; --ink:#263652; --soft:#66728A;
@@ -206,7 +206,7 @@ button,input,select{font:inherit}
 </div>
 
 <script src="./municipalities.js"></script>
-<script src="./reviews.js?v=7.16"></script>
+<script src="./reviews.js?v=7.17"></script>
 <script>
 function readLastQuery() {
   try { return localStorage.getItem('gourmet-last-query-v2') || ''; }
@@ -355,6 +355,42 @@ const GENERAL_WORDS = new Set([
   'グルメ','飲食店','レストラン','観光地グルメ','食べ歩き','名物'
 ]);
 
+// Recognize generic search phrases only; never remove a substring of a shop name.
+function foodTerm(word) {
+  if (FOOD_WORDS.has(word)) return FOOD_TERMS[word] || word;
+  const base = word.replace(/(?:専門店|料理店|のお店|の店|屋さん|屋|店)$/, '');
+  return FOOD_WORDS.has(base) ? (FOOD_TERMS[base] || base) : '';
+}
+function categoryWords(query) {
+  return queryWords(query).flatMap(word => {
+    const parts = word.split(/[\/／・、,]+/).filter(Boolean);
+    return parts.length > 1 && parts.every(foodTerm) ? parts : [word];
+  });
+}
+function reviewTerm() {
+  const term = categoryTerm();
+  if (!['all','famous','tourist'].includes(STATE.mode)) return term;
+  const dishes = [...new Set(categoryWords(STATE.query).map(foodTerm).filter(Boolean))];
+  return dishes.length === 1 ? dishes[0] : term;
+}
+function matchesSelectedArea(word) {
+  if (!STATE.pref) return true;
+  const pref = fullPrefName(STATE.pref);
+  if (Object.hasOwn(CITY_DATA, word)) return word === pref;
+  if (!/[市区町村]$/.test(word)) return true;
+  const names = cities => cities.flatMap(city => [city, ...queryWords(city)]);
+  const inSelectedPref = names(CITY_DATA[pref] || []).includes(word);
+  const isKnownArea = inSelectedPref || Object.values(CITY_DATA).some(cities => names(cities).includes(word));
+  if (!isKnownArea) return true; // Unknown station/shop names remain untouched.
+  return STATE.city ? names([STATE.city]).includes(word) : inSelectedPref;
+}
+function dishBrands(term) {
+  // Reuse officially reviewed specialist brands, restricted to the selected prefecture.
+  const kind = term === 'うどん店' ? 'うどん' : '';
+  return kind ? LOCAL_CHAINS.filter(c => c.kind === kind && c.name !== 'どんどん' &&
+    (!STATE.pref || c.prefs.includes(STATE.pref))) : [];
+}
+
 function normalizeQuery(query='') {
   return query.normalize('NFKC').replace(/[・、,]+/g, ' ').replace(/\s+/g, ' ').trim();
 }
@@ -411,14 +447,14 @@ function searchText() {
     // Do not mix saved free text (possibly a national chain name) into curated searches.
     return [fullPrefName(STATE.pref), STATE.city, chain ? chain.query : ''].filter(Boolean).join(' ');
   }
-  let words = queryWords(STATE.query);
+  let words = categoryWords(STATE.query);
   if(STATE.mode !== 'all') {
     words = words.filter(word => !GENERAL_WORDS.has(word) &&
-      !(FOOD_MODES.has(STATE.mode) && FOOD_WORDS.has(word)));
+      !(FOOD_MODES.has(STATE.mode) && (foodTerm(word) || word === '道の駅')));
   }
   const pref = fullPrefName(STATE.pref);
   const area = [pref, ...queryWords(STATE.city)].filter(Boolean);
-  words = words.filter(word => word !== STATE.pref && !area.includes(word));
+  words = words.filter(word => word !== STATE.pref && !area.includes(word) && matchesSelectedArea(word));
   const term = categoryTerm();
   // Avoid appending another generic restaurant type to an explicit dish search.
   const type = STATE.mode === 'all' && !words.length ? '飲食店' :
@@ -608,7 +644,7 @@ async function searchByReviews() {
   }
   const options = {
     text:searchText(), pref:fullPrefName(STATE.pref), city:STATE.city,
-    mode:STATE.mode, term:categoryTerm(), coords:STATE.coords ? {...STATE.coords} : null,
+    mode:STATE.mode, term:reviewTerm(), dishBrands:dishBrands(reviewTerm()), coords:STATE.coords ? {...STATE.coords} : null,
     chainName: STATE.mode === 'localchain' ? (selectedChain().match || selectedChain().name) : '',
     chainAliases: STATE.mode === 'localchain' ? (selectedChain().aliases || []) : [],
     chainExcludedNames: STATE.mode === 'localchain' ? (selectedChain().excludedNames || []) : [],
@@ -624,6 +660,8 @@ async function searchByReviews() {
       '取得した' + result.candidates + '候補のうち、条件に合う' + result.places.length +
       '店を口コミ・評価件数の多い順に並べ、' + list.length + '店を表示しています。' +
       '地域全店を網羅するランキングではありません。' +
+      (['うどん店','とんこつラーメン店','つけ麺店','海鮮丼専門店','ハンバーグ専門店','パフェ専門店','肉料理店'].includes(options.term) ?
+        '<br>料理名・業態・確認済みブランドで絞り込んでいます。店名などから確認できない店舗は表示されない場合があります。提供メニューは店舗情報でご確認ください。' : '') +
       (options.coords ? '<br>現在地から10km以内の候補です。' : '') +
       '<br>件数は文章のない評価も含みます。<div class="google-attribution" translate="no">Google Maps</div></div>' +
       (list.length ? list.map(placeCard).join('') :
