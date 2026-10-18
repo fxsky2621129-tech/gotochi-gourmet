@@ -1,3 +1,56 @@
+## v7.19 ローカルチェーン101ブランド（2026-10-18）
+
+西日本を中心に専門店40ブランドを追加し、61→101ブランドに拡充。支店を別チェーンとして数えません。「寿司」「とんかつ」「カレー」の種類フィルターを追加。既存のファミレス43ブランドと通常検索のカテゴリーを維持しています。
+
+公式の店舗案内・運営会社情報で確認した地域を登録しています。全国の全出店県を完全に網羅するものではありません。暖暮は今回確認した福岡県内の店舗を登録。藤一番の四日市諏訪公園前店は公式の休業表示に従い三重を除外。亀王は現行店舗一覧の大阪・兵庫のみ、電光石火は現行一覧にない愛媛を含めていません。すし遊館あさひはすし遊館の1ブランドに含め、人力屋など別名称の姉妹業態を水増ししていません。
+
+似た店名への対策として、うどん「どんどん」の口コミ候補から「どんどん庵」を除外。「回転すし北海道」に一般の「北海道食堂」が混ざらないことも確認します。
+
+### 追加ブランドと確認元（確認日：2026-10-18）
+
+| チェーン | 種類 | 登録地域 | 情報源 |
+|---|---|---|---|
+| 小麦冶 | うどん | 福岡 | [公式情報](https://udon-komugiya.com/shop/) |
+| こだわり麺や | うどん | 香川 | [公式情報](https://kodawarimenya.com/shop_list.html) |
+| めりけんや | うどん | 香川・大阪・東京・神奈川 | [公式情報](https://merikenya.com/index.php/merikenyashop) |
+| どんどん庵 | うどん | 愛知・岐阜・三重 | [公式情報](https://www.sagami.co.jp/dondonan/) |
+| 若鯱家 | うどん | 愛知・岐阜・三重・東京・埼玉・神奈川 | [公式情報](https://www.wakashachiya.co.jp/shopinfo/) |
+| さぬき麺業 | うどん | 香川・東京 | [公式情報](https://shop.sanukiudon.co.jp/pages/shoplist) |
+| 河童ラーメン本舗 | ラーメン | 大阪・奈良・兵庫 | [公式情報](https://kappa-hompo.co.jp/store/) |
+| もっこす | ラーメン | 兵庫 | [公式情報](https://moccos.jp/shop/) |
+| 希望軒 | ラーメン | 兵庫・大阪・京都 | [公式情報](https://kibou-ken.com/shop/) |
+| 九州らーめん亀王 | ラーメン | 大阪・兵庫 | [公式情報](https://www.kiou.co.jp/shop-k.htm) |
+| 暖暮 | ラーメン | 福岡 | [公式情報](https://www.danbo.jp/store_info.html) |
+| 龍の家 | ラーメン | 福岡・熊本・大分・東京 | [公式情報](https://apex-online.hr-hackerplus.com/about/) |
+| 黒亭 | ラーメン | 熊本 | [公式情報](https://kokutei.co.jp/access/) |
+| 桂花ラーメン | ラーメン | 熊本・東京 | [公式情報](https://keika-raumen.co.jp/shop.html) |
+| 鳴門うどん | うどん | 大分 | [公式情報](https://kfs-naruto.com/) |
+| たも屋 | うどん | 香川・高知・愛媛 | [公式情報](https://www.tamoya.com/shopinfo/index.html) |
+| 岐阜タンメン | ラーメン | 岐阜・愛知・長野・富山・静岡・三重・福井・石川 | [公式情報](https://gifu-tanmen.com/99_access/index.html) |
+| 藤一番 | ラーメン | 愛知・岐阜 | [公式情報](https://www.fujiichiban.jp/shoplist/) |
+| 福しん | 中華料理 | 東京・埼玉 | [公式情報](https://www.fuku-sin.co.jp/shop.html) |
+| 回転すし北海道 | 寿司 | 鳥取・島根 | [公式情報](https://sushibenkei.co.jp/shop) |
+| すし辰 | 寿司 | 広島 | [公式情報](https://www.v-style.co.jp/brand/sushi) |
+| すし遊館 | 寿司 | 岡山・広島・山口・香川 | [公式情報](https://sushiyoukan.com/shop/) |
+| すし丸 | 寿司 | 広島・岡山・徳島・東京 | [公式情報](https://susi-maru.co.jp/shopinfo/) |
+| 寿し一貫 | 寿司 | 高知・香川・徳島・愛媛 | [公式情報](https://sushiikkan.jp/tenpo/) |
+| お好み焼き徳川 | お好み焼き | 広島・山口・愛媛 | [公式情報](https://www.tokugawa.jp/shops.html) |
+| ちんちくりん | お好み焼き | 広島・東京 | [公式情報](https://www.chinchikurin.com/shop/) |
+| 電光石火 | お好み焼き | 広島・東京・愛知・福岡・神奈川・北海道・千葉 | [公式情報](https://okonomiyaki-denko-sekka.com/shop/) |
+| お好み焼き偶 | お好み焼き | 兵庫・大阪 | [公式情報](https://www.okonomiyaki-gu.co.jp/shop/) |
+| かつアンドかつ | とんかつ | 大阪・兵庫・京都・奈良 | [公式情報](https://www.katsuandkatsu.jp/shop/) |
+| 勝烈亭 | とんかつ | 熊本 | [公式情報](https://hayashi-sangyo.jp/shopslist/) |
+| こがらや | うどん | 大阪 | [公式情報](https://kogaraya.jp/site/shop) |
+| 麺や兼虎 | ラーメン | 福岡・佐賀 | [公式情報](https://www.kanetora.co.jp/shop) |
+| カレーのチャンピオン | カレー | 石川・富山・福井・東京・愛知・兵庫・岐阜 | [公式情報](https://chancurry.com/shoplist/) |
+| インデアンカレー | カレー | 大阪・兵庫・東京 | [公式情報](https://www.indiancurry.jp/) |
+| 因幡うどん | うどん | 福岡 | [公式情報](https://inabaudon.com/) |
+| 人力うどん | うどん | 福岡・佐賀 | [公式情報](https://www.jinrikiudon.co.jp/restaurant-cat/udon/) |
+| 博多めんちゃんこ亭 | ラーメン | 福岡・長崎 | [公式情報](https://menchanko.co.jp/) |
+| 大龍ラーメン | ラーメン | 福岡・佐賀 | [公式情報](https://www.dairyuramen.com/) |
+| かつ処季の屋 | とんかつ | 高知・兵庫・岡山 | [公式情報](https://elleair-foods.co.jp/eatery/) |
+| ふくの家 | ラーメン | 福岡 | [公式情報](https://www.jinrikiudon.co.jp/restaurant-cat/ramen/) |
+
 # ご当地グルメ検索 v7.18
 
 ## v7.18 SNSカテゴリーの削除（2026-10-18）

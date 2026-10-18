@@ -117,7 +117,7 @@ test('udon and meat searches do not combine alternative dishes', () => {
 
 test('regional catalog lists every registered candidate in all 47 prefectures', () => {
   const p=page();p.mode('localchain');
-  const chains=p.run('LOCAL_CHAINS');assert.equal(chains.length,61);
+  const chains=p.run('LOCAL_CHAINS');assert.equal(chains.length,101);
   const prefs=[...html.match(/<select id="pref"[\s\S]*?<\/select>/)[0].matchAll(/<option>([^<]+)<\/option>/g)].map(m=>m[1]);
   assert.equal(prefs.length,47);assert.equal(new Set(chains.map(c=>c.name)).size,chains.length);
   for(const c of chains){
@@ -276,6 +276,46 @@ test('specialty filters preserve region and invalidate incompatible brand select
 
 test('new specialists generate region and brand queries without conflicting cuisine text', () => {
   const examples=[
+    ["福岡","うどん","小麦冶","小麦冶"],
+    ["香川","うどん","こだわり麺や","こだわり麺や"],
+    ["香川","うどん","めりけんや","めりけんや"],
+    ["愛知","うどん","どんどん庵","どんどん庵"],
+    ["愛知","うどん","若鯱家","若鯱家"],
+    ["香川","うどん","さぬき麺業","さぬき麺業"],
+    ["大阪","ラーメン","河童ラーメン本舗","河童ラーメン本舗"],
+    ["兵庫","ラーメン","もっこす","中華そば もっこす"],
+    ["兵庫","ラーメン","希望軒","希望軒"],
+    ["大阪","ラーメン","九州らーめん亀王","九州らーめん亀王"],
+    ["福岡","ラーメン","暖暮","ラーメン 暖暮"],
+    ["福岡","ラーメン","龍の家","ラーメン 龍の家"],
+    ["熊本","ラーメン","黒亭","熊本ラーメン 黒亭"],
+    ["熊本","ラーメン","桂花ラーメン","桂花ラーメン"],
+    ["大分","うどん","鳴門うどん","鳴門うどん"],
+    ["香川","うどん","たも屋","たも屋"],
+    ["岐阜","ラーメン","岐阜タンメン","岐阜タンメン"],
+    ["愛知","ラーメン","藤一番","ラーメン 藤一番"],
+    ["東京","中華料理","福しん","手もみラーメン 福しん"],
+    ["鳥取","寿司","回転すし北海道","回転すし北海道"],
+    ["広島","寿司","すし辰","すし辰"],
+    ["岡山","寿司","すし遊館","すし遊館"],
+    ["広島","寿司","すし丸","回転寿司 すし丸"],
+    ["高知","寿司","寿し一貫","寿し一貫"],
+    ["広島","お好み焼き","お好み焼き徳川","お好み焼き 徳川"],
+    ["広島","お好み焼き","ちんちくりん","お好み焼き ちんちくりん"],
+    ["広島","お好み焼き","電光石火","お好み焼き 電光石火"],
+    ["兵庫","お好み焼き","お好み焼き偶","お好み焼き 偶"],
+    ["大阪","とんかつ","かつアンドかつ","かつアンドかつ"],
+    ["熊本","とんかつ","勝烈亭","勝烈亭"],
+    ["大阪","うどん","こがらや","うどん こがらや"],
+    ["福岡","ラーメン","麺や兼虎","麺や兼虎"],
+    ["石川","カレー","カレーのチャンピオン","カレーのチャンピオン"],
+    ["大阪","カレー","インデアンカレー","インデアンカレー"],
+    ["福岡","うどん","因幡うどん","因幡うどん"],
+    ["福岡","うどん","人力うどん","人力うどん"],
+    ["福岡","ラーメン","博多めんちゃんこ亭","博多めんちゃんこ亭"],
+    ["福岡","ラーメン","大龍ラーメン","大龍ラーメン"],
+    ["高知","とんかつ","かつ処季の屋","かつ処季の屋"],
+    ["福岡","ラーメン","ふくの家","久留米ラーメン ふくの家"],
     ['福岡','うどん','牧のうどん','牧のうどん'],
     ['東京','うどん','大地のうどん','大地のうどん'],
     ['島根','うどん','どんどん','うどん どんどん'],
@@ -306,6 +346,9 @@ test('new specialists generate region and brand queries without conflicting cuis
 test('specialist review aliases exclude similar brand names and other prefectures', async () => {
   for(const [pref,brand,accepted,rejected] of [
     ['山口','どんどん','どんどん 湯田店','どんどん亭 宇部店'],
+    ['山口','どんどん','どんどん 湯田店','どんどん庵'],
+    ['鳥取','回転すし北海道','回転すし北海道 湖山店','北海道食堂'],
+    ['石川','カレーのチャンピオン','チャンピオンカレー 県庁前店','カレー食堂'],
     ['愛知','ステーキのあさくま','あさくま 桜山店','カレーのあさくま'],
     ['奈良','彩華ラーメン','サイカラーメン 本店','ガスト'],
     ['新潟','ステーキのさる～ん','さるーん 新発田店','ガスト']
@@ -877,3 +920,20 @@ test('SDK load failures clear the pending load and display an actionable error',
 });
 
 
+
+
+test('expanded specialist filters select only matching brands and preserve button state', () => {
+  const p=page();p.mode('localchain');
+  for(const kind of ['寿司','とんかつ','カレー']) {
+    p.pref('');p.familyKind(kind);
+    assert.equal(p.ids.kind.value,'ローカルチェーン '+kind);
+    assert.ok(p.run('chainCandidates().length')>1);
+    assert.ok(p.run('chainCandidates()').every(c=>c.kind===kind));
+    p.kind('ローカルチェーン '+kind);p.mode('localchain');
+    assert.equal(p.ids.kind.value,'ローカルチェーン '+kind);
+  }
+  p.pref('三重');p.familyKind('ラーメン');
+  assert.ok(!p.ids.chain.innerHTML.includes('藤一番'),'suspended Yokkaichi branch is excluded');
+  p.pref('徳島');p.familyKind('うどん');
+  assert.ok(!p.ids.chain.innerHTML.includes('鳴門うどん'),'Oita brand is not Naruto city udon');
+});
