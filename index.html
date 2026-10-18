@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <meta name="theme-color" content="#26324A">
-<title>ご当地グルメ検索 v7.18</title>
+<title>ご当地グルメ検索 v7.19</title>
 <style>
 :root {
   --bg:#F5EFE0; --card:#FFFCF4; --ink:#263652; --soft:#66728A;
@@ -162,6 +162,9 @@ button,input,select{font:inherit}
   <button type="button" data-family-kind="ステーキ・ハンバーグ" aria-pressed="false">ステーキ・ハンバーグ</button>
   <button type="button" data-family-kind="中華料理" aria-pressed="false">中華料理</button>
   <button type="button" data-family-kind="お好み焼き" aria-pressed="false">お好み焼き</button>
+  <button type="button" data-family-kind="寿司" aria-pressed="false">寿司</button>
+  <button type="button" data-family-kind="とんかつ" aria-pressed="false">とんかつ</button>
+  <button type="button" data-family-kind="カレー" aria-pressed="false">カレー</button>
   <button type="button" data-family-kind="鶏料理" aria-pressed="false">鶏料理</button>
 </div>
 <div class="category-options hidden" id="chainOptions">
@@ -229,9 +232,49 @@ const CITY_DATA = typeof MUNICIPALITIES === 'undefined' ? {} : MUNICIPALITIES;
 // Western Japan additions checked against official store information on 2026-10-17.
 // Tomato & Onion Osaka is temporarily closed in the official directory and omitted.
 const LOCAL_CHAINS = [
+  {"name":"小麦冶","query":"小麦冶","kind":"うどん","cuisines":["和食"],"prefs":["福岡"],"source":"https://udon-komugiya.com/shop/","checkedAt":"2026-10-18"},
+  {"name":"こだわり麺や","query":"こだわり麺や","kind":"うどん","cuisines":["和食"],"prefs":["香川"],"source":"https://kodawarimenya.com/shop_list.html","checkedAt":"2026-10-18"},
+  {"name":"めりけんや","query":"めりけんや","kind":"うどん","cuisines":["和食"],"prefs":["香川","大阪","東京","神奈川"],"source":"https://merikenya.com/index.php/merikenyashop","checkedAt":"2026-10-18"},
+  {"name":"どんどん庵","query":"どんどん庵","kind":"うどん","cuisines":["和食"],"prefs":["愛知","岐阜","三重"],"source":"https://www.sagami.co.jp/dondonan/","checkedAt":"2026-10-18"},
+  {"name":"若鯱家","query":"若鯱家","kind":"うどん","cuisines":["和食"],"prefs":["愛知","岐阜","三重","東京","埼玉","神奈川"],"source":"https://www.wakashachiya.co.jp/shopinfo/","checkedAt":"2026-10-18"},
+  {"name":"さぬき麺業","query":"さぬき麺業","kind":"うどん","cuisines":["和食"],"prefs":["香川","東京"],"source":"https://shop.sanukiudon.co.jp/pages/shoplist","checkedAt":"2026-10-18"},
+  {"name":"河童ラーメン本舗","query":"河童ラーメン本舗","kind":"ラーメン","cuisines":["中華"],"prefs":["大阪","奈良","兵庫"],"source":"https://kappa-hompo.co.jp/store/","checkedAt":"2026-10-18"},
+  {"name":"もっこす","query":"中華そば もっこす","kind":"ラーメン","cuisines":["中華"],"prefs":["兵庫"],"source":"https://moccos.jp/shop/","checkedAt":"2026-10-18","excludedNames":["天ぷらもっこす"]},
+  {"name":"希望軒","query":"希望軒","kind":"ラーメン","cuisines":["中華"],"prefs":["兵庫","大阪","京都"],"source":"https://kibou-ken.com/shop/","checkedAt":"2026-10-18"},
+  {"name":"九州らーめん亀王","query":"九州らーめん亀王","kind":"ラーメン","cuisines":["中華"],"prefs":["大阪","兵庫"],"source":"https://www.kiou.co.jp/shop-k.htm","checkedAt":"2026-10-18","aliases":["亀王"]},
+  {"name":"暖暮","query":"ラーメン 暖暮","kind":"ラーメン","cuisines":["中華"],"prefs":["福岡"],"source":"https://www.danbo.jp/store_info.html","checkedAt":"2026-10-18"},
+  {"name":"龍の家","query":"ラーメン 龍の家","kind":"ラーメン","cuisines":["中華"],"prefs":["福岡","熊本","大分","東京"],"source":"https://apex-online.hr-hackerplus.com/about/","checkedAt":"2026-10-18"},
+  {"name":"黒亭","query":"熊本ラーメン 黒亭","kind":"ラーメン","cuisines":["中華"],"prefs":["熊本"],"source":"https://kokutei.co.jp/access/","checkedAt":"2026-10-18"},
+  {"name":"桂花ラーメン","query":"桂花ラーメン","kind":"ラーメン","cuisines":["中華"],"prefs":["熊本","東京"],"source":"https://keika-raumen.co.jp/shop.html","checkedAt":"2026-10-18","aliases":["桂花拉麺"]},
+  {"name":"鳴門うどん","query":"鳴門うどん","kind":"うどん","cuisines":["和食"],"prefs":["大分"],"source":"https://kfs-naruto.com/","checkedAt":"2026-10-18"},
+  {"name":"たも屋","query":"たも屋","kind":"うどん","cuisines":["和食"],"prefs":["香川","高知","愛媛"],"source":"https://www.tamoya.com/shopinfo/index.html","checkedAt":"2026-10-18"},
+  {"name":"岐阜タンメン","query":"岐阜タンメン","kind":"ラーメン","cuisines":["中華"],"prefs":["岐阜","愛知","長野","富山","静岡","三重","福井","石川"],"source":"https://gifu-tanmen.com/99_access/index.html","checkedAt":"2026-10-18"},
+  {"name":"藤一番","query":"ラーメン 藤一番","kind":"ラーメン","cuisines":["中華"],"prefs":["愛知","岐阜"],"source":"https://www.fujiichiban.jp/shoplist/","checkedAt":"2026-10-18"},
+  {"name":"福しん","query":"手もみラーメン 福しん","kind":"中華料理","cuisines":["中華"],"prefs":["東京","埼玉"],"source":"https://www.fuku-sin.co.jp/shop.html","checkedAt":"2026-10-18"},
+  {"name":"回転すし北海道","query":"回転すし北海道","kind":"寿司","cuisines":["和食"],"prefs":["鳥取","島根"],"source":"https://sushibenkei.co.jp/shop","checkedAt":"2026-10-18"},
+  {"name":"すし辰","query":"すし辰","kind":"寿司","cuisines":["和食"],"prefs":["広島"],"source":"https://www.v-style.co.jp/brand/sushi","checkedAt":"2026-10-18"},
+  {"name":"すし遊館","query":"すし遊館","kind":"寿司","cuisines":["和食"],"prefs":["岡山","広島","山口","香川"],"source":"https://sushiyoukan.com/shop/","checkedAt":"2026-10-18"},
+  {"name":"すし丸","query":"回転寿司 すし丸","kind":"寿司","cuisines":["和食"],"prefs":["広島","岡山","徳島","東京"],"source":"https://susi-maru.co.jp/shopinfo/","checkedAt":"2026-10-18"},
+  {"name":"寿し一貫","query":"寿し一貫","kind":"寿司","cuisines":["和食"],"prefs":["高知","香川","徳島","愛媛"],"source":"https://sushiikkan.jp/tenpo/","checkedAt":"2026-10-18"},
+  {"name":"お好み焼き徳川","query":"お好み焼き 徳川","kind":"お好み焼き","cuisines":["和食"],"prefs":["広島","山口","愛媛"],"source":"https://www.tokugawa.jp/shops.html","checkedAt":"2026-10-18","aliases":["お好み焼徳川"]},
+  {"name":"ちんちくりん","query":"お好み焼き ちんちくりん","kind":"お好み焼き","cuisines":["和食"],"prefs":["広島","東京"],"source":"https://www.chinchikurin.com/shop/","checkedAt":"2026-10-18"},
+  {"name":"電光石火","query":"お好み焼き 電光石火","kind":"お好み焼き","cuisines":["和食"],"prefs":["広島","東京","愛知","福岡","神奈川","北海道","千葉"],"source":"https://okonomiyaki-denko-sekka.com/shop/","checkedAt":"2026-10-18"},
+  {"name":"お好み焼き偶","query":"お好み焼き 偶","kind":"お好み焼き","cuisines":["和食"],"prefs":["兵庫","大阪"],"source":"https://www.okonomiyaki-gu.co.jp/shop/","checkedAt":"2026-10-18","aliases":["お好み焼偶","お好み焼・鉄板焼偶"]},
+  {"name":"かつアンドかつ","query":"かつアンドかつ","kind":"とんかつ","cuisines":["和食"],"prefs":["大阪","兵庫","京都","奈良"],"source":"https://www.katsuandkatsu.jp/shop/","checkedAt":"2026-10-18"},
+  {"name":"勝烈亭","query":"勝烈亭","kind":"とんかつ","cuisines":["和食"],"prefs":["熊本"],"source":"https://hayashi-sangyo.jp/shopslist/","checkedAt":"2026-10-18"},
+  {"name":"こがらや","query":"うどん こがらや","kind":"うどん","cuisines":["和食"],"prefs":["大阪"],"source":"https://kogaraya.jp/site/shop","checkedAt":"2026-10-18"},
+  {"name":"麺や兼虎","query":"麺や兼虎","kind":"ラーメン","cuisines":["中華"],"prefs":["福岡","佐賀"],"source":"https://www.kanetora.co.jp/shop","checkedAt":"2026-10-18","aliases":["兼虎"]},
+  {"name":"カレーのチャンピオン","query":"カレーのチャンピオン","kind":"カレー","cuisines":["洋食"],"prefs":["石川","富山","福井","東京","愛知","兵庫","岐阜"],"source":"https://chancurry.com/shoplist/","checkedAt":"2026-10-18","aliases":["チャンピオンカレー"]},
+  {"name":"インデアンカレー","query":"インデアンカレー","kind":"カレー","cuisines":["洋食"],"prefs":["大阪","兵庫","東京"],"source":"https://www.indiancurry.jp/","checkedAt":"2026-10-18"},
+  {"name":"因幡うどん","query":"因幡うどん","kind":"うどん","cuisines":["和食"],"prefs":["福岡"],"source":"https://inabaudon.com/","checkedAt":"2026-10-18"},
+  {"name":"人力うどん","query":"人力うどん","kind":"うどん","cuisines":["和食"],"prefs":["福岡","佐賀"],"source":"https://www.jinrikiudon.co.jp/restaurant-cat/udon/","checkedAt":"2026-10-18"},
+  {"name":"博多めんちゃんこ亭","query":"博多めんちゃんこ亭","kind":"ラーメン","cuisines":["中華"],"prefs":["福岡","長崎"],"source":"https://menchanko.co.jp/","checkedAt":"2026-10-18","aliases":["めんちゃんこ亭"]},
+  {"name":"大龍ラーメン","query":"大龍ラーメン","kind":"ラーメン","cuisines":["中華"],"prefs":["福岡","佐賀"],"source":"https://www.dairyuramen.com/","checkedAt":"2026-10-18"},
+  {"name":"かつ処季の屋","query":"かつ処季の屋","kind":"とんかつ","cuisines":["和食"],"prefs":["高知","兵庫","岡山"],"source":"https://elleair-foods.co.jp/eatery/","checkedAt":"2026-10-18"},
+  {"name":"ふくの家","query":"久留米ラーメン ふくの家","kind":"ラーメン","cuisines":["中華"],"prefs":["福岡"],"source":"https://www.jinrikiudon.co.jp/restaurant-cat/ramen/","checkedAt":"2026-10-18"},
   {"name":"牧のうどん","query":"牧のうどん","kind":"うどん","cuisines":["和食"],"prefs":["福岡","佐賀","長崎"],"source":"https://www.makinoudon.jp/cont6/main.html","checkedAt":"2026-10-17"},
   {"name":"大地のうどん","query":"大地のうどん","kind":"うどん","cuisines":["和食"],"prefs":["福岡","東京"],"source":"https://daichinoudon.com/shop/","checkedAt":"2026-10-17"},
-  {"name":"どんどん","query":"うどん どんどん","kind":"うどん","cuisines":["和食"],"prefs":["山口","岡山","広島","島根","福岡","東京"],"source":"https://www.s-dondon.co.jp/shoplist/","checkedAt":"2026-10-17","excludedNames":["どんどん亭","焼肉どんどん","お弁当どんどん"]},
+  {"name":"どんどん","query":"うどん どんどん","kind":"うどん","cuisines":["和食"],"prefs":["山口","岡山","広島","島根","福岡","東京"],"source":"https://www.s-dondon.co.jp/shoplist/","checkedAt":"2026-10-17","excludedNames":["どんどん亭","焼肉どんどん","お弁当どんどん","どんどん庵"]},
   {"name":"讃岐製麺","query":"讃岐製麺","kind":"うどん","cuisines":["和食"],"prefs":["愛知","大阪"],"source":"https://www.meshiya.co.jp/brand/sanuki/","checkedAt":"2026-10-17"},
   {"name":"彩華ラーメン","query":"彩華ラーメン","kind":"ラーメン","cuisines":["中華"],"prefs":["奈良","大阪","京都","愛知"],"source":"https://www.saikaramen.com/shop/","checkedAt":"2026-10-17","aliases":["サイカラーメン"]},
   {"name":"天理スタミナラーメン","query":"天理スタミナラーメン","kind":"ラーメン","cuisines":["中華"],"prefs":["奈良","大阪","兵庫","滋賀","三重","沖縄"],"source":"https://www.tensuta.jp/店舗一覧","checkedAt":"2026-10-17"},
@@ -310,6 +353,9 @@ const MODES = {
     ['ステーキ・ハンバーグ','ローカルチェーン ステーキ・ハンバーグ'],
     ['中華料理','ローカルチェーン 中華料理'],
     ['お好み焼き','ローカルチェーン お好み焼き'],
+    ['寿司','ローカルチェーン 寿司'],
+    ['とんかつ','ローカルチェーン とんかつ'],
+    ['カレー','ローカルチェーン カレー'],
     ['鶏料理','ローカルチェーン 鶏料理']
   ]},
   famous:{label:'有名店', term:'人気の飲食店'},
