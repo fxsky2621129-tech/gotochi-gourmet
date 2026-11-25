@@ -1,6 +1,16 @@
 {
-  "updated_at": "2026-11-24T19:01:02+09:00",
+  "updated_at": "2026-11-25T17:44:50+09:00",
   "items": [
+    {
+      "title": "【セブンイレブン】400万食販売の「フローズンチョコバナナ」がゴディバとコラボ! SNSで話題のショコラクレープ&生チョコも再登場 - au Webポータル",
+      "url": "https://news.google.com/rss/articles/CBMibkFVX3lxTE5sM0w4TGJTaTdadlROTXhKeU9BRE5TelZqWm5xM2ZYdGRfQ210dWQtX1JXTDdOZVVXcXdjb2tNUGpmdFNsWWR4TllPS2JWckdGXzRDVHUxVkxFX0twVkphS0R1aWxzME0wbE52ci13?oc=5",
+      "source": "au Webポータル",
+      "published": "2026-11-24T08:27:53Z",
+      "classification": "sns-article",
+      "genre": "sweets",
+      "prefecture": "",
+      "city": ""
+    },
     {
       "title": "＜画像2 / 10＞インスタで話題！愛知の人気店が手掛ける、渾身のイチゴスイーツをご覧あれ!! - ウォーカープラス",
       "url": "https://news.google.com/rss/articles/CBMia0FVX3lxTE5TTVNKNXN6cU1TOWtZQjNydmsyYmpMWTNGZUdXdlk2Yk5Qc19qTmJRMlJjQXJxQ09tb0pBNUNNU3NDOTNrdE5iQmtUb3hDSnZqdlRKelBfY0xacjZlWjk4d2s5ZGNLYVAtUXQ4?oc=5",
@@ -150,19 +160,9 @@
       "genre": "sweets",
       "prefecture": "",
       "city": ""
-    },
-    {
-      "title": "【大阪】「ウソみたい…」老舗パティスリーのケーキがSNSで話題！ネックレスまで「全て食べられる」トルソー型ケーキとは - LASISA",
-      "url": "https://news.google.com/rss/articles/CBMiREFVX3lxTE1jdDdWUmxTWm5yTlZFQ0kySU5CSGZiaTE1TDBLQnV5SHRVTzRHVlliMWxmcTkyYU1kLWtTUHJ6c0xPZTZz?oc=5",
-      "source": "LASISA",
-      "published": "2026-10-26T07:00:00Z",
-      "classification": "sns-article",
-      "genre": "sweets",
-      "prefecture": "大阪府",
-      "city": ""
     }
   ],
-  "feeds_succeeded": 3,
+  "feeds_succeeded": 4,
   "feeds_total": 4,
   "note": "公開ニュースRSSの見出しにSNSへの言及がある記事。SNS投稿数や店舗所在地は未検証。都道府県は見出しに明記された地域です。"
 }
